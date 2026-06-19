@@ -145,3 +145,22 @@ func FactorioLogin(username string, password string) (error, int) {
 
 	return nil, http.StatusOK
 }
+
+// FactorioLoginWithToken saves credentials directly using a token from factorio.com/profile
+func FactorioLoginWithToken(username string, token string) (error, int) {
+	if username == "" || token == "" {
+		return errors.New("username and token are required"), http.StatusBadRequest
+	}
+
+	credentials := Credentials{
+		Username: username,
+		Userkey:  token,
+	}
+
+	err := credentials.Save()
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+
+	return nil, http.StatusOK
+}

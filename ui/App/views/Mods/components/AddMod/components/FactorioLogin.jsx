@@ -10,9 +10,9 @@ const FactorioLogin = ({setIsFactorioAuthenticated}) => {
     const {register, handleSubmit} = useForm();
     const [isLoading, setIsLoading] = useState(false);
 
-    const login = ({username, password}) => {
+    const login = ({username, token}) => {
         setIsLoading(true);
-        modsResource.portal.login(username, password)
+        modsResource.portal.login(username, token)
             .then(res => {
                 setIsFactorioAuthenticated(true)
             })
@@ -28,8 +28,8 @@ const FactorioLogin = ({setIsFactorioAuthenticated}) => {
                     <Input register={register('username',{required: true})}/>
                 </div>
                 <div className="w-1/2 ml-2">
-                    <Label text="Password" htmlFor="password"/>
-                    <Input type="password" register={register('password',{required: true})}/>
+                    <Label text="Token" htmlFor="password"/>
+                    <Input type="password" register={register('token',{required: true})}/>
                 </div>
             </div>
             <Button isSubmit={true} isLoading={isLoading}>Login</Button>

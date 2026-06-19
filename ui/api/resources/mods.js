@@ -34,10 +34,10 @@ const mods = {
     },
     downloadAllURL: '/api/mods/download',
     portal: {
-        login: async (username, password) => {
+        login: async (username, token) => {
             const response = await client.post('/api/mods/portal/login', {
                 username,
-                password
+                token
             });
             return response.data;
         },
