@@ -63,15 +63,16 @@ func (modInfoList *ModInfoList) listInstalledMods() error {
 
 			zipFile, err := zip.OpenReader(path)
 			if err != nil {
-				log.Fatalln(err)
-				return err
+				log.Printf("error opening mod zip %s: %v", path, err)
+				return nil
 			}
 			defer zipFile.Close()
 
 			var modInfo ModInfo
 			err = modInfo.getModInfo(&zipFile.Reader)
 			if err != nil {
-				log.Fatalf("Error in getModInfo: %s", err)
+				log.Printf("error reading info.json from %s: %v", path, err)
+				return nil
 			}
 
 			modInfo.FileName = info.Name()
@@ -170,24 +171,24 @@ func (modInfo *ModInfo) getModInfo(reader *zip.Reader) error {
 			rc, err := singleFile.Open()
 
 			if err != nil {
-				log.Fatal(err)
+				log.Printf("error opening file in mod zip: %v", err)
 				return err
 			}
 
 			byteArray, err := ioutil.ReadAll(rc)
 			if err != nil {
-				log.Fatal(err)
+				log.Printf("error reading file in mod zip: %v", err)
 				return err
 			}
 			err = rc.Close()
 			if err != nil {
-				log.Printf("Error closing singleFile: %s", err)
+				log.Printf("error closing singleFile: %s", err)
 				return err
 			}
 
 			err = json.Unmarshal(byteArray, modInfo)
 			if err != nil {
-				log.Fatalln(err)
+				log.Printf("invalid info.json in mod: %v", err)
 				return err
 			}
 
