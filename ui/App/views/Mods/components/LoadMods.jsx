@@ -40,20 +40,25 @@ const LoadMods = ({refreshMods}) => {
     }
 
     const loadMods = async data => {
-        await modResource.deleteAll();
-        const {mods} = await savesResource.mods(data.save).catch(() => {
+        try {
+            await modResource.deleteAll();
+            const result = await savesResource.mods(data.save);
+            const mods = result?.mods || [];
+            
+            if (mods.length === 0) {
+                window.flash(t('noModsFound', { ns: 'mods' }), "green");
+                return;
+            }
+
+            await modResource.portal.installMultiple(mods);
+            refreshMods();
+            window.flash(t('modsLoaded').replace('{save}', data.save), "green");
+        } catch (e) {
+            window.flash(t('errorOccurred', { ns: 'common' }), "red");
+        } finally {
             setIsLoading(false);
             setLoadModsData(undefined);
-        });
-
-        await modResource.portal.installMultiple(mods)
-            .then(() => {
-                refreshMods();
-                window.flash(t('modsLoaded').replace('{save}', data.save), "green");
-            }).finally(() => {
-                setIsLoading(false);
-                setLoadModsData(undefined);
-            });
+        }
     }
 
     return isFactorioAuthenticated
