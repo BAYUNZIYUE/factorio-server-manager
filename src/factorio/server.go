@@ -14,6 +14,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/OpenFactorioServerManager/factorio-server-manager/api/websocket"
 	"github.com/OpenFactorioServerManager/factorio-server-manager/bootstrap"
@@ -299,6 +300,15 @@ func (server *Server) Run() error {
 
 	go server.parseRunningCommand(server.StdOut)
 	go server.parseRunningCommand(server.StdErr)
+
+	// Ждём завершения синка модов если он идёт
+	if IsModsSyncing() {
+		log.Println("Waiting for mod sync to complete before starting server...")
+		for IsModsSyncing() {
+			time.Sleep(1 * time.Second)
+		}
+		log.Println("Mod sync complete, starting server")
+	}
 
 	err = server.Cmd.Start()
 	if err != nil {

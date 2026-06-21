@@ -61,6 +61,10 @@
     "react-hook-form": "^7.47.0",
     "regenerator-runtime": "^0.14.0",
     "semver": "^7.3.7",
-    "tailwindcss": "^3.3.5"
+    "tailwindcss": "^3.3.5",
+    "i18next": "^25.5.2",
+    "react-i18next": "^15.7.3",
+    "i18next-http-backend": "^3.0.2",
+    "i18next-browser-languagedetector": "^8.2.0"
   }
 }

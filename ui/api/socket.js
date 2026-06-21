@@ -63,11 +63,21 @@ function connect() {
         );
     }
 
+    function modsSyncSubscribeEvent() {
+        socket.send(JSON.stringify({room_name: "", controls: {type: "subscribe", value: "mods_sync"}}));
+    }
+
+    function modsSyncUnsubscribeEvent() {
+        socket.send(JSON.stringify({room_name: "", controls: {type: "unsubscribe", value: "mods_sync"}}));
+    }
+
     function registerEventEmitter() {
         bus.on('log subscribe', logSubscribeEvent);
         bus.on('log unsubscribe', logUnsubscribeEvent);
         bus.on('server status subscribe', serverStatusSubscribeEvent);
         bus.on('command send', commandSendEvent);
+        bus.on('mods sync subscribe', modsSyncSubscribeEvent);
+        bus.on('mods sync unsubscribe', modsSyncUnsubscribeEvent);
     }
 
     function unregisterEventEmitter() {
@@ -75,6 +85,8 @@ function connect() {
         bus.off('log unsubscribe', logUnsubscribeEvent);
         bus.off('server status subscribe', serverStatusSubscribeEvent);
         bus.off('command send', commandSendEvent);
+        bus.off('mods sync subscribe', modsSyncSubscribeEvent);
+        bus.off('mods sync unsubscribe', modsSyncUnsubscribeEvent);
     }
 
     socket.onmessage = e => {

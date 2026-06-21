@@ -210,6 +210,18 @@ func (h *SaveHeader) ReadFrom(r io.Reader) (err error) {
 		}
 	}
 
+	// Factorio 2.0 добавил два байта и uint32 перед списком модов
+	if !h.FactorioVersion.Less(Version{2, 0, 0, 0}) {
+		_, err = r.Read(scratch[:2])
+		if err != nil {
+			return fmt.Errorf("read 2.0 unknown bytes: %v", err)
+		}
+		_, err = r.Read(scratch[:4])
+		if err != nil {
+			return fmt.Errorf("read 2.0 extra uint32: %v", err)
+		}
+	}
+
 	var n uint32
 	if atLeast016 {
 		n, err = readOptimUint(r, Version(h.FactorioVersion), 32)

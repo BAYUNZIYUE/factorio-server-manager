@@ -16,6 +16,7 @@ import GameSettings from "./views/GameSettings";
 import Console from "./views/Console";
 import Help from "./views/Help";
 import socket from "../api/socket";
+import "./i18n";
 import {Flash} from "./components/Flash";
 
 

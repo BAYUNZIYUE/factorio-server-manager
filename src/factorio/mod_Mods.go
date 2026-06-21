@@ -71,6 +71,29 @@ func (mods *Mods) ListInstalledMods() ModsResultList {
 		result.ModsResult = append(result.ModsResult, modsResult)
 	}
 
+	// Добавляем моды из mod-list.json которых нет как zip (DLC моды)
+	for _, simpleMod := range mods.ModSimpleList.Mods {
+		if simpleMod.Name == "base" {
+			continue
+		}
+		// Проверяем — есть ли уже в результатах
+		found := false
+		for _, r := range result.ModsResult {
+			if r.Name == simpleMod.Name {
+				found = true
+				break
+			}
+		}
+		if !found {
+			// DLC мод — только в mod-list.json, без zip
+			var modsResult ModsResult
+			modsResult.Name = simpleMod.Name
+			modsResult.Title = simpleMod.Name
+			modsResult.Enabled = simpleMod.Enabled
+			modsResult.Compatibility = true
+			result.ModsResult = append(result.ModsResult, modsResult)
+		}
+	}
 	return result
 }
 
