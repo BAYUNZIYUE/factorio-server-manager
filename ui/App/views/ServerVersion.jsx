@@ -40,6 +40,15 @@ const ServerVersion = ({serverStatus}) => {
         fetchData();
         socket.emit('server version subscribe');
 
+        (async () => {
+            const status = await server.version.installStatus();
+            if (status && status.installing) {
+                setIsInstalling(true);
+                setInstallVersion(status.version);
+                setProgress(status.progress);
+            }
+        })();
+
         const handleVersionMessage = (msg) => {
             try {
                 const data = JSON.parse(typeof msg === 'string' ? msg : JSON.stringify(msg));
@@ -49,7 +58,13 @@ const ServerVersion = ({serverStatus}) => {
                     setIsInstalling(false);
                     setProgress(0);
                     setCurrentVersion(data.version);
+                    setInstallVersion(null);
                     window.flash(t('installSuccess').replace('{version}', data.version), "green");
+                } else if (data.type === 'install_error') {
+                    setIsInstalling(false);
+                    setProgress(0);
+                    setInstallVersion(null);
+                    setError(data.error || 'Unknown error');
                 }
             } catch (e) {}
         };
@@ -116,8 +131,9 @@ const ServerVersion = ({serverStatus}) => {
         try {
             await server.version.install(version);
         } catch (e) {
-            setError(t('installFailed').replace('{error}', e.message || ''));
+            setError(t('installFailed').replace('{error}', e.response?.data?.error || e.message || ''));
             setIsInstalling(false);
+            setInstallVersion(null);
         }
     };
 

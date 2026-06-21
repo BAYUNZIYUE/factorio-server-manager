@@ -289,6 +289,12 @@ var apiRoutes = Routes{
 		"/server/version/install",
 		InstallVersion,
 		true,
+	}, {
+		"GetInstallStatus",
+		"GET",
+		"/server/version/install-status",
+		GetInstallStatus,
+		false,
 	},
 	// Mod Portal Stuff
 	{

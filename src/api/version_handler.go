@@ -67,26 +67,59 @@ func InstallVersion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	vm := factorio.NewVersionManager()
-	wsRoom := websocket.WebsocketHub.GetRoom("server_version")
-
-	err := vm.DownloadAndInstall(data.Version, func(percent int) {
-		msg := fmt.Sprintf(`{"type":"download_progress","version":"%s","percent":%d}`, data.Version, percent)
-		wsRoom.Send(string(msg))
-	})
-
-	if err != nil {
-		log.Printf("Version install error: %v", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
+	status := factorio.GetInstallStatus()
+	if status.Installing {
+		w.WriteHeader(http.StatusConflict)
+		json.NewEncoder(w).Encode(map[string]string{"error": "installation already in progress"})
 		return
 	}
 
-	wsRoom.Send(fmt.Sprintf(`{"type":"install_complete","version":"%s"}`, data.Version))
+	factorio.SetInstallStatus(factorio.InstallStatus{
+		Installing: true,
+		Version:    data.Version,
+		Progress:   0,
+	})
 
-	w.WriteHeader(http.StatusOK)
+	go func() {
+		vm := factorio.NewVersionManager()
+		wsRoom := websocket.WebsocketHub.GetRoom("server_version")
+
+		err := vm.DownloadAndInstall(data.Version, func(percent int) {
+			factorio.SetInstallStatus(factorio.InstallStatus{
+				Installing: true,
+				Version:    data.Version,
+				Progress:   percent,
+			})
+			msg := fmt.Sprintf(`{"type":"download_progress","version":"%s","percent":%d}`, data.Version, percent)
+			wsRoom.Send(string(msg))
+		})
+
+		if err != nil {
+			log.Printf("Version install error: %v", err)
+			factorio.SetInstallStatus(factorio.InstallStatus{
+				Installing: false,
+				Version:    data.Version,
+				Progress:   100,
+				Error:      err.Error(),
+			})
+			wsRoom.Send(fmt.Sprintf(`{"type":"install_error","version":"%s","error":"%s"}`, data.Version, err.Error()))
+			return
+		}
+
+		factorio.SetInstallStatus(factorio.InstallStatus{})
+		wsRoom.Send(fmt.Sprintf(`{"type":"install_complete","version":"%s"}`, data.Version))
+	}()
+
+	w.WriteHeader(http.StatusAccepted)
 	json.NewEncoder(w).Encode(map[string]string{
-		"status":  "ok",
+		"status":  "started",
 		"version": data.Version,
 	})
+}
+
+func GetInstallStatus(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json;charset=UTF-8")
+	status := factorio.GetInstallStatus()
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(status)
 }

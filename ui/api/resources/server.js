@@ -39,7 +39,11 @@ export default {
             return response.data;
         },
         install: async (version) => {
-            const response = await client.post('/api/server/version/install', { version }, { timeout: 600000 });
+            const response = await client.post('/api/server/version/install', { version });
+            return response.data;
+        },
+        installStatus: async () => {
+            const response = await client.get('/api/server/version/install-status');
             return response.data;
         }
     }
