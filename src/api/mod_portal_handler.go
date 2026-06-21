@@ -219,10 +219,10 @@ func ModPortalInstallMultipleHandler(w http.ResponseWriter, r *http.Request) {
 			log.Printf("Error downloading mod {%s}, error: %s", details.Name, "version not found")
 		}
 		current++
-		wsRoom.Send(fmt.Sprintf(\`{"type":"progress","current":%d,"total":%d,"name":"%s"}\`, current, total, datum.Name))
+		wsRoom.Send(fmt.Sprintf("{\"type\":\"progress\",\"current\":%d,\"total\":%d,\"name\":\"%s\"}", current, total, datum.Name))
 	}
 
-	wsRoom.Send(fmt.Sprintf(\`{"type":"complete","total":%d}\`, total))
+	wsRoom.Send(fmt.Sprintf("{\"type\":\"complete\",\"total\":%d}", total))
 
 	resp = modList.ListInstalledMods()
 }
