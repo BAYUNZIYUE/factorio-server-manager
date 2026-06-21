@@ -210,14 +210,16 @@ func ModPortalInstallMultipleHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for w := 0; w < workers; w++ {
-		go func() {
+		go func(wid int) {
 			for j := range jobs {
 				var r result
 				r.index = j.index
 				r.name = j.name
+				wsRoom.Send(fmt.Sprintf("{\"type\":\"worker\",\"worker\":%d,\"name\":\"%s\",\"state\":\"start\"}", wid, j.name))
 				details, err, statusCode := factorio.ModPortalModDetails(j.name)
 				if err != nil || statusCode != http.StatusOK {
 					r.err = fmt.Errorf("portal lookup failed")
+					wsRoom.Send(fmt.Sprintf("{\"type\":\"worker\",\"worker\":%d,\"name\":\"%s\",\"state\":\"error\"}", wid, j.name))
 					results <- r
 					continue
 				}
@@ -228,16 +230,20 @@ func ModPortalInstallMultipleHandler(w http.ResponseWriter, r *http.Request) {
 						dl := modList.DownloadMod(release.DownloadURL, release.FileName, details.Name)
 						if dl != nil {
 							r.err = dl
+							wsRoom.Send(fmt.Sprintf("{\"type\":\"worker\",\"worker\":%d,\"name\":\"%s\",\"state\":\"error\"}", wid, j.name))
+						} else {
+							wsRoom.Send(fmt.Sprintf("{\"type\":\"worker\",\"worker\":%d,\"name\":\"%s\",\"state\":\"done\"}", wid, j.name))
 						}
 						break
 					}
 				}
 				if !found {
 					r.err = fmt.Errorf("version not found")
+					wsRoom.Send(fmt.Sprintf("{\"type\":\"worker\",\"worker\":%d,\"name\":\"%s\",\"state\":\"error\"}", wid, j.name))
 				}
 				results <- r
 			}
-		}()
+		}(w)
 	}
 
 	for i, datum := range data {

@@ -24,6 +24,7 @@ const LoadMods = ({refreshMods}) => {
     const [showProgress, setShowProgress] = useState(false);
     const [activeCount, setActiveCount] = useState(0);
     const [completedNames, setCompletedNames] = useState([]);
+    const [workerStates, setWorkerStates] = useState({});
     const [modList, setModList] = useState([]);
     const [selectedMods, setSelectedMods] = useState(new Set());
     const [showModList, setShowModList] = useState(false);
@@ -32,11 +33,14 @@ const LoadMods = ({refreshMods}) => {
         const stored = localStorage.getItem('mod_install_pending');
         if (stored) {
             try {
-                const data = JSON.parse(stored);
-                setInstallProgress({current: 0, total: data.total});
-                setShowProgress(true);
-                const done = JSON.parse(localStorage.getItem('mod_install_done') || '[]');
-                setCompletedNames(done);
+                if (localStorage.getItem('mod_install_done') === 'true') {
+                    localStorage.removeItem('mod_install_pending');
+                    localStorage.removeItem('mod_install_done');
+                } else {
+                    const data = JSON.parse(stored);
+                    setInstallProgress({current: 0, total: data.total});
+                    setShowProgress(true);
+                }
             } catch(e) {}
         }
 
@@ -69,11 +73,20 @@ const LoadMods = ({refreshMods}) => {
                         return next;
                     });
                     setShowProgress(true);
+                } else if (data.type === 'worker') {
+                    setWorkerStates(prev => ({
+                        ...prev,
+                        [data.worker]: {
+                            name: data.name,
+                            state: data.state
+                        }
+                    }));
                 } else if (data.type === 'complete') {
                     setShowProgress(false);
                     setActiveCount(0);
+                    setWorkerStates({});
+                    localStorage.setItem('mod_install_done', 'true');
                     localStorage.removeItem('mod_install_pending');
-                    localStorage.removeItem('mod_install_done');
                 }
             } catch (e) {}
         };
@@ -168,18 +181,31 @@ const LoadMods = ({refreshMods}) => {
             {showProgress && (
                 <div className="mt-4">
                     <div className="flex justify-between text-sm text-gray-light mb-1">
-                        <span>{t('installingMods', { ns: 'mods' })} {activeCount > 0 ? `(${activeCount} concurrent)` : ''}</span>
+                        <span>{t('installingMods', { ns: 'mods' })} ({activeCount} workers)</span>
                         <span>{installProgress.current}/{installProgress.total}</span>
                     </div>
-                    <div className="w-full bg-gray-dark rounded h-2 mb-2">
+                    <div className="w-full bg-gray-dark rounded h-2 mb-3">
                         <div
-                            className="bg-orange h-2 rounded transition-all duration-300"
+                            className="bg-green h-2 rounded transition-all duration-300"
                             style={{width: `${installProgress.total > 0 ? (installProgress.current / installProgress.total * 100) : 0}%`}}
                         />
                     </div>
-                    <p className="text-xs text-gray-light">
-                        {completedNames.slice(-5).join(', ')}
-                    </p>
+                    {[0,1,2,3,4].map(w => {
+                        const ws = workerStates[w];
+                        if (!ws) return null;
+                        const color = ws.state === 'done' ? 'bg-green' : ws.state === 'error' ? 'bg-red' : ws.state === 'start' ? 'bg-orange' : 'bg-gray-light';
+                        return (
+                            <div key={w} className="mb-1">
+                                <div className="w-full bg-gray-dark rounded h-1.5">
+                                    <div
+                                        className={`${color} h-1.5 rounded transition-all duration-300`}
+                                        style={{width: ws.state === 'done' ? '100%' : ws.state === 'error' ? '100%' : '60%'}}
+                                    />
+                                </div>
+                                <p className="text-xs text-gray-light truncate">{ws.name} {ws.state === 'done' ? '✓' : ws.state === 'error' ? '✗' : ''}</p>
+                            </div>
+                        );
+                    })}
                 </div>
             )}
             <Modal
