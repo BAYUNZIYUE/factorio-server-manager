@@ -36,6 +36,7 @@
   "selectModsToInstall": "Select mods to install from this save:",
   "installSelected": "Install ({count})",
   "noModsSelected": "No mods selected.",
+  "confirmDeleteAllMods": "This will permanently delete all installed mods and mod packs. The Factorio server must be stopped before proceeding. Are you sure you want to continue?",
   "compatibility": "Compatibility",
   "modVersion": "Mod Version",
   "factorioVersion": "Factorio Version"

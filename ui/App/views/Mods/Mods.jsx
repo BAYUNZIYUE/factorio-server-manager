@@ -13,6 +13,7 @@ import Fuse from "fuse.js";
 import CreateModPack from "./components/CreateModPack";
 import ModPack from "./components/ModPack";
 import ModList from "./components/ModList";
+import ConfirmDialog from "../../components/ConfirmDialog";
 
 const Mods = ({serverStatus}) => {
 
@@ -25,6 +26,7 @@ const Mods = ({serverStatus}) => {
     const [isDeletingAllMods, setIsDeletingAllMods] = useState(false);
     const [isUpdatingAllMods, setIsUpdatingAllMods] = useState(false);
     const [updatableMods, setUpdatableMods] = useState([]);
+    const [showDeleteAllConfirm, setShowDeleteAllConfirm] = useState(false);
 
     const addUpdatableMod = mod => {
         setUpdatableMods(mods => [...mods, mod])
@@ -155,7 +157,9 @@ const Mods = ({serverStatus}) => {
                             <>
                                 <a className="bg-gray-light py-1 px-2 hover:glow-orange hover:bg-orange inline-block accentuated text-black font-bold"
                                    href={modsResource.downloadAllURL}>{t('downloadAllMods')}</a>
-                                <Button size="sm" type="danger" className="ml-2" onClick={deleteAllMods}>{t('deleteAllMods')}</Button>
+                                <Button size="sm" type="danger" className="ml-2"
+                                    isLoading={isDeletingAllMods}
+                                    onClick={() => setShowDeleteAllConfirm(true)}>{t('deleteAllMods')}</Button>
                             </>
                         ) : (
                             <span className="text-gray-light text-sm italic">{t('changingModsDisabled')}</span>
@@ -182,6 +186,17 @@ const Mods = ({serverStatus}) => {
                 actions={
                     <CreateModPack onSuccess={fetchModPacks}/>
                 }
+            />
+            <ConfirmDialog
+                title={t('deleteAllMods')}
+                content={t('confirmDeleteAllMods')}
+                isOpen={showDeleteAllConfirm}
+                close={() => setShowDeleteAllConfirm(false)}
+                onSuccess={() => {
+                    setShowDeleteAllConfirm(false);
+                    deleteAllMods();
+                }}
+                closeImmediately={true}
             />
         </div>
     )
