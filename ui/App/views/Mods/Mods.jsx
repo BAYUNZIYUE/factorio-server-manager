@@ -151,10 +151,15 @@ const Mods = ({serverStatus}) => {
                             <Button size="sm" className="mr-2" isLoading={isUpdatingAllMods}
                                     onClick={updateAllMods}>{t('updateAllMods')}</Button>
                         }
-                        <a className="bg-gray-light py-1 px-2 hover:glow-orange hover:bg-orange inline-block accentuated text-black font-bold"
-                           href={modsResource.downloadAllURL}>{t('downloadAllMods')}</a>
-                        <button className="bg-red-light hover:bg-red py-1 px-2 inline-block accentuated text-white font-bold ml-2"
-                                onClick={deleteAllMods}>{t('deleteAllMods')}</button>
+                        {!disabled ? (
+                            <>
+                                <a className="bg-gray-light py-1 px-2 hover:glow-orange hover:bg-orange inline-block accentuated text-black font-bold"
+                                   href={modsResource.downloadAllURL}>{t('downloadAllMods')}</a>
+                                <Button size="sm" type="danger" className="ml-2" onClick={deleteAllMods}>{t('deleteAllMods')}</Button>
+                            </>
+                        ) : (
+                            <span className="text-gray-light text-sm italic">{t('changingModsDisabled')}</span>
+                        )}
                     </>
                 }
             />
