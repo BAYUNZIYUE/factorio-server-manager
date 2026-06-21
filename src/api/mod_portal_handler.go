@@ -188,38 +188,76 @@ func ModPortalInstallMultipleHandler(w http.ResponseWriter, r *http.Request) {
 
 	wsRoom := websocket.WebsocketHub.GetRoom("mod_install")
 	total := len(data)
-	current := 0
 
-	for _, datum := range data {
-		// skip base mod because it is already included in factorio
-		if datum.Name == "base" {
-			current++
-			continue
-		}
-		details, err, statusCode := factorio.ModPortalModDetails(datum.Name)
-		if err != nil || statusCode != http.StatusOK {
-			log.Printf("Error in getting mod details from mod portal: %s", err)
-			current++
-			continue
-		}
+	type job struct {
+		index int
+		name  string
+		ver   factorio.Version
+	}
+	type result struct {
+		index int
+		name  string
+		size  int64
+		err   error
+	}
 
-		var found = false
-		for _, release := range details.Releases {
-			if release.Version.Equals(datum.Version) {
-				found = true
-				err := modList.DownloadMod(release.DownloadURL, release.FileName, details.Name)
-				if err != nil {
-					log.Printf("Error downloading mod {%s}, error: %s", details.Name, err)
-					break
+	jobs := make(chan job, total)
+	results := make(chan result, total)
+
+	workers := 5
+	if total < workers {
+		workers = total
+	}
+
+	for w := 0; w < workers; w++ {
+		go func() {
+			for j := range jobs {
+				var r result
+				r.index = j.index
+				r.name = j.name
+				details, err, statusCode := factorio.ModPortalModDetails(j.name)
+				if err != nil || statusCode != http.StatusOK {
+					r.err = fmt.Errorf("portal lookup failed")
+					results <- r
+					continue
 				}
-				break
+				found := false
+				for _, release := range details.Releases {
+					if release.Version.Equals(j.ver) {
+						found = true
+						dl := modList.DownloadMod(release.DownloadURL, release.FileName, details.Name)
+						if dl != nil {
+							r.err = dl
+						}
+						break
+					}
+				}
+				if !found {
+					r.err = fmt.Errorf("version not found")
+				}
+				results <- r
 			}
+		}()
+	}
+
+	for i, datum := range data {
+		if datum.Name != "base" {
+			jobs <- job{index: i, name: datum.Name, ver: datum.Version}
+		} else {
+			results <- result{index: i, name: "base"}
 		}
-		if !found {
-			log.Printf("Error downloading mod {%s}, error: %s", details.Name, "version not found")
+	}
+	close(jobs)
+
+	completed := 0
+	wsRoom.Send(fmt.Sprintf("{\"type\":\"start\",\"total\":%d}", total))
+	for completed < total {
+		r := <-results
+		completed++
+		if r.err != nil {
+			log.Printf("Error downloading mod {%s}: %v", r.name, r.err)
 		}
-		current++
-		wsRoom.Send(fmt.Sprintf("{\"type\":\"progress\",\"current\":%d,\"total\":%d,\"name\":\"%s\"}", current, total, datum.Name))
+		wsRoom.Send(fmt.Sprintf("{\"type\":\"progress\",\"current\":%d,\"total\":%d,\"name\":\"%s\",\"active\":%d}", completed, total, r.name, workers))
 	}
 
 	wsRoom.Send(fmt.Sprintf("{\"type\":\"complete\",\"total\":%d}", total))

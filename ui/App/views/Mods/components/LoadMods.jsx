@@ -22,11 +22,24 @@ const LoadMods = ({refreshMods}) => {
     const [loadModsData, setLoadModsData] = useState(undefined);
     const [installProgress, setInstallProgress] = useState({current: 0, total: 0});
     const [showProgress, setShowProgress] = useState(false);
+    const [activeCount, setActiveCount] = useState(0);
+    const [completedNames, setCompletedNames] = useState([]);
     const [modList, setModList] = useState([]);
     const [selectedMods, setSelectedMods] = useState(new Set());
     const [showModList, setShowModList] = useState(false);
 
     useEffect(() => {
+        const stored = localStorage.getItem('mod_install_pending');
+        if (stored) {
+            try {
+                const data = JSON.parse(stored);
+                setInstallProgress({current: 0, total: data.total});
+                setShowProgress(true);
+                const done = JSON.parse(localStorage.getItem('mod_install_done') || '[]');
+                setCompletedNames(done);
+            } catch(e) {}
+        }
+
         (async () => {
             setIsFactorioAuthenticated(await modResource.portal.status())
 
@@ -41,11 +54,26 @@ const LoadMods = ({refreshMods}) => {
         const handleProgress = (msg) => {
             try {
                 const data = JSON.parse(typeof msg === 'string' ? msg : JSON.stringify(msg));
-                if (data.type === 'progress') {
+                if (data.type === 'start') {
+                    setInstallProgress({current: 0, total: data.total});
+                    setShowProgress(true);
+                    setActiveCount(0);
+                    setCompletedNames([]);
+                    localStorage.setItem('mod_install_pending', JSON.stringify(data));
+                } else if (data.type === 'progress') {
                     setInstallProgress({current: data.current, total: data.total});
+                    setActiveCount(data.active || 0);
+                    setCompletedNames(prev => {
+                        const next = [...prev, data.name];
+                        localStorage.setItem('mod_install_done', JSON.stringify(next));
+                        return next;
+                    });
                     setShowProgress(true);
                 } else if (data.type === 'complete') {
                     setShowProgress(false);
+                    setActiveCount(0);
+                    localStorage.removeItem('mod_install_pending');
+                    localStorage.removeItem('mod_install_done');
                 }
             } catch (e) {}
         };
@@ -140,15 +168,18 @@ const LoadMods = ({refreshMods}) => {
             {showProgress && (
                 <div className="mt-4">
                     <div className="flex justify-between text-sm text-gray-light mb-1">
-                        <span>{t('installingMods', { ns: 'mods' })}</span>
+                        <span>{t('installingMods', { ns: 'mods' })} {activeCount > 0 ? `(${activeCount} concurrent)` : ''}</span>
                         <span>{installProgress.current}/{installProgress.total}</span>
                     </div>
-                    <div className="w-full bg-gray-dark rounded h-2">
+                    <div className="w-full bg-gray-dark rounded h-2 mb-2">
                         <div
                             className="bg-orange h-2 rounded transition-all duration-300"
                             style={{width: `${installProgress.total > 0 ? (installProgress.current / installProgress.total * 100) : 0}%`}}
                         />
                     </div>
+                    <p className="text-xs text-gray-light">
+                        {completedNames.slice(-5).join(', ')}
+                    </p>
                 </div>
             )}
             <Modal
