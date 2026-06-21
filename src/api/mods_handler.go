@@ -2,12 +2,14 @@ package api
 
 import (
 	"archive/zip"
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"os"
+	"os/exec"
 	"path/filepath"
 
 	"github.com/OpenFactorioServerManager/factorio-server-manager/bootstrap"
@@ -363,5 +365,51 @@ func LoadModsFromSaveHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if len(header.Mods) == 0 {
+		mods, err := saveModsFallback(path)
+		if err != nil {
+			log.Printf("python fallback error: %v", err)
+		} else if mods != nil {
+			header.Mods = make([]factorio.Mod, len(mods))
+			for i, m := range mods {
+				var v factorio.Version
+				v.UnmarshalText([]byte(m["version"]))
+				header.Mods[i] = factorio.Mod{Name: m["name"], Version: v}
+			}
+		}
+	}
+
 	resp = header
+}
+
+func saveModsFallback(path string) ([]map[string]string, error) {
+	cmd := exec.Command("python3", "/home/game/fsm/save_mods.py", path)
+	var out bytes.Buffer
+	cmd.Stdout = &out
+	cmd.Stderr = &out
+	if err := cmd.Run(); err != nil {
+		return nil, fmt.Errorf("python parser failed: %v", err)
+	}
+	var result struct {
+		Fallback bool `json:"fallback"`
+		Mods []struct {
+			Name    string `json:"name"`
+			Version string `json:"version"`
+		} `json:"mods"`
+		Error string `json:"error"`
+	}
+	if err := json.Unmarshal(out.Bytes(), &result); err != nil {
+		return nil, fmt.Errorf("parse python output: %v", err)
+	}
+	if result.Fallback {
+		return nil, nil
+	}
+	if result.Error != "" {
+		return nil, fmt.Errorf("%s", result.Error)
+	}
+	var mods []map[string]string
+	for _, m := range result.Mods {
+		mods = append(mods, map[string]string{"name": m.Name, "version": m.Version})
+	}
+	return mods, nil
 }
