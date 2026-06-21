@@ -1,0 +1,8 @@
+{
+  "console": "控制台",
+  "consoleNotAvailable": "服务器未运行时控制台不可用。",
+  "inputPlaceholder": "输入指令...",
+  "commandSent": "指令已发送。",
+  "rconNotAvailable": "RCON 不可用。",
+  "send": "发送"
+}

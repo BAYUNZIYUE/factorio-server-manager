@@ -1,0 +1,20 @@
+{
+  "listOfUsers": "用户列表",
+  "changePassword": "修改密码",
+  "createUser": "创建用户",
+  "confirmDeleteUser": "确认删除此用户？",
+  "noUsersFound": "未找到用户。",
+  "passwordConfirmation": "确认密码",
+  "oldPassword": "旧密码",
+  "newPassword": "新密码",
+  "newPasswordConfirmation": "确认新密码",
+  "passwordRequired": "密码为必填项。",
+  "passwordMismatch": "两次输入的密码不一致。",
+  "passwordChanged": "密码已修改。",
+  "usernameRequired": "用户名为必填项。",
+  "roleRequired": "角色为必填项。",
+  "emailRequired": "邮箱为必填项。",
+  "userCreated": "用户已创建。",
+  "userDeleted": "用户已删除。",
+  "change": "修改"
+}

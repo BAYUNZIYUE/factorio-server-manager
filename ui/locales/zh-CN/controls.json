@@ -1,0 +1,20 @@
+{
+  "serverStatus": "服务器状态",
+  "startServer": "启动服务器",
+  "saveStopServer": "保存并停止服务器",
+  "killServer": "强制停止服务器",
+  "status": "状态",
+  "ip": "IP 地址",
+  "port": "端口",
+  "factorioVersion": "Factorio 版本",
+  "save": "存档",
+  "ipRequired": "IP 地址为必填项且必须有效。",
+  "portRequired": "端口为必填项，范围 1-65535",
+  "saveRequired": "存档为必填项且必须有效。",
+  "RUNNING": "运行中",
+  "STOPPED": "已停止",
+  "UNKNOWN": "未知",
+  "saveBeforeStop": "停止前保存游戏？",
+  "confirmStop": "确认停止服务器？",
+  "confirmKill": "确认强制停止服务器？这可能导致数据丢失。"
+}

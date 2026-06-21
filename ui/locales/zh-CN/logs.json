@@ -1,0 +1,8 @@
+{
+  "logs": "日志",
+  "noLogsAvailable": "暂无日志。",
+  "factorioLog": "Factorio 日志",
+  "factorioCurrentLog": "Factorio 当前日志",
+  "factorioPreviousLog": "Factorio 历史日志",
+  "fsmLog": "FSM 日志"
+}

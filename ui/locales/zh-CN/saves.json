@@ -1,0 +1,13 @@
+{
+  "createSave": "创建存档",
+  "uploadSave": "上传存档",
+  "saves": "存档",
+  "createSaveDisabled": "服务器运行中无法创建存档。",
+  "confirmDeleteSave": "确认删除此存档？",
+  "downloadSave": "下载",
+  "noSavesFound": "未找到存档。",
+  "savefileName": "存档文件名",
+  "saveFile": "存档文件",
+  "selectFile": "选择文件 ...",
+  "saveNameRequired": "存档名称为必填项。"
+}

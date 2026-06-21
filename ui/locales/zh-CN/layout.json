@@ -1,0 +1,21 @@
+{
+  "appTitle": "Factorio 服务器管理器",
+  "serverStatus": "服务器状态",
+  "serverManagement": "服务器管理",
+  "fsmAdministration": "FSM 管理",
+  "linkControls": "控制面板",
+  "linkSaves": "存档",
+  "linkMods": "模组",
+  "linkServerSettings": "服务器设置",
+  "linkGameSettings": "游戏设置",
+  "linkConsole": "控制台",
+  "linkLogs": "日志",
+  "linkUsers": "用户",
+  "linkHelp": "帮助",
+  "languageLabel": "语言",
+  "helpTitle": "帮助",
+  "helpBugsAndHelp": "Bug 与帮助",
+  "helpDescription": "报告 Bug、请求新功能或获取 Factorio 服务器管理器的帮助，请访问以下资源：",
+  "helpResources": "资源",
+  "helpWiki": "Wiki"
+}
