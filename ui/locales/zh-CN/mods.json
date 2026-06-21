@@ -31,6 +31,11 @@
   "deleteExistingMods": "加载前删除所有现有模组？现有模组将被永久移除。",
   "noModsFound": "此存档中没有模组。",
   "installingMods": "安装模组中",
+  "selectAll": "全选",
+  "deselectAll": "取消全选",
+  "selectModsToInstall": "选择要从此存档安装的模组：",
+  "installSelected": "安装 ({count})",
+  "noModsSelected": "未选择任何模组。",
   "compatibility": "兼容性",
   "modVersion": "模组版本",
   "factorioVersion": "Factorio 版本"

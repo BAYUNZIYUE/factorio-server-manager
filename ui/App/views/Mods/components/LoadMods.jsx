@@ -8,7 +8,7 @@ import Button from "../../../components/Button";
 import modsResource from "../../../../api/resources/mods";
 import modResource from "../../../../api/resources/mods";
 import FactorioLogin from "./AddMod/components/FactorioLogin";
-import ConfirmDialog from "../../../components/ConfirmDialog";
+import Modal from "../../../components/Modal";
 import socket from "../../../../api/socket";
 
 const LoadMods = ({refreshMods}) => {
@@ -22,6 +22,9 @@ const LoadMods = ({refreshMods}) => {
     const [loadModsData, setLoadModsData] = useState(undefined);
     const [installProgress, setInstallProgress] = useState({current: 0, total: 0});
     const [showProgress, setShowProgress] = useState(false);
+    const [modList, setModList] = useState([]);
+    const [selectedMods, setSelectedMods] = useState(new Set());
+    const [showModList, setShowModList] = useState(false);
 
     useEffect(() => {
         (async () => {
@@ -54,30 +57,65 @@ const LoadMods = ({refreshMods}) => {
         };
     }, []);
 
-    const loadModsRequested = data => {
+    const loadModsRequested = async data => {
         setIsLoading(true);
+        const result = await savesResource.mods(data.save);
+        const mods = result?.mods || [];
+        
+        if (mods.length === 0) {
+            window.flash(t('noModsFound', { ns: 'mods' }), "green");
+            setIsLoading(false);
+            return;
+        }
+
+        setModList(mods.filter(m => m.name !== 'base'));
+        setSelectedMods(new Set(mods.filter(m => m.name !== 'base').map(m => m.name)));
         setLoadModsData(data);
+        setShowModList(true);
+        setIsLoading(false);
     }
 
-    const loadMods = async data => {
+    const toggleMod = (name) => {
+        const next = new Set(selectedMods);
+        if (next.has(name)) {
+            next.delete(name);
+        } else {
+            next.add(name);
+        }
+        setSelectedMods(next);
+    }
+
+    const selectAll = () => {
+        setSelectedMods(new Set(modList.map(m => m.name)));
+    }
+
+    const deselectAll = () => {
+        setSelectedMods(new Set());
+    }
+
+    const loadMods = async () => {
+        const data = loadModsData;
+        setShowModList(false);
+        setLoadModsData(undefined);
+        setIsLoading(true);
+
         try {
             await modResource.deleteAll();
-            const result = await savesResource.mods(data.save);
-            const mods = result?.mods || [];
+            const toInstall = modList.filter(m => selectedMods.has(m.name));
             
-            if (mods.length === 0) {
-                window.flash(t('noModsFound', { ns: 'mods' }), "green");
+            if (toInstall.length === 0) {
+                window.flash(t('noModsSelected', { ns: 'mods' }), "gray-light");
                 return;
             }
 
-            await modResource.portal.installMultiple(mods);
+            await modResource.portal.installMultiple(toInstall);
             refreshMods();
             window.flash(t('modsLoaded').replace('{save}', data.save), "green");
         } catch (e) {
             window.flash(t('errorOccurred', { ns: 'common' }), "red");
         } finally {
             setIsLoading(false);
-            setLoadModsData(undefined);
+            setShowProgress(false);
         }
     }
 
@@ -94,7 +132,7 @@ const LoadMods = ({refreshMods}) => {
                 }))}
             />
             <div className="flex space-x-2">
-                <Button isSubmit={true} isDisabled={isDisabled} isLoading={isLoading}>{t('loadMods')}</Button>
+                <Button isSubmit={true} isDisabled={isDisabled || isLoading}>{t('loadMods')}</Button>
                 {showProgress && (
                     <Button type="danger" onClick={() => window.location.reload()}>{t('cancel', { ns: 'common' })}</Button>
                 )}
@@ -113,19 +151,45 @@ const LoadMods = ({refreshMods}) => {
                     </div>
                 </div>
             )}
-            <ConfirmDialog
+            <Modal
                 title={t('loadModsTitle')}
-                content={t('deleteExistingMods')}
-                isOpen={loadModsData !== undefined}
-                close={() => {
-                    setIsLoading(false);
-                    setLoadModsData(undefined);
-                }}
-                onSuccess={() => {
-                    const data = loadModsData;
-                    loadMods(data);
-                }}
-                closeImmediately={true}
+                isOpen={showModList}
+                content={
+                    <div>
+                        <p className="mb-3 text-sm">{t('selectModsToInstall', { ns: 'mods' })}</p>
+                        <div className="flex space-x-2 mb-3">
+                            <Button size="sm" onClick={selectAll}>{t('selectAll', { ns: 'mods' })}</Button>
+                            <Button size="sm" onClick={deselectAll}>{t('deselectAll', { ns: 'mods' })}</Button>
+                        </div>
+                        <div className="max-h-96 overflow-y-auto">
+                            <table className="w-full">
+                                <tbody>
+                                    {modList.map(mod => (
+                                        <tr key={mod.name} className="border-b border-gray-light cursor-pointer hover:bg-gray-dark"
+                                            onClick={() => toggleMod(mod.name)}>
+                                            <td className="py-1 pr-2">
+                                                <input type="checkbox" checked={selectedMods.has(mod.name)} readOnly
+                                                    className="cursor-pointer" />
+                                            </td>
+                                            <td className="py-1 text-dirty-white">{mod.name}</td>
+                                            <td className="py-1 text-gray-light text-sm text-right">{mod.version}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                }
+                actions={
+                    <div className="flex space-x-2">
+                        <Button size="sm" type="danger" onClick={() => { setShowModList(false); setLoadModsData(undefined); }}>
+                            {t('cancel', { ns: 'common' })}
+                        </Button>
+                        <Button size="sm" type="success" onClick={loadMods}>
+                            {t('installSelected', { ns: 'mods' }).replace('{count}', selectedMods.size)}
+                        </Button>
+                    </div>
+                }
             />
         </form>
         : <FactorioLogin setIsFactorioAuthenticated={setIsFactorioAuthenticated}/>

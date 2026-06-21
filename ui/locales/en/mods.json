@@ -31,6 +31,11 @@
   "deleteExistingMods": "Delete all existing mods before loading? Existing mods will be permanently removed.",
   "noModsFound": "No mods found in this save.",
   "installingMods": "Installing mods",
+  "selectAll": "Select All",
+  "deselectAll": "Deselect All",
+  "selectModsToInstall": "Select mods to install from this save:",
+  "installSelected": "Install ({count})",
+  "noModsSelected": "No mods selected.",
   "compatibility": "Compatibility",
   "modVersion": "Mod Version",
   "factorioVersion": "Factorio Version"
