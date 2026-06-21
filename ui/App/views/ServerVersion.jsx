@@ -15,6 +15,8 @@ const ServerVersion = ({serverStatus}) => {
     const [installVersion, setInstallVersion] = useState(null);
     const [progress, setProgress] = useState(0);
     const [error, setError] = useState(null);
+    const [showAll, setShowAll] = useState(false);
+    const [allVersions, setAllVersions] = useState([]);
 
     const fetchData = async () => {
         setIsLoading(true);
@@ -54,6 +56,25 @@ const ServerVersion = ({serverStatus}) => {
         socket.on('server_version', handleVersionMessage);
         return () => socket.off('server_version', handleVersionMessage);
     }, []);
+
+    const toggleAllVersions = async () => {
+        if (showAll) {
+            setShowAll(false);
+            return;
+        }
+        if (allVersions.length === 0) {
+            try {
+                const list = await server.version.list();
+                setAllVersions(list || []);
+            } catch (e) {
+                setError(t('fetchFailed'));
+                return;
+            }
+        }
+        setShowAll(true);
+    };
+
+    const displayVersions = showAll && allVersions.length > 0 ? allVersions : availableVersions;
 
     const handleInstall = async (version) => {
         if (serverStatus && serverStatus.running) {
@@ -121,20 +142,20 @@ const ServerVersion = ({serverStatus}) => {
                             <div>
                                 <h2 className="text-dirty-white text-lg mb-2">{t('availableVersions')}</h2>
                                 <div className="bg-black rounded border border-gray-light">
-                                    {availableVersions.length === 0 ? (
+                                    {displayVersions.length === 0 ? (
                                         <p className="p-4 text-gray-light">{t('noInternet')}</p>
                                     ) : (
                                         <div className="divide-y divide-gray-light">
-                                            {availableVersions.map((release, i) => (
+                                            {displayVersions.map((release, i) => (
                                                 <div key={release.version} className="flex items-center justify-between p-3">
                                                     <div className="flex items-center space-x-2">
                                                         <span className="text-dirty-white">{release.version}</span>
-                                                        {release.stable ? (
+                                                        {!showAll && release.stable ? (
                                                             <span className="text-xs bg-green text-black px-1 rounded">{t('stable')}</span>
-                                                        ) : (
+                                                        ) : (!showAll ? (
                                                             <span className="text-xs bg-orange text-black px-1 rounded">{t('experimental')}</span>
-                                                        )}
-                                                        {i === 0 && (
+                                                        ) : null)}
+                                                        {!showAll && i === 0 && (
                                                             <span className="text-xs bg-blue text-white px-1 rounded">{t('latest')}</span>
                                                         )}
                                                     </div>
@@ -151,6 +172,12 @@ const ServerVersion = ({serverStatus}) => {
                                         </div>
                                     )}
                                 </div>
+                            </div>
+
+                            <div className="mt-2 text-center">
+                                <Button size="sm" type="default" onClick={toggleAllVersions}>
+                                    {showAll ? t('showLatest') : t('showAll')}
+                                </Button>
                             </div>
 
                             {hasUpdate && !isInstalling && (

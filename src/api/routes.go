@@ -278,6 +278,12 @@ var apiRoutes = Routes{
 		GetAvailableVersions,
 		false,
 	}, {
+		"GetFullVersionList",
+		"GET",
+		"/server/version/list",
+		GetFullVersionList,
+		false,
+	}, {
 		"InstallVersion",
 		"POST",
 		"/server/version/install",

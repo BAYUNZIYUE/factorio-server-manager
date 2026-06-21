@@ -40,6 +40,21 @@ func GetAvailableVersions(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(releases)
 }
 
+func GetFullVersionList(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json;charset=UTF-8")
+
+	vm := factorio.NewVersionManager()
+	releases, err := vm.GetFullVersionList()
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(releases)
+}
+
 func InstallVersion(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json;charset=UTF-8")
 

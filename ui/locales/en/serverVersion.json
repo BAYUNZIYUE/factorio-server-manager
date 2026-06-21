@@ -20,5 +20,7 @@
   "confirmInstall": "Installing a new Factorio version will replace the current server binary. The server must be stopped. Continue?",
   "noTokenError": "Factorio.com authentication required. Please log in via the Mods page first.",
   "fetchFailed": "Failed to fetch available versions.",
-  "noInternet": "Cannot reach Factorio API. Check your internet connection."
+  "noInternet": "Cannot reach Factorio API. Check your internet connection.",
+  "showAll": "Show All Versions",
+  "showLatest": "Show Latest Only"
 }

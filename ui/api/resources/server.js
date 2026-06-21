@@ -34,6 +34,10 @@ export default {
             const response = await client.get('/api/server/version/available');
             return response.data;
         },
+        list: async () => {
+            const response = await client.get('/api/server/version/list');
+            return response.data;
+        },
         install: async (version) => {
             const response = await client.post('/api/server/version/install', { version });
             return response.data;

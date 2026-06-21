@@ -67,6 +67,52 @@ func (vm *VersionManager) GetAvailableVersions() ([]Release, error) {
 	return releases, nil
 }
 
+type UpdaterResponse map[string][]struct {
+	From string `json:"from"`
+	To   string `json:"to"`
+}
+
+func (vm *VersionManager) GetFullVersionList() ([]Release, error) {
+	if vm.Credentials == nil || vm.Credentials.Userkey == "" {
+		return nil, fmt.Errorf("Factorio.com credentials required")
+	}
+
+	url := fmt.Sprintf("https://updater.factorio.com/get-available-versions?username=%s&token=%s&apiVersion=2",
+		vm.Credentials.Username, vm.Credentials.Userkey)
+
+	resp, err := http.Get(url)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch version list: %w", err)
+	}
+	defer resp.Body.Close()
+
+	var data UpdaterResponse
+	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
+		return nil, fmt.Errorf("failed to parse version list: %w", err)
+	}
+
+	seen := make(map[string]bool)
+	releases := []Release{}
+
+	updates, ok := data["core-linux_headless64"]
+	if !ok {
+		return nil, fmt.Errorf("no headless packages found")
+	}
+
+	for _, u := range updates {
+		if !seen[u.To] {
+			seen[u.To] = true
+			releases = append(releases, Release{Version: u.To, Stable: false, Latest: false})
+		}
+	}
+
+	if len(releases) > 0 {
+		releases[len(releases)-1].Stable = false
+	}
+
+	return releases, nil
+}
+
 func (vm *VersionManager) DownloadAndInstall(version string, progressCb func(percent int)) error {
 	if vm.Credentials == nil || vm.Credentials.Userkey == "" {
 		return fmt.Errorf("Factorio.com credentials required. Log in via Mod Portal first.")

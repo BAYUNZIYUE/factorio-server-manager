@@ -20,5 +20,7 @@
   "confirmInstall": "安装新版本将替换当前服务器二进制文件。服务器必须处于停止状态。确认继续？",
   "noTokenError": "需要 Factorio.com 认证。请先在模组页面登录。",
   "fetchFailed": "获取可用版本失败。",
-  "noInternet": "无法连接 Factorio API。请检查网络连接。"
+  "noInternet": "无法连接 Factorio API。请检查网络连接。",
+  "showAll": "显示全部版本",
+  "showLatest": "仅显示最新"
 }
