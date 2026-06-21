@@ -16,7 +16,13 @@ var NilVersion = Version{0, 0, 0, 0}
 type Version [4]uint
 
 func (v Version) String() string {
-	return fmt.Sprintf("%d.%d.%d.%d", v[0], v[1], v[2], v[3])
+	if v[3] != 0 {
+		return fmt.Sprintf("%d.%d.%d.%d", v[0], v[1], v[2], v[3])
+	}
+	if v[2] != 0 {
+		return fmt.Sprintf("%d.%d.%d", v[0], v[1], v[2])
+	}
+	return fmt.Sprintf("%d.%d", v[0], v[1])
 }
 
 // MarshalText implements encoding.TextMarshaller for Version
