@@ -127,8 +127,7 @@ func ModDeleteHandler(w http.ResponseWriter, r *http.Request) {
 		log.Println(resp)
 		return
 	}
-
-	resp = data.Name
+	resp = map[string]string{"status": "ok", "name": data.Name}
 }
 
 func ModDeleteAllHandler(w http.ResponseWriter, r *http.Request) {
