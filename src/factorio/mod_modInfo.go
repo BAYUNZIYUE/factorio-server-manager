@@ -144,7 +144,6 @@ func (modInfoList *ModInfoList) deleteMod(modName string) error {
 			filePath := filepath.Join(modInfoList.Destination, mod.FileName)
 
 			FileLock.LockW(filePath)
-			//delete mod
 			err = os.Remove(filePath)
 			FileLock.Unlock(filePath)
 			if err != nil {

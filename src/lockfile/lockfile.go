@@ -107,33 +107,36 @@ func (fl *FileLock) RUnlock(filePath string) error {
 	return nil
 }
 
-func (fl *FileLock) LockW(filePath string) {
+func (fl *FileLock) LockW(filePath string) error {
+	deadline := time.Now().Add(30 * time.Second)
 	for {
 		err := fl.Lock(filePath)
 		if err == ErrorAlreadyLocked {
+			if time.Now().After(deadline) {
+				log.Printf("file lock timeout for %s, giving up", filePath)
+				return errors.New("file lock timeout")
+			}
 			time.Sleep(time.Second * 2)
-			log.Println("file locked wait two seconds to access write-lock")
 		}
-
 		if err == nil {
-			break
+			return nil
 		}
 	}
-	return
 }
 
-func (fl *FileLock) RLockW(filePath string) {
+func (fl *FileLock) RLockW(filePath string) error {
+	deadline := time.Now().Add(30 * time.Second)
 	for {
 		err := fl.RLock(filePath)
-
 		if err == ErrorAlreadyLocked {
+			if time.Now().After(deadline) {
+				log.Printf("file read-lock timeout for %s, skipping", filePath)
+				return errors.New("file read-lock timeout")
+			}
 			time.Sleep(time.Second * 2)
-			log.Println("file locked ... wait two seconds to try to access read-lock")
 		}
-
 		if err == nil {
-			break
+			return nil
 		}
 	}
-	return
 }
