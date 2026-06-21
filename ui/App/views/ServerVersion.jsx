@@ -38,6 +38,7 @@ const ServerVersion = ({serverStatus}) => {
 
     useEffect(() => {
         fetchData();
+        socket.emit('server version subscribe');
 
         const handleVersionMessage = (msg) => {
             try {

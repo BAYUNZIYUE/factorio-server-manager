@@ -63,11 +63,26 @@ function connect() {
         );
     }
 
+    function serverVersionSubscribeEvent() {
+        socket.send(
+            JSON.stringify(
+                {
+                    room_name: "",
+                    controls: {
+                        type: "subscribe",
+                        value: "server_version"
+                    }
+                }
+            )
+        );
+    }
+
     function registerEventEmitter() {
         bus.on('log subscribe', logSubscribeEvent);
         bus.on('log unsubscribe', logUnsubscribeEvent);
         bus.on('server status subscribe', serverStatusSubscribeEvent);
         bus.on('command send', commandSendEvent);
+        bus.on('server version subscribe', serverVersionSubscribeEvent);
     }
 
     function unregisterEventEmitter() {
@@ -75,6 +90,7 @@ function connect() {
         bus.off('log unsubscribe', logUnsubscribeEvent);
         bus.off('server status subscribe', serverStatusSubscribeEvent);
         bus.off('command send', commandSendEvent);
+        bus.off('server version subscribe', serverVersionSubscribeEvent);
     }
 
     socket.onmessage = e => {
