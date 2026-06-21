@@ -265,6 +265,24 @@ var apiRoutes = Routes{
 		"/settings/update",
 		UpdateServerSettings,
 		false,
+	}, {
+		"GetCurrentVersion",
+		"GET",
+		"/server/version/current",
+		GetCurrentVersion,
+		false,
+	}, {
+		"GetAvailableVersions",
+		"GET",
+		"/server/version/available",
+		GetAvailableVersions,
+		false,
+	}, {
+		"InstallVersion",
+		"POST",
+		"/server/version/install",
+		InstallVersion,
+		true,
 	},
 	// Mod Portal Stuff
 	{

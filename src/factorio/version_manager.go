@@ -21,9 +21,11 @@ type Release struct {
 	Latest  bool   `json:"latest,omitempty"`
 }
 
+type VersionData map[string]string
+
 type DownloadsResponse struct {
-	Stable       Release `json:"stable"`
-	Experimental Release `json:"experimental"`
+	Stable       VersionData `json:"stable"`
+	Experimental VersionData `json:"experimental"`
 }
 
 type VersionManager struct {
@@ -55,13 +57,11 @@ func (vm *VersionManager) GetAvailableVersions() ([]Release, error) {
 	}
 
 	releases := []Release{}
-	if data.Stable.Version != "" {
-		data.Stable.Latest = true
-		releases = append(releases, data.Stable)
+	if v, ok := data.Stable["headless"]; ok && v != "" {
+		releases = append(releases, Release{Version: v, Stable: true, Latest: true})
 	}
-	if data.Experimental.Version != "" {
-		data.Experimental.Latest = false
-		releases = append(releases, data.Experimental)
+	if v, ok := data.Experimental["headless"]; ok && v != "" {
+		releases = append(releases, Release{Version: v, Stable: false, Latest: false})
 	}
 
 	return releases, nil
