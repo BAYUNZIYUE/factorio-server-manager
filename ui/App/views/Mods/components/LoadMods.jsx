@@ -93,7 +93,12 @@ const LoadMods = ({refreshMods}) => {
                     value: save.name
                 }))}
             />
-            <Button isSubmit={true} isDisabled={isDisabled} isLoading={isLoading}>{t('loadMods')}</Button>
+            <div className="flex space-x-2">
+                <Button isSubmit={true} isDisabled={isDisabled} isLoading={isLoading}>{t('loadMods')}</Button>
+                {showProgress && (
+                    <Button type="danger" onClick={() => window.location.reload()}>{t('cancel', { ns: 'common' })}</Button>
+                )}
+            </div>
             {showProgress && (
                 <div className="mt-4">
                     <div className="flex justify-between text-sm text-gray-light mb-1">
