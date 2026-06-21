@@ -1,0 +1,21 @@
+{
+  "appTitle": "Factorio Server Manager",
+  "serverStatus": "Server Status",
+  "serverManagement": "Server Management",
+  "fsmAdministration": "FSM Administration",
+  "linkControls": "Controls",
+  "linkSaves": "Saves",
+  "linkMods": "Mods",
+  "linkServerSettings": "Server Settings",
+  "linkGameSettings": "Game Settings",
+  "linkConsole": "Console",
+  "linkLogs": "Logs",
+  "linkUsers": "Users",
+  "linkHelp": "Help",
+  "languageLabel": "Language",
+  "helpTitle": "Help",
+  "helpBugsAndHelp": "Bugs and Help",
+  "helpDescription": "For bug reports, feature requests, or help with Factorio Server Manager, please visit the following resources:",
+  "helpResources": "Resources",
+  "helpWiki": "Wiki"
+}

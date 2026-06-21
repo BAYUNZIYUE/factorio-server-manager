@@ -1,0 +1,20 @@
+{
+  "serverStatus": "Server Status",
+  "startServer": "Start Server",
+  "saveStopServer": "Save & Stop Server",
+  "killServer": "Kill Server",
+  "status": "Status",
+  "ip": "IP",
+  "port": "Port",
+  "factorioVersion": "Factorio Version",
+  "save": "Save",
+  "ipRequired": "IP is required and must be valid.",
+  "portRequired": "Port is required within range 1-65535",
+  "saveRequired": "Save is required and must be valid.",
+  "RUNNING": "Running",
+  "STOPPED": "Stopped",
+  "UNKNOWN": "Unknown",
+  "saveBeforeStop": "Save before stopping?",
+  "confirmStop": "Are you sure you want to stop the server?",
+  "confirmKill": "Are you sure you want to kill the server? This may cause data loss."
+}

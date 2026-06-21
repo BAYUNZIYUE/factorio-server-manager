@@ -1,0 +1,8 @@
+{
+  "logs": "Logs",
+  "noLogsAvailable": "No logs available.",
+  "factorioLog": "Factorio Log",
+  "factorioCurrentLog": "Factorio Current Log",
+  "factorioPreviousLog": "Factorio Previous Log",
+  "fsmLog": "FSM Log"
+}

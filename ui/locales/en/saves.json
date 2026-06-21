@@ -1,0 +1,13 @@
+{
+  "createSave": "Create Save",
+  "uploadSave": "Upload Save",
+  "saves": "Saves",
+  "createSaveDisabled": "Creating saves is disabled while the server is running.",
+  "confirmDeleteSave": "Are you sure you want to delete this save?",
+  "downloadSave": "Download",
+  "noSavesFound": "No saves found.",
+  "savefileName": "Save File Name",
+  "saveFile": "Save File",
+  "selectFile": "Select File ...",
+  "saveNameRequired": "Save name is required."
+}

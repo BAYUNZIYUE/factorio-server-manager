@@ -1,0 +1,8 @@
+{
+  "console": "Console",
+  "consoleNotAvailable": "Console is not available when the server is not running.",
+  "inputPlaceholder": "Enter command...",
+  "commandSent": "Command sent.",
+  "rconNotAvailable": "RCON is not available.",
+  "send": "Send"
+}
