@@ -115,7 +115,7 @@ func (vm *VersionManager) DownloadAndInstall(version string, progressCb func(per
 		return fmt.Errorf("failed to create bin directory: %w", err)
 	}
 
-	err = extractTarXz(tmpFile.Name(), binDir)
+	err = extractTarXz(tmpFile.Name(), vm.FactorioDir)
 	if err != nil {
 		return fmt.Errorf("failed to extract: %w", err)
 	}
