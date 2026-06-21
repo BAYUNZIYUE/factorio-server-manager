@@ -3,15 +3,23 @@ import { useTranslation } from 'react-i18next';
 import Modal from "./Modal";
 import Button from "./Button";
 
-function ConfirmDialog({title, content, isOpen, close, onSuccess}) {
+function ConfirmDialog({title, content, isOpen, close, onSuccess, closeImmediately}) {
 
     const { t } = useTranslation('common');
     const [isLoading, setIsLoading] = useState(false);
 
     const confirm = () => {
         setIsLoading(true);
-        close();
-        onSuccess?.();
+        if (closeImmediately) {
+            close();
+            onSuccess?.();
+        } else {
+            onSuccess()
+                .finally(() => {
+                    close();
+                    setIsLoading(false);
+                })
+        }
     }
 
     return (

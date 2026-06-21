@@ -120,6 +120,7 @@ const LoadMods = ({refreshMods}) => {
                     const data = loadModsData;
                     loadMods(data);
                 }}
+                closeImmediately={true}
             />
         </form>
         : <FactorioLogin setIsFactorioAuthenticated={setIsFactorioAuthenticated}/>
