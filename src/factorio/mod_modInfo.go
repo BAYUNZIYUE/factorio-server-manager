@@ -27,6 +27,7 @@ type ModInfo struct {
 	FactorioVersion Version  `json:"factorio_version"`
 	Dependencies    []string `json:"dependencies"`
 	Compatibility   bool     `json:"compatibility"`
+	DepOp           string   `json:"dep_op"`
 }
 
 func newModInfoList(destination string) (ModInfoList, error) {
@@ -117,6 +118,7 @@ func (modInfoList *ModInfoList) listInstalledMods() error {
 			if modInfo.Compatibility && !base.Equals(NilVersion) {
 				modInfo.Compatibility = server.Version.Compatible(base, op)
 				modInfo.FactorioVersion = base
+				modInfo.DepOp = op
 			}
 
 			modInfoList.Mods = append(modInfoList.Mods, modInfo)
