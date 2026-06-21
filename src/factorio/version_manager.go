@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"github.com/OpenFactorioServerManager/factorio-server-manager/bootstrap"
@@ -114,6 +115,10 @@ func (vm *VersionManager) GetFullVersionList() ([]Release, error) {
 		releases[len(releases)-1].Stable = false
 	}
 
+	sort.Slice(releases, func(i, j int) bool {
+		return compareVersions(releases[i].Version, releases[j].Version) > 0
+	})
+
 	return releases, nil
 }
 
@@ -214,6 +219,33 @@ func isStableVersion(version string) bool {
 	var patch int
 	fmt.Sscanf(parts[len(parts)-1], "%d", &patch)
 	return patch%2 == 0
+}
+
+func compareVersions(a, b string) int {
+	aParts := strings.Split(a, ".")
+	bParts := strings.Split(b, ".")
+
+	maxLen := len(aParts)
+	if len(bParts) > maxLen {
+		maxLen = len(bParts)
+	}
+
+	for i := 0; i < maxLen; i++ {
+		var aNum, bNum int
+		if i < len(aParts) {
+			fmt.Sscanf(aParts[i], "%d", &aNum)
+		}
+		if i < len(bParts) {
+			fmt.Sscanf(bParts[i], "%d", &bNum)
+		}
+		if aNum > bNum {
+			return 1
+		}
+		if aNum < bNum {
+			return -1
+		}
+	}
+	return 0
 }
 
 func parseVersionLine(line string) (string, error) {
