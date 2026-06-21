@@ -76,6 +76,33 @@ const ServerVersion = ({serverStatus}) => {
 
     const displayVersions = showAll && allVersions.length > 0 ? allVersions : availableVersions;
 
+    const stableReleases = displayVersions.filter(r => r.stable);
+    const experimentalReleases = displayVersions.filter(r => !r.stable);
+
+    const renderVersionRow = (release) => (
+        <div key={release.version} className="flex items-center justify-between p-3">
+            <div className="flex items-center space-x-2">
+                <span className="text-dirty-white">{release.version}</span>
+                {!showAll && release.stable ? (
+                    <span className="text-xs bg-green text-black px-1 rounded">{t('stable')}</span>
+                ) : (!showAll ? (
+                    <span className="text-xs bg-orange text-black px-1 rounded">{t('experimental')}</span>
+                ) : null)}
+                {!showAll && displayVersions.indexOf(release) === 0 && (
+                    <span className="text-xs bg-blue text-white px-1 rounded">{t('latest')}</span>
+                )}
+            </div>
+            <Button
+                size="sm"
+                isLoading={isInstalling && installVersion === release.version}
+                isDisabled={isInstalling || currentVersion === release.version}
+                onClick={() => handleInstall(release.version)}
+            >
+                {currentVersion === release.version ? t('current') : t('install')}
+            </Button>
+        </div>
+    );
+
     const handleInstall = async (version) => {
         if (serverStatus && serverStatus.running) {
             window.flash(t('serverMustBeStopped'), "red");
@@ -144,31 +171,34 @@ const ServerVersion = ({serverStatus}) => {
                                 <div className="bg-black rounded border border-gray-light">
                                     {displayVersions.length === 0 ? (
                                         <p className="p-4 text-gray-light">{t('noInternet')}</p>
+                                    ) : showAll ? (
+                                        <div>
+                                            {stableReleases.length > 0 && (
+                                                <div className="mb-4">
+                                                    <div className="px-3 py-2 bg-gray-dark">
+                                                        <span className="text-green font-bold">{t('stable')}</span>
+                                                        <span className="text-gray-light text-sm ml-2">({stableReleases.length})</span>
+                                                    </div>
+                                                    <div className="divide-y divide-gray-light">
+                                                        {stableReleases.map(r => renderVersionRow(r))}
+                                                    </div>
+                                                </div>
+                                            )}
+                                            {experimentalReleases.length > 0 && (
+                                                <div>
+                                                    <div className="px-3 py-2 bg-gray-dark">
+                                                        <span className="text-orange font-bold">{t('experimental')}</span>
+                                                        <span className="text-gray-light text-sm ml-2">({experimentalReleases.length})</span>
+                                                    </div>
+                                                    <div className="divide-y divide-gray-light">
+                                                        {experimentalReleases.map(r => renderVersionRow(r))}
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
                                     ) : (
                                         <div className="divide-y divide-gray-light">
-                                            {displayVersions.map((release, i) => (
-                                                <div key={release.version} className="flex items-center justify-between p-3">
-                                                    <div className="flex items-center space-x-2">
-                                                        <span className="text-dirty-white">{release.version}</span>
-                                                        {!showAll && release.stable ? (
-                                                            <span className="text-xs bg-green text-black px-1 rounded">{t('stable')}</span>
-                                                        ) : (!showAll ? (
-                                                            <span className="text-xs bg-orange text-black px-1 rounded">{t('experimental')}</span>
-                                                        ) : null)}
-                                                        {!showAll && i === 0 && (
-                                                            <span className="text-xs bg-blue text-white px-1 rounded">{t('latest')}</span>
-                                                        )}
-                                                    </div>
-                                                    <Button
-                                                        size="sm"
-                                                        isLoading={isInstalling && installVersion === release.version}
-                                                        isDisabled={isInstalling || currentVersion === release.version}
-                                                        onClick={() => handleInstall(release.version)}
-                                                    >
-                                                        {currentVersion === release.version ? t('current') : t('install')}
-                                                    </Button>
-                                                </div>
-                                            ))}
+                                            {displayVersions.map((release, i) => renderVersionRow(release))}
                                         </div>
                                     )}
                                 </div>

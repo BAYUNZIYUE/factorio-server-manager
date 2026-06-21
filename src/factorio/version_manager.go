@@ -102,7 +102,11 @@ func (vm *VersionManager) GetFullVersionList() ([]Release, error) {
 	for _, u := range updates {
 		if !seen[u.To] {
 			seen[u.To] = true
-			releases = append(releases, Release{Version: u.To, Stable: false, Latest: false})
+			releases = append(releases, Release{
+				Version: u.To,
+				Stable:  isStableVersion(u.To),
+				Latest:  false,
+			})
 		}
 	}
 
@@ -200,6 +204,16 @@ func NewVersionManager() *VersionManager {
 		FactorioBinary: config.FactorioBinary,
 		Credentials:    &creds,
 	}
+}
+
+func isStableVersion(version string) bool {
+	parts := strings.Split(version, ".")
+	if len(parts) < 3 {
+		return false
+	}
+	var patch int
+	fmt.Sscanf(parts[len(parts)-1], "%d", &patch)
+	return patch%2 == 0
 }
 
 func parseVersionLine(line string) (string, error) {
