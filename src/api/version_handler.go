@@ -106,6 +106,10 @@ func InstallVersion(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		if err := factorio.RefreshServerVersion(); err != nil {
+			log.Printf("Failed to refresh server version: %v", err)
+		}
+
 		factorio.SetInstallStatus(factorio.InstallStatus{})
 		wsRoom.Send(fmt.Sprintf(`{"type":"install_complete","version":"%s"}`, data.Version))
 	}()

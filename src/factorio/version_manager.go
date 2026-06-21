@@ -5,10 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strings"
 
@@ -198,6 +200,37 @@ func (pr *ProgressReader) Read(p []byte) (int, error) {
 		pr.OnProgress(pct)
 	}
 	return n, err
+}
+
+func RefreshServerVersion() error {
+	server := GetFactorioServer()
+	config := bootstrap.GetConfig()
+
+	out, err := exec.Command(config.FactorioBinary, "--version").Output()
+	if err != nil {
+		return fmt.Errorf("failed to read version: %w", err)
+	}
+
+	reg := regexp.MustCompile("Version.*?((\\d+\\.)?(\\d+\\.)?(\\*|\\d+)+)")
+	found := reg.FindStringSubmatch(string(out))
+	if len(found) < 2 {
+		return fmt.Errorf("could not parse version from: %s", string(out))
+	}
+
+	if err := server.Version.UnmarshalText([]byte(found[1])); err != nil {
+		return fmt.Errorf("could not parse version: %w", err)
+	}
+
+	baseModInfoFile := filepath.Join(config.FactorioBaseModDir, "info.json")
+	bmifBa, err := ioutil.ReadFile(baseModInfoFile)
+	if err == nil {
+		var modInfo ModInfo
+		if err := json.Unmarshal(bmifBa, &modInfo); err == nil {
+			server.BaseModVersion = modInfo.Version
+		}
+	}
+
+	return nil
 }
 
 func NewVersionManager() *VersionManager {
