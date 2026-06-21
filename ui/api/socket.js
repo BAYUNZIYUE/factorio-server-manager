@@ -63,6 +63,20 @@ function connect() {
         );
     }
 
+    function modInstallSubscribeEvent() {
+        socket.send(
+            JSON.stringify(
+                {
+                    room_name: "",
+                    controls: {
+                        type: "subscribe",
+                        value: "mod_install"
+                    }
+                }
+            )
+        );
+    }
+
     function serverVersionSubscribeEvent() {
         socket.send(
             JSON.stringify(
@@ -83,6 +97,7 @@ function connect() {
         bus.on('server status subscribe', serverStatusSubscribeEvent);
         bus.on('command send', commandSendEvent);
         bus.on('server version subscribe', serverVersionSubscribeEvent);
+        bus.on('mod install subscribe', modInstallSubscribeEvent);
     }
 
     function unregisterEventEmitter() {
@@ -91,6 +106,7 @@ function connect() {
         bus.off('server status subscribe', serverStatusSubscribeEvent);
         bus.off('command send', commandSendEvent);
         bus.off('server version subscribe', serverVersionSubscribeEvent);
+        bus.off('mod install subscribe', modInstallSubscribeEvent);
     }
 
     socket.onmessage = e => {

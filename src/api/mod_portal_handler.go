@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/OpenFactorioServerManager/factorio-server-manager/api/websocket"
 	"github.com/OpenFactorioServerManager/factorio-server-manager/factorio"
 	"github.com/gorilla/mux"
 )
@@ -185,40 +186,43 @@ func ModPortalInstallMultipleHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	wsRoom := websocket.WebsocketHub.GetRoom("mod_install")
+	total := len(data)
+	current := 0
+
 	for _, datum := range data {
 		// skip base mod because it is already included in factorio
 		if datum.Name == "base" {
+			current++
 			continue
 		}
 		details, err, statusCode := factorio.ModPortalModDetails(datum.Name)
 		if err != nil || statusCode != http.StatusOK {
-			resp = fmt.Sprintf("Error in getting mod details from mod portal: %s", err)
-			log.Println(resp)
-			w.WriteHeader(http.StatusInternalServerError)
-			return
+			log.Printf("Error in getting mod details from mod portal: %s", err)
+			current++
+			continue
 		}
 
-		//find correct mod-version
 		var found = false
 		for _, release := range details.Releases {
 			if release.Version.Equals(datum.Version) {
 				found = true
-
 				err := modList.DownloadMod(release.DownloadURL, release.FileName, details.Name)
 				if err != nil {
-					resp = fmt.Sprintf("Error downloading mod {%s}, error: %s", details.Name, err)
-					log.Println(resp)
-					w.WriteHeader(http.StatusInternalServerError)
-					return
+					log.Printf("Error downloading mod {%s}, error: %s", details.Name, err)
+					break
 				}
 				break
 			}
 		}
 		if !found {
 			log.Printf("Error downloading mod {%s}, error: %s", details.Name, "version not found")
-			w.WriteHeader(http.StatusInternalServerError)
 		}
+		current++
+		wsRoom.Send(fmt.Sprintf(\`{"type":"progress","current":%d,"total":%d,"name":"%s"}\`, current, total, datum.Name))
 	}
+
+	wsRoom.Send(fmt.Sprintf(\`{"type":"complete","total":%d}\`, total))
 
 	resp = modList.ListInstalledMods()
 }

@@ -30,6 +30,7 @@
   "modsLoaded": "已从存档加载模组。",
   "deleteExistingMods": "加载前删除所有现有模组？现有模组将被永久移除。",
   "noModsFound": "此存档中没有模组。",
+  "installingMods": "安装模组中",
   "compatibility": "兼容性",
   "modVersion": "模组版本",
   "factorioVersion": "Factorio 版本"

@@ -30,6 +30,7 @@
   "modsLoaded": "Mods loaded from save.",
   "deleteExistingMods": "Delete all existing mods before loading? Existing mods will be permanently removed.",
   "noModsFound": "No mods found in this save.",
+  "installingMods": "Installing mods",
   "compatibility": "Compatibility",
   "modVersion": "Mod Version",
   "factorioVersion": "Factorio Version"
