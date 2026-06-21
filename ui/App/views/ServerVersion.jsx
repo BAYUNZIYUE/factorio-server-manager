@@ -129,8 +129,13 @@ const ServerVersion = ({serverStatus}) => {
                                                 <div key={release.version} className="flex items-center justify-between p-3">
                                                     <div className="flex items-center space-x-2">
                                                         <span className="text-dirty-white">{release.version}</span>
+                                                        {release.stable ? (
+                                                            <span className="text-xs bg-green text-black px-1 rounded">{t('stable')}</span>
+                                                        ) : (
+                                                            <span className="text-xs bg-orange text-black px-1 rounded">{t('experimental')}</span>
+                                                        )}
                                                         {i === 0 && (
-                                                            <span className="text-xs bg-green text-black px-1 rounded">{t('latest')}</span>
+                                                            <span className="text-xs bg-blue text-white px-1 rounded">{t('latest')}</span>
                                                         )}
                                                     </div>
                                                     <Button

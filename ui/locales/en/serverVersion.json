@@ -7,6 +7,8 @@
   "upToDate": "Up to date",
   "updateAvailable": "Update Available",
   "latest": "latest",
+  "stable": "stable",
+  "experimental": "experimental",
   "install": "Install",
   "updateTo": "Update to {version}",
   "downloadProgress": "Downloading... {percent}%",
