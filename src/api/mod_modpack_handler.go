@@ -454,7 +454,7 @@ func ModPackModPortalInstallHandler(w http.ResponseWriter, r *http.Request) {
 
 	modList := packMap[packName].Mods
 
-	err = modList.DownloadMod(data.DownloadURL, data.Filename, data.ModName)
+	_, err = modList.DownloadMod(data.DownloadURL, data.Filename, data.ModName)
 	if err != nil {
 		resp = fmt.Sprintf("Error downloading a mod: %s", err)
 		log.Println(resp)
@@ -505,7 +505,7 @@ func ModPackModPortalInstallMultipleHandler(w http.ResponseWriter, r *http.Reque
 			if release.Version.Equals(datum.Version) {
 				found = true
 
-				err := modList.DownloadMod(release.DownloadURL, release.FileName, details.Name)
+				_, err := modList.DownloadMod(release.DownloadURL, release.FileName, details.Name)
 				if err != nil {
 					resp = fmt.Sprintf("Error downloading mod {%s}, error: %s", details.Name, err)
 					log.Println(resp)

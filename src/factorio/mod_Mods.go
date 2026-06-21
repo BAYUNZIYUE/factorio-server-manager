@@ -131,27 +131,26 @@ func (mods *Mods) createMod(modName string, fileName string, fileRc io.Reader) e
 	return nil
 }
 
-func (mods *Mods) DownloadMod(url string, filename string, modId string) error {
+func (mods *Mods) DownloadMod(url string, filename string, modId string) (int64, error) {
 	var err error
 
 	var credentials Credentials
 	status, err := credentials.Load()
 	if err != nil {
 		log.Printf("error loading credentials: %s", err)
-		return err
+		return 0, err
 	}
 	if status == false {
 		log.Printf("error: credentials are invalid")
-		return errors.New("error: credentials are invalid")
+		return 0, errors.New("error: credentials are invalid")
 	}
 
-	//download the mod from the mod portal api
 	completeUrl := "https://mods.factorio.com" + url + "?username=" + credentials.Username + "&token=" + credentials.Userkey
 
 	response, err := http.Get(completeUrl)
 	if err != nil {
 		log.Printf("error on downloading mod: %s", err)
-		return err
+		return 0, err
 	}
 
 	log.Printf("download complete\n StatusCode: %d\n Status: %s", response.StatusCode, response.Status)
@@ -160,21 +159,18 @@ func (mods *Mods) DownloadMod(url string, filename string, modId string) error {
 
 	if response.StatusCode != 200 {
 		log.Printf("StatusCode: %d", response.StatusCode)
-
-		return errors.New("Statuscode not 200: " + fmt.Sprint(response.StatusCode))
+		return 0, errors.New("Statuscode not 200: " + fmt.Sprint(response.StatusCode))
 	}
 
 	err = mods.createMod(modId, filename, response.Body)
 	if err != nil {
 		log.Printf("error when creating Mod: %s", err)
-		return err
+		return 0, err
 	}
 
 	log.Printf("completed copying the response.Body")
 
-	//done everything is made inside the createMod
-
-	return nil
+	return response.ContentLength, nil
 }
 
 func (mods *Mods) UploadMod(file multipart.File, header *multipart.FileHeader) error {
@@ -216,7 +212,7 @@ func (mods *Mods) UploadMod(file multipart.File, header *multipart.FileHeader) e
 func (mods *Mods) UpdateMod(modName string, url string, filename string) error {
 	var err error
 
-	err = mods.DownloadMod(url, filename, modName)
+	_, err = mods.DownloadMod(url, filename, modName)
 	if err != nil {
 		log.Printf("updateMod ... error when downloading the new Mod: %s", err)
 		return err
