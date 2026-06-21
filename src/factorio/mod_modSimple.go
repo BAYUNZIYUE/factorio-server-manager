@@ -154,7 +154,11 @@ func (modSimpleList *ModSimpleList) ToggleMod(modName string) (error, bool) {
 	}
 
 	if !found {
-		return errors.New("mod is not installed"), newEnabled
+		err = modSimpleList.createMod(modName)
+		if err != nil {
+			return errors.New("mod is not installed"), newEnabled
+		}
+		newEnabled = true
 	}
 
 	err = modSimpleList.saveModInfoJson()
