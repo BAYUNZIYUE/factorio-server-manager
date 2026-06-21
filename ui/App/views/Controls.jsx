@@ -12,6 +12,8 @@ import Error from "../components/Error";
 const Controls = ({serverStatus}) => {
 
     const { t } = useTranslation('controls');
+    const savedIp = localStorage.getItem('fsm_ip') || '0.0.0.0';
+    const savedPort = localStorage.getItem('fsm_port') || '34197';
     const factorioVersion = serverStatus.fac_version ? serverStatus.fac_version : t('UNKNOWN');
     const [saves, setSaves] = useState([]);
     const [isDisabled, setIsDisabled] = useState(true);
@@ -23,6 +25,8 @@ const Controls = ({serverStatus}) => {
 
     const startServer = async (data) => {
         setIsStarting(true);
+        localStorage.setItem('fsm_ip', data.ip);
+        localStorage.setItem('fsm_port', data.port);
         await server.start(data.ip, parseInt(data.port), data.save);
     }
 
@@ -83,23 +87,23 @@ const Controls = ({serverStatus}) => {
                             </div>
                             <div className="lg:w-1/5 mb-2 mr-0 lg:mr-4">
                                 <div className="font-bold">{t('ip')}</div>
-                                <Input
-                                    defaultValue={"0.0.0.0"}
-                                    disabled={isDisabled}
-                                    register={register('ip',{required: true, pattern: /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/})}
-                                />
+                                    <Input
+                                        defaultValue={savedIp}
+                                        disabled={isDisabled}
+                                        register={register('ip',{required: true, pattern: /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/})}
+                                    />
                                 <Error error={errors.ip} message={t('ipRequired')}/>
                             </div>
                             <div className="lg:w-1/5 mb-2 mr-0 lg:mr-4">
                                 <div className="font-bold">{t('port')}</div>
-                                <Input
-                                    type="number"
-                                    min={1}
-                                    max={65535}
-                                    defaultValue={"34197"}
-                                    disabled={isDisabled}
-                                    register={register('port',{required: true, min: 1, max: 65535})}
-                                />
+                                    <Input
+                                        type="number"
+                                        min={1}
+                                        max={65535}
+                                        defaultValue={savedPort}
+                                        disabled={isDisabled}
+                                        register={register('port',{required: true, min: 1, max: 65535})}
+                                    />
                                 <Error error={errors.port} message={t('portRequired')}/>
                             </div>
                             <div className="lg:w-1/5 mb-2 mr-0 lg:mr-4">
