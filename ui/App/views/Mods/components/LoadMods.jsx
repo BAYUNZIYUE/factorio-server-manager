@@ -116,7 +116,11 @@ const LoadMods = ({refreshMods}) => {
                     setIsLoading(false);
                     setLoadModsData(undefined);
                 }}
-                onSuccess={() => loadMods(loadModsData)}
+                onSuccess={() => {
+                    const data = loadModsData;
+                    setLoadModsData(undefined);
+                    setTimeout(() => loadMods(data), 0);
+                }}
             />
         </form>
         : <FactorioLogin setIsFactorioAuthenticated={setIsFactorioAuthenticated}/>
