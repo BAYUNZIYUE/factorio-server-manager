@@ -193,16 +193,12 @@ const LoadMods = ({refreshMods}) => {
                     {[0,1,2,3,4].map(w => {
                         const ws = workerStates[w];
                         if (!ws) return null;
-                        const color = ws.state === 'done' ? 'bg-green' : ws.state === 'error' ? 'bg-red' : ws.state === 'start' ? 'bg-orange' : 'bg-gray-light';
+                        const icon = ws.state === 'done' ? '✓' : ws.state === 'error' ? '✗' : '↓';
+                        const color = ws.state === 'done' ? 'text-green' : ws.state === 'error' ? 'text-red' : 'text-orange';
                         return (
-                            <div key={w} className="mb-1">
-                                <div className="w-full bg-gray-dark rounded h-1.5">
-                                    <div
-                                        className={`${color} h-1.5 rounded transition-all duration-300`}
-                                        style={{width: ws.state === 'done' ? '100%' : ws.state === 'error' ? '100%' : '60%'}}
-                                    />
-                                </div>
-                                <p className="text-xs text-gray-light truncate">{ws.name} {ws.state === 'done' ? '✓' : ws.state === 'error' ? '✗' : ''}</p>
+                            <div key={w} className="flex items-center text-xs">
+                                <span className={`${color} w-4`}>{icon}</span>
+                                <span className="text-gray-light truncate">{ws.name}</span>
                             </div>
                         );
                     })}
