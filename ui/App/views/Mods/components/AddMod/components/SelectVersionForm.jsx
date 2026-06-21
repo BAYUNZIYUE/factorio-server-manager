@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from 'react-i18next';
 import Modal from "../../../../../components/Modal";
 import Button from "../../../../../components/Button";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
@@ -8,6 +9,8 @@ import {faTimes} from "@fortawesome/free-solid-svg-icons/faTimes";
 
 const SelectVersionForm = ({releases, isOpen, close, install}) => {
 
+    const { t } = useTranslation(['mods', 'common']);
+
     const download = release => {
         install(release)
         close()
@@ -16,15 +19,15 @@ const SelectVersionForm = ({releases, isOpen, close, install}) => {
     return (
         <Modal
             isOpen={isOpen}
-            title="Select Version"
+            title={t('selectVersion', { ns: 'mods' })}
             content={
                 <div className="h-64 overflow-y-auto">
                     <table className="w-full">
                         <thead>
                         <tr className="text-left py-1">
-                            <th>Version</th>
-                            <th>Compatibility</th>
-                            <th>Actions</th>
+                            <th>{t('version', { ns: 'mods' })}</th>
+                            <th>{t('compatibility', { ns: 'mods' })}</th>
+                            <th>{t('actions', { ns: 'common' })}</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -45,7 +48,7 @@ const SelectVersionForm = ({releases, isOpen, close, install}) => {
                 </div>
             }
             actions={
-                <Button onClick={close} size="sm" type="danger">Cancel</Button>
+                <Button onClick={close} size="sm" type="danger">{t('cancel', { ns: 'common' })}</Button>
             }
         />
     )

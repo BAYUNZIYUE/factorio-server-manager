@@ -1,4 +1,5 @@
 import React, {useEffect, useState} from "react";
+import { useTranslation } from 'react-i18next';
 import modsResource from "../../../../../../api/resources/mods";
 import Button from "../../../../../components/Button";
 import Label from "../../../../../components/Label";
@@ -10,12 +11,13 @@ import {faSpinner} from "@fortawesome/free-solid-svg-icons";
 import SelectVersionForm from "./SelectVersionForm";
 
 const LinkModPortal = () => {
-    return <a href="https://mods.factorio.com" target="_blank" className="px-2 text-blue hover:text-blue-light">Mod
-        Portal <FontAwesomeIcon icon={faExternalLinkAlt}/></a>
+    const { t } = useTranslation('mods');
+    return <a href="https://mods.factorio.com" target="_blank" className="px-2 text-blue hover:text-blue-light">{t('modPortal')} <FontAwesomeIcon icon={faExternalLinkAlt}/></a>
 }
 
 const AddModForm = ({setIsFactorioAuthenticated, fuse, refetchInstalledMods}) => {
 
+    const { t } = useTranslation('mods');
     const {register, watch, setValue, handleSubmit} = useForm();
     const [suggestedMods, setSuggestedMods] = useState([]);
     const [selectedMod, setSelectedMod] = useState(null);
@@ -101,11 +103,11 @@ const AddModForm = ({setIsFactorioAuthenticated, fuse, refetchInstalledMods}) =>
         <form onSubmit={handleSubmit(openSelectVersionModal)}>
             <SelectVersionForm isOpen={isModalOpen} releases={releases} install={install} close={() => setIsModalOpen(false)}/>
             <div className="mb-4 relative" >
-                <Label text="Mod" htmlFor="mod"/>
+                <Label text={t('mods')} htmlFor="mod"/>
                 { typeof fuse !== "undefined"
                     ? <Input register={register('mod',{required: true})} hasAutoComplete={false} onKeyDown={handleKeyDown}/>
                     : <div className="border border-gray-medium w-full py-2 px-3 text-white">
-                        <FontAwesomeIcon icon={faSpinner} spin={true}/> Loading List of Mods from <LinkModPortal/>
+                        <FontAwesomeIcon icon={faSpinner} spin={true}/> {t('loadingModList')} <LinkModPortal/>
                     </div>
                 }
                 {suggestedMods.length > 0 &&
@@ -114,8 +116,8 @@ const AddModForm = ({setIsFactorioAuthenticated, fuse, refetchInstalledMods}) =>
                     </ul>
                 }
             </div>
-            <Button isDisabled={selectedMod === null} isSubmit={true} onClick={() => setIsModalOpen(true)} className="mr-2">Install</Button>
-            <Button onClick={logout} type="danger" className="mr-2">Logout</Button>
+            <Button isDisabled={selectedMod === null} isSubmit={true} onClick={() => setIsModalOpen(true)} className="mr-2">{t('install')}</Button>
+            <Button onClick={logout} type="danger" className="mr-2">{t('logout', { ns: 'common' })}</Button>
             <LinkModPortal/>
         </form>
     )

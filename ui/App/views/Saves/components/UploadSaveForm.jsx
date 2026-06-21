@@ -1,13 +1,15 @@
 import Button from "../../../components/Button";
 import React, {useState} from "react";
+import { useTranslation } from 'react-i18next';
 import {useForm} from "react-hook-form";
 import saves from "../../../../api/resources/saves";
 import Error from "../../../components/Error";
 
 
 const UploadSaveForm = ({onSuccess}) => {
+    const { t } = useTranslation('saves');
     const {register, handleSubmit, formState: {errors}} = useForm();
-    const [fileName, setFileName] = useState('Select File ...');
+    const [fileName, setFileName] = useState(t('selectFile'));
 
     const onSubmit = (data, e) => {
         saves.upload(data.savefile[0]).then(_ => {
@@ -20,7 +22,7 @@ const UploadSaveForm = ({onSuccess}) => {
         <form onSubmit={handleSubmit(onSubmit)}>
             <div className="mb-6">
                 <label className="block text-white text-sm font-bold mb-2" htmlFor="password">
-                    Save File
+                    {t('saveFile')}
                 </label>
                 <div className="relative bg-white shadow text-black w-full">
                     <input
@@ -30,9 +32,9 @@ const UploadSaveForm = ({onSuccess}) => {
                         type="file"/>
                     <div className="px-2 py-3">{fileName}</div>
                 </div>
-                <Error error={errors.savefile} message="Savefile is required"/>
+                <Error error={errors.savefile} message={t('saveNameRequired')}/>
             </div>
-            <Button type="success" isSubmit={true}>Upload</Button>
+            <Button type="success" isSubmit={true}>{t('upload', { ns: 'common' })}</Button>
         </form>
     )
 }

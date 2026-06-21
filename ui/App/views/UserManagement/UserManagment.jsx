@@ -1,5 +1,6 @@
 import Panel from "../../components/Panel";
 import React, {useCallback, useEffect, useState} from "react";
+import { useTranslation } from 'react-i18next';
 import user from "../../../api/resources/user";
 import CreateUserForm from "./components/CreateUserForm";
 import ChangePasswordForm from "./components/ChangePasswordForm"
@@ -7,6 +8,8 @@ import {faTrashAlt} from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 
 const UserManagement = () => {
+
+    const { t } = useTranslation('userManagement');
 
     const [users, setUsers] = useState([]);
 
@@ -29,15 +32,15 @@ const UserManagement = () => {
     return (
         <>
             <Panel
-                title="List of Users"
+                title={t('listOfUsers')}
                 content={
                     <table className="w-full">
                         <thead>
                         <tr className="text-left py-1">
-                            <th>Name</th>
-                            <th>Role</th>
-                            <th>Email</th>
-                            <th>Actions</th>
+                            <th>{t('name', { ns: 'common' })}</th>
+                            <th>{t('role', { ns: 'common' })}</th>
+                            <th>{t('email', { ns: 'common' })}</th>
+                            <th>{t('actions', { ns: 'common' })}</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -57,12 +60,12 @@ const UserManagement = () => {
                 className="mb-4"
             />
             <Panel
-                title="Change Password"
+                title={t('changePassword')}
                 content={<ChangePasswordForm/>}
                 className="mb-4"
             />
             <Panel
-                title="Create User"
+                title={t('createUser')}
                 content={<CreateUserForm updateUserList={updateList}/>}
                 className="mb-4"
             />

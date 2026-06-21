@@ -1,4 +1,5 @@
 import React, {useState} from "react";
+import { useTranslation } from 'react-i18next';
 import {faSpinner, faTrashAlt, faUpload} from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import modsResource from "../../../../api/resources/mods";
@@ -6,6 +7,8 @@ import ModList from "./ModList";
 import ConfirmDialog from "../../../components/ConfirmDialog";
 
 const ModPack = ({modPack, reloadModPacks, factorioVersion, reloadMods, disabled = false}) => {
+
+    const { t } = useTranslation('mods');
 
     const [isLoading, setIsLoading] = useState(false);
     const [isLoadModPackDialogOpen, setIsLoadModPackDialogOpen] = useState(false);
@@ -63,8 +66,8 @@ const ModPack = ({modPack, reloadModPacks, factorioVersion, reloadMods, disabled
                                              icon={isLoading ? faSpinner : faUpload}
                             />
                             <ConfirmDialog
-                                title="Load ModPack"
-                                content={`Loading the ModPack ${modPack.name} will remove all installed Mods.`}
+                                title={t('loadModsTitle')}
+                                content={t('deleteExistingMods')}
                                 isOpen={isLoadModPackDialogOpen}
                                 close={() => setIsLoadModPackDialogOpen(false)}
                                 onSuccess={() => loadModPack(modPack.name)}

@@ -1,4 +1,5 @@
 import React, {useEffect, useState} from "react";
+import { useTranslation } from 'react-i18next';
 import savesResource from "../../../api/resources/saves";
 import Panel from "../../components/Panel";
 import CreateSaveForm from "./components/CreateSaveForm";
@@ -7,6 +8,8 @@ import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faDownload, faTrashAlt} from "@fortawesome/free-solid-svg-icons";
 
 const Saves = ({serverStatus}) => {
+
+    const { t } = useTranslation('saves');
 
     const [saves, setSaves] = useState([]);
 
@@ -35,19 +38,18 @@ const Saves = ({serverStatus}) => {
         <>
             <div className="lg:flex mb-6">
                 <Panel
-                    title="Create Save"
+                    title={t('createSave')}
                     className="lg:w-1/2 lg:mr-3 mb-6 lg:mb-0"
                     content={
                         serverStatus.running
                             ? <p className="text-red-light pt-4 pb-24">
-                                Create a new Save is only possible if the Factorio server is
-                                not running.
+                                {t('createSaveDisabled')}
                             </p>
                             : <CreateSaveForm onSuccess={updateList}/>
                     }
                 />
                 <Panel
-                    title="Upload Save"
+                    title={t('uploadSave')}
                     className="lg:w-1/2 lg:ml-3"
                     content={<UploadSaveForm onSuccess={updateList}/>}
                 />
@@ -55,16 +57,16 @@ const Saves = ({serverStatus}) => {
 
             <Panel
                 className="mb-4"
-                title="Saves"
+                title={t('saves')}
                 content={
                     <div className="overflow-x-auto w-full">
                         <table className="w-full">
                             <thead>
                             <tr className="text-left py-1">
-                                <th>Name</th>
-                                <th>Last Modified At</th>
-                                <th>Size</th>
-                                <th>Actions</th>
+                                <th>{t('name', { ns: 'common' })}</th>
+                                <th>{t('lastModifiedAt', { ns: 'common' })}</th>
+                                <th>{t('size', { ns: 'common' })}</th>
+                                <th>{t('actions', { ns: 'common' })}</th>
                             </tr>
                             </thead>
                             <tbody>

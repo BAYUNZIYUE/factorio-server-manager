@@ -1,5 +1,6 @@
 import Panel from "../components/Panel";
 import React, {useEffect, useState} from "react";
+import { useTranslation } from 'react-i18next';
 import settingsResource from "../../api/resources/settings";
 import Input from "../components/Input";
 import Label from "../components/Label";
@@ -10,6 +11,7 @@ import {useForm} from "react-hook-form";
 
 const ServerSettings = () => {
 
+    const { t } = useTranslation('serverSettings');
     const [settings, setSettings] = useState();
     const [numberInputs, setNumberInputs] = useState([]);
 
@@ -36,7 +38,7 @@ const ServerSettings = () => {
        settingsResource.server.update(data)
            .then(() => {
                fetchSettings()
-                   .then(() => window.flash("Settings saved.", "green"))
+                   .then(() => window.flash(t('settingsSaved'), "green"))
            });
     }
 
@@ -124,7 +126,7 @@ const ServerSettings = () => {
     return (
         <form className="mb-4" onSubmit={handleSubmit(saveServerSettings)}>
             <Panel
-                title="Server Settings"
+                title={t('serverSettings')}
                 content={
                     <>
                         {settings && Object.keys(settings).map(key => {
@@ -150,7 +152,7 @@ const ServerSettings = () => {
                     </>
                 }
                 actions={
-                    <Button isSubmit={true} type="success">Save</Button>
+                    <Button isSubmit={true} type="success">{t('saveSettings')}</Button>
                 }
             />
         </form>

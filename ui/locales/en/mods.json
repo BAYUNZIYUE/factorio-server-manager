@@ -28,5 +28,8 @@
   "loadModsTitle": "Load Mods from Save",
   "selectSave": "Select a save file",
   "modsLoaded": "Mods loaded from save.",
-  "deleteExistingMods": "Delete all existing mods before loading? Existing mods will be permanently removed."
+  "deleteExistingMods": "Delete all existing mods before loading? Existing mods will be permanently removed.",
+  "compatibility": "Compatibility",
+  "modVersion": "Mod Version",
+  "factorioVersion": "Factorio Version"
 }

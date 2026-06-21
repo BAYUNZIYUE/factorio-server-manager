@@ -1,4 +1,5 @@
 import React, {useEffect, useState} from "react";
+import { useTranslation } from 'react-i18next';
 import savesResource from "../../../../api/resources/saves";
 import Select from "../../../components/Select";
 import Label from "../../../components/Label";
@@ -10,6 +11,8 @@ import FactorioLogin from "./AddMod/components/FactorioLogin";
 import ConfirmDialog from "../../../components/ConfirmDialog";
 
 const LoadMods = ({refreshMods}) => {
+
+    const { t } = useTranslation(['mods', 'common']);
 
     const [saves, setSaves] = useState([]);
     const {register, reset, handleSubmit} = useForm();
@@ -46,7 +49,7 @@ const LoadMods = ({refreshMods}) => {
         await modResource.portal.installMultiple(mods)
             .then(() => {
                 refreshMods();
-                window.flash(`Mods are loaded from save file ${data.save}.`, "green");
+                window.flash(t('modsLoaded').replace('{save}', data.save), "green");
             }).finally(() => {
                 setIsLoading(false);
                 setLoadModsData(undefined);
@@ -55,7 +58,7 @@ const LoadMods = ({refreshMods}) => {
 
     return isFactorioAuthenticated
         ? <form onSubmit={handleSubmit(loadModsRequested)}>
-            <Label text="Save" htmlFor="save"/>
+            <Label text={t('save', { ns: 'common' })} htmlFor="save"/>
             <Select
                 register={register('save')}
                 className="mb-4"
@@ -65,10 +68,10 @@ const LoadMods = ({refreshMods}) => {
                     value: save.name
                 }))}
             />
-            <Button isSubmit={true} isDisabled={isDisabled} isLoading={isLoading}>Load</Button>
+            <Button isSubmit={true} isDisabled={isDisabled} isLoading={isLoading}>{t('loadMods')}</Button>
             <ConfirmDialog
-                title="Load Mods from Save"
-                content={`Loading the Mods from Save "${loadModsData?.save}" will remove all currently installed Mods.`}
+                title={t('loadModsTitle')}
+                content={t('deleteExistingMods')}
                 isOpen={loadModsData !== undefined}
                 close={() => {
                     setIsLoading(false);

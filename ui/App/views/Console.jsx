@@ -1,8 +1,11 @@
 import Panel from "../components/Panel";
 import React, {useEffect, useRef, useState} from "react";
+import { useTranslation } from 'react-i18next';
 import socket from "../../api/socket";
 
 const Console = ({serverStatus}) => {
+
+    const { t } = useTranslation('console');
 
     const [logs, setLogs] = useState([]);
     const consoleInput = useRef(null);
@@ -25,7 +28,7 @@ const Console = ({serverStatus}) => {
 
     return (
         <Panel
-            title="Console"
+            title={t('console')}
             content={
                 serverStatus.running
                     ? <>
@@ -44,7 +47,7 @@ const Console = ({serverStatus}) => {
                         />
                     </>
                     : <p className="text-red-light pt-4">
-                        The console is not available, because Factorio is not running.
+                        {t('consoleNotAvailable')}
                     </p>
             }
         />

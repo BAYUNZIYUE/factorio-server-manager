@@ -1,18 +1,20 @@
 import Mod from "./Mod";
 import React from "react";
-
+import { useTranslation } from 'react-i18next';
 
 const ModList = ({mods, factorioVersion, updateMod, toggleMod, deleteMod, addUpdatableMod = null, disabled = false}) => {
+
+    const { t } = useTranslation('mods');
 
     return (
         <table className="w-full">
             <thead>
             <tr className="text-left py-1">
-                <th>Name</th>
-                <th>Enabled</th>
-                <th>Compatibility</th>
-                <th>Mod Version</th>
-                <th>Factorio Version</th>
+                <th>{t('name', { ns: 'common' })}</th>
+                <th>{t('enabled', { ns: 'common' })}</th>
+                <th>{t('compatibility')}</th>
+                <th>{t('modVersion')}</th>
+                <th>{t('factorioVersion')}</th>
                 <th/>
             </tr>
             </thead>
