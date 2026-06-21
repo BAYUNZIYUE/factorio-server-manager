@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"io"
+	"bytes"
 	"os"
 )
 
@@ -82,158 +83,166 @@ type Mod struct {
 
 // Mostly based on https://forums.factorio.com/viewtopic.php?f=5&t=8568&p=277892&hilit=level.dat+python#p277892
 func (h *SaveHeader) ReadFrom(r io.Reader) (err error) {
-	var scratch [8]byte
+	data, dataErr := io.ReadAll(r)
+	if dataErr != nil {
+		return fmt.Errorf("read save data: %%v", dataErr)
+	}
 
 	var fv version64
-	_, err = r.Read(scratch[:8])
-	if err != nil {
-		return err
-	}
-	if err := fv.UnmarshalBinary(scratch[:8]); err != nil {
-		return fmt.Errorf("read FactorioVersion: %v", err)
+	if err := fv.UnmarshalBinary(data[:8]); err != nil {
+		return fmt.Errorf("read FactorioVersion: %%%%v", err)
 	}
 	h.FactorioVersion = Version(fv)
+
+	if !h.FactorioVersion.Less(Version{2, 0, 0, 0}) {
+		return readFromV2(h, data)
+	}
+
+	var scratch [8]byte
+	buf := bytes.NewReader(data)
+	buf.Read(scratch[:8])
 
 	atLeast016 := !h.FactorioVersion.Less(Version{0, 16, 0, 0})
 
 	if !h.FactorioVersion.Less(Version{0, 17, 0, 0}) {
-		//FIXME correct naming
-		_, err = r.Read(scratch[:1])
+		_, err = buf.Read(scratch[:1])
 		if err != nil {
-			return fmt.Errorf("read first random 0.17 byte: %v", err)
+			return fmt.Errorf("read first random 0.17 byte: %%%%v", err)
 		}
 	}
 
-	// campaign, example: "transport-belt-madness"
-	h.Campaign, err = readString(r, Version(h.FactorioVersion), false)
-	if err != nil {
-		return fmt.Errorf("read Campaign: %v", err)
-	}
+	h.Campaign, err = readString(buf, Version(h.FactorioVersion), false)
+	if err != nil { return fmt.Errorf("read Campaign: %%%%v", err) }
 
-	// level name, example: "level-01"
-	h.Name, err = readString(r, Version(h.FactorioVersion), false)
-	if err != nil {
-		return fmt.Errorf("read Name: %v", err)
-	}
+	h.Name, err = readString(buf, Version(h.FactorioVersion), false)
+	if err != nil { return fmt.Errorf("read Name: %%%%v", err) }
 
-	// name of the base mod, example: "base"
-	h.BaseMod, err = readString(r, Version(h.FactorioVersion), false)
-	if err != nil {
-		return fmt.Errorf("read BaseMod: %v", err)
-	}
+	h.BaseMod, err = readString(buf, Version(h.FactorioVersion), false)
+	if err != nil { return fmt.Errorf("read BaseMod: %%%%v", err) }
 
-	// Read Difficulty
-	_, err = r.Read(scratch[:1])
-	if err != nil {
-		return fmt.Errorf("read Difficulty: %v", err)
-	}
+	_, err = buf.Read(scratch[:1])
+	if err != nil { return fmt.Errorf("read Difficulty: %%%%v", err) }
 	h.Difficulty = scratch[0]
 
-	// Read finished as bool
-	_, err = r.Read(scratch[:1])
-	if err != nil {
-		return fmt.Errorf("read Finished: %v", err)
-	}
+	_, err = buf.Read(scratch[:1])
+	if err != nil { return fmt.Errorf("read Finished: %%%%v", err) }
 	h.Finished = scratch[0] != 0
 
-	// Read playerWon as bool
-	_, err = r.Read(scratch[:1])
-	if err != nil {
-		return fmt.Errorf("read PlayerWon: %v", err)
-	}
+	_, err = buf.Read(scratch[:1])
+	if err != nil { return fmt.Errorf("read PlayerWon: %%%%v", err) }
 	h.PlayerWon = scratch[0] != 0
 
-	// Read NextLevel string (normally empty)
-	h.NextLevel, err = readString(r, Version(h.FactorioVersion), false)
-	if err != nil {
-		return fmt.Errorf("read NextLevel: %v", err)
-	}
+	h.NextLevel, err = readString(buf, Version(h.FactorioVersion), false)
+	if err != nil { return fmt.Errorf("read NextLevel: %%%%v", err) }
 
 	if !h.FactorioVersion.Less(Version{0, 12, 0, 0}) {
-		_, err = r.Read(scratch[:1])
-		if err != nil {
-			return fmt.Errorf("read CanContinue: %v", err)
-		}
+		_, err = buf.Read(scratch[:1])
+		if err != nil { return fmt.Errorf("read CanContinue: %%%%v", err) }
 		h.CanContinue = scratch[0] != 0
-
-		_, err = r.Read(scratch[:1])
-		if err != nil {
-			return fmt.Errorf("read FinishedButContinuing: %v", err)
-		}
+		_, err = buf.Read(scratch[:1])
+		if err != nil { return fmt.Errorf("read FinishedButContinuing: %%%%v", err) }
 		h.FinishedButContinuing = scratch[0] != 0
 	}
 
-	_, err = r.Read(scratch[:1])
-	if err != nil {
-		return fmt.Errorf("read SavingReplay: %v", err)
-	}
+	_, err = buf.Read(scratch[:1])
+	if err != nil { return fmt.Errorf("read SavingReplay: %%%%v", err) }
 	h.SavingReplay = scratch[0] != 0
 
 	if atLeast016 {
-		_, err = r.Read(scratch[:1])
-		if err != nil {
-			return fmt.Errorf("read AllowNonAdminDebugOptions: %v", err)
-		}
+		_, err = buf.Read(scratch[:1])
+		if err != nil { return fmt.Errorf("read AllowNonAdmin: %%%%v", err) }
 		h.AllowNonAdminDebugOptions = scratch[0] != 0
 	}
 
 	var loadedFrom version48
-	err = loadedFrom.ReadFrom(r, Version(h.FactorioVersion))
-	if err != nil {
-		return fmt.Errorf("read LoadedFrom: %v", err)
-	}
+	err = loadedFrom.ReadFrom(buf, Version(h.FactorioVersion))
+	if err != nil { return fmt.Errorf("read LoadedFrom: %%%%v", err) }
 	h.LoadedFrom = Version(loadedFrom)
 
-	_, err = r.Read(scratch[:2])
-	if err != nil {
-		return fmt.Errorf("read LoadedFromBuild: %v", err)
-	}
+	_, err = buf.Read(scratch[:2])
+	if err != nil { return fmt.Errorf("read LoadedFromBuild: %%%%v", err) }
 	h.LoadedFromBuild = binary.LittleEndian.Uint16(scratch[:2])
 
-	_, err = r.Read(scratch[:1])
-	if err != nil {
-		return fmt.Errorf("read AllowedCommands: %v", err)
-	}
+	_, err = buf.Read(scratch[:1])
+	if err != nil { return fmt.Errorf("read AllowedCommands: %%%%v", err) }
 	h.AllowedCommands = scratch[0]
 	if h.FactorioVersion.Less(Version{0, 13, 0, 87}) {
-		if h.AllowedCommands == 0 {
-			h.AllowedCommands = 2
-		} else {
-			h.AllowedCommands = 1
-		}
+		if h.AllowedCommands == 0 { h.AllowedCommands = 2 } else { h.AllowedCommands = 1 }
 	}
 
 	if h.FactorioVersion.Less(Version{0, 13, 0, 42}) {
-		h.Stats, err = h.readStats(r)
-		if err != nil {
-			return fmt.Errorf("read Stats: %v", err)
-		}
+		h.Stats, err = h.readStats(buf)
+		if err != nil { return fmt.Errorf("read Stats: %%%%v", err) }
 	}
 
 	var n uint32
 	if atLeast016 {
-		n, err = readOptimUint(r, Version(h.FactorioVersion), 32)
-		if err != nil {
-			return fmt.Errorf("read num mods: %v", err)
-		}
+		n, err = readOptimUint(buf, Version(h.FactorioVersion), 32)
+		if err != nil { return fmt.Errorf("read num mods: %%%%v", err) }
 	} else {
-		_, err = r.Read(scratch[:4])
-		if err != nil {
-			return fmt.Errorf("read num mods: %v", err)
-		}
+		_, err = buf.Read(scratch[:4])
+		if err != nil { return fmt.Errorf("read num mods: %%%%v", err) }
 		n = binary.LittleEndian.Uint32(scratch[:4])
 	}
 
 	for i := uint32(0); i < n; i++ {
 		var m Mod
-		if err = (&m).ReadFrom(r, Version(h.FactorioVersion)); err != nil {
-			return fmt.Errorf("read mod: %v", err)
+		if err = (&m).ReadFrom(buf, Version(h.FactorioVersion)); err != nil {
+			return fmt.Errorf("read mod: %%%%v", err)
 		}
 		h.Mods = append(h.Mods, m)
 	}
-
 	return nil
 }
+
+func readFromV2(h *SaveHeader, data []byte) error {
+	pos := 10
+	campaign, pos, _ := readStringBuf(data, pos)
+	h.Campaign = campaign
+	baseMod, pos, _ := readStringBuf(data, pos)
+	h.BaseMod = baseMod
+
+	scanStart := 0
+	for i := pos; i < len(data)-10; i++ {
+		if data[i] == 4 && string(data[i+1:i+5]) == "base" {
+			scanStart = i
+			break
+		}
+	}
+	if scanStart == 0 {
+		return fmt.Errorf("mod list not found in 2.0 save")
+	}
+
+	off := scanStart + 12
+	for {
+		if off+8 >= len(data) { break }
+		nameLen := int(data[off])
+		if nameLen < 3 || nameLen > 50 { break }
+		off++
+		name := string(data[off:off+nameLen]); off += nameLen
+		major := uint(data[off])
+		minor := uint(data[off+1])
+		patch := uint(data[off+2])
+		off += 7
+		h.Mods = append(h.Mods, Mod{Name: name, Version: Version{major, minor, patch, 0}})
+	}
+	return nil
+}
+
+func readStringBuf(data []byte, pos int) (string, int, error) {
+	if pos >= len(data) { return "", pos, io.EOF }
+	b := data[pos]; pos++
+	if b == 0xFF {
+		if pos+4 > len(data) { return "", pos, io.ErrUnexpectedEOF }
+		l := binary.LittleEndian.Uint32(data[pos:pos+4])
+		pos += 4
+		if pos+int(l) > len(data) { return "", pos, io.ErrUnexpectedEOF }
+		return string(data[pos:pos+int(l)]), pos + int(l), nil
+	}
+	if pos+int(b) > len(data) { return "", pos, io.ErrUnexpectedEOF }
+	return string(data[pos:pos+int(b)]), pos + int(b), nil
+}
+
 
 func readOptimUint(r io.Reader, v Version, bitSize int) (uint32, error) {
 	var b [4]byte
