@@ -15,6 +15,7 @@ import ServerSettings from "./views/ServerSettings";
 import GameSettings from "./views/GameSettings";
 import Console from "./views/Console";
 import Help from "./views/Help";
+import ServerVersion from "./views/ServerVersion";
 import socket from "../api/socket";
 import {Flash} from "./components/Flash";
 
@@ -69,6 +70,7 @@ const App = () => {
                         <Route path="logs" element={<Logs serverStatus={serverStatus}/>}/>
                         <Route path="user-management" element={<UserManagement serverStatus={serverStatus}/>}/>
                         <Route path="help" element={<Help serverStatus={serverStatus}/>}/>
+                        <Route path="server-version" element={<ServerVersion serverStatus={serverStatus}/>}/>
                     </Route>
                 </Route>
             </Routes>

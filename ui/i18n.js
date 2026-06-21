@@ -12,6 +12,7 @@ import enServerSettings from './locales/en/serverSettings.json';
 import enLogs from './locales/en/logs.json';
 import enConsole from './locales/en/console.json';
 import enUserManagement from './locales/en/userManagement.json';
+import enServerVersion from './locales/en/serverVersion.json';
 
 // Chinese locale files
 import zhCommon from './locales/zh-CN/common.json';
@@ -23,6 +24,7 @@ import zhServerSettings from './locales/zh-CN/serverSettings.json';
 import zhLogs from './locales/zh-CN/logs.json';
 import zhConsole from './locales/zh-CN/console.json';
 import zhUserManagement from './locales/zh-CN/userManagement.json';
+import zhServerVersion from './locales/zh-CN/serverVersion.json';
 
 const resources = {
   en: {
@@ -35,6 +37,7 @@ const resources = {
     logs: enLogs,
     console: enConsole,
     userManagement: enUserManagement,
+    serverVersion: enServerVersion,
   },
   'zh-CN': {
     common: zhCommon,
@@ -46,6 +49,7 @@ const resources = {
     logs: zhLogs,
     console: zhConsole,
     userManagement: zhUserManagement,
+    serverVersion: zhServerVersion,
   },
 };
 

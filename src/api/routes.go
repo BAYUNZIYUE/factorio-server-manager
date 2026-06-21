@@ -122,6 +122,10 @@ func NewRouter() *mux.Router {
 		Methods("GET").
 		Name("Help").
 		Handler(http.StripPrefix("/help", http.FileServer(http.Dir("./app/"))))
+	subRouter.Path("/server-version").
+		Methods("GET").
+		Name("Server version").
+		Handler(http.StripPrefix("/server-version", http.FileServer(http.Dir("./app/"))))
 
 	// catch all route
 	mainRouter.PathPrefix("/").

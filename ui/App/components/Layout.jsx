@@ -73,6 +73,7 @@ const Layout = ({handleLogout, serverStatus}) => {
                             <Link to="/">{t('linkControls', { ns: 'layout' })}</Link>
                             <Link to="/saves">{t('linkSaves', { ns: 'layout' })}</Link>
                             <Link to="/mods">{t('linkMods', { ns: 'layout' })}</Link>
+                            <Link to="/server-version">{t('linkServerVersion', { ns: 'layout' })}</Link>
                             <Link to="/server-settings">{t('linkServerSettings', { ns: 'layout' })}</Link>
                             <Link to="/game-settings">{t('linkGameSettings', { ns: 'layout' })}</Link>
                             <Link to="/console">{t('linkConsole', { ns: 'layout' })}</Link>
