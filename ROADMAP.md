@@ -33,4 +33,3 @@
   - Server name field
 - [ ] Multi-server support
 - [ ] Dual logs — Factorio server logs + FSM manager logs
-
