@@ -10,11 +10,8 @@ function ConfirmDialog({title, content, isOpen, close, onSuccess}) {
 
     const confirm = () => {
         setIsLoading(true);
-        onSuccess()
-            .finally(() => {
-                close();
-                setIsLoading(false);
-            })
+        close();
+        onSuccess?.();
     }
 
     return (

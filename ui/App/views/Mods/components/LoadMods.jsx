@@ -118,8 +118,7 @@ const LoadMods = ({refreshMods}) => {
                 }}
                 onSuccess={() => {
                     const data = loadModsData;
-                    setLoadModsData(undefined);
-                    setTimeout(() => loadMods(data), 0);
+                    loadMods(data);
                 }}
             />
         </form>
