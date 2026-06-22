@@ -27,9 +27,27 @@ const Mods = ({serverStatus}) => {
 
     const loadPortalList = () => {
         if (portalLoaded) return;
+        const cached = sessionStorage.getItem('mod_portal_cache');
+        if (cached) {
+            try {
+                const {data, time} = JSON.parse(cached);
+                if (Date.now() - time < 3600000) {
+                    setFuse(new Fuse(data, {
+                        keys: [{name: "name", weight: 2}, {name: "title", weight: 1}],
+                        minMatchCharLength: 3
+                    }));
+                    setPortalLoaded(true);
+                    return;
+                }
+            } catch(e) {}
+        }
         setPortalLoaded(true);
         modsResource.portal.list()
             .then(res => {
+                sessionStorage.setItem('mod_portal_cache', JSON.stringify({
+                    data: res.results,
+                    time: Date.now()
+                }));
                 setFuse(new Fuse(res.results, {
                     keys: [{name: "name", weight: 2}, {name: "title", weight: 1}],
                     minMatchCharLength: 3
