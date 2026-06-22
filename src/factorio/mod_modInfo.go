@@ -24,6 +24,7 @@ type ModInfo struct {
 	Title           string   `json:"title"`
 	Author          string   `json:"author"`
 	FileName        string   `json:"file_name"`
+	FileSize        int64    `json:"file_size"`
 	FactorioVersion Version  `json:"factorio_version"`
 	Dependencies    []string `json:"dependencies"`
 	Compatibility   bool     `json:"compatibility"`
@@ -77,6 +78,7 @@ func (modInfoList *ModInfoList) listInstalledMods() error {
 			}
 
 			modInfo.FileName = info.Name()
+			modInfo.FileSize = info.Size()
 
 			var base Version
 			var op string

@@ -102,6 +102,7 @@ const Mod = ({mod, factorioVersion, toggleMod, deleteMod, updateMod, addUpdatabl
                                                 className="hover:text-orange cursor-pointer ml-1"
                                                 icon={icon}/>}</td>
             <td className="pr-4">{mod.dep_op ? mod.dep_op + ' ' + mod.factorio_version : mod.factorio_version}</td>
+            <td className="pr-4 text-gray-light text-sm">{mod.file_size > 0 ? ((mod.file_size / 1024).toFixed(0) + ' KB') : '-'}</td>
             {
                 !disabled &&
                 <td className="pr-4">

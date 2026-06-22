@@ -15,6 +15,7 @@ const ModList = ({mods, factorioVersion, updateMod, toggleMod, deleteMod, addUpd
                 <th>{t('compatibility')}</th>
                 <th>{t('modVersion')}</th>
                 <th>{t('factorioVersion')}</th>
+                <th>{t('size', { ns: 'common' })}</th>
                 <th/>
             </tr>
             </thead>

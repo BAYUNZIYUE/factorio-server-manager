@@ -55,6 +55,7 @@ func (mods *Mods) ListInstalledMods() ModsResultList {
 		var modsResult ModsResult
 		modsResult.Name = modInfo.Name
 		modsResult.FileName = modInfo.FileName
+		modsResult.FileSize = modInfo.FileSize
 		modsResult.Author = modInfo.Author
 		modsResult.Title = modInfo.Title
 		modsResult.Version = modInfo.Version

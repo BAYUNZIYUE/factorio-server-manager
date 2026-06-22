@@ -274,7 +274,11 @@ func ModPortalInstallMultipleHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func getContentLength(downloadURL string) int64 {
-	u := "https://mods.factorio.com" + downloadURL
+	var creds factorio.Credentials
+	if ok, _ := creds.Load(); !ok {
+		return 0
+	}
+	u := "https://mods.factorio.com" + downloadURL + "?username=" + creds.Username + "&token=" + creds.Userkey
 	resp, err := http.Head(u)
 	if err != nil {
 		return 0
