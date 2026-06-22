@@ -4,6 +4,14 @@ import TabTitle from "./TabTitle";
 const TabControl = ({children}) => {
     const [selectedTab, setSelectedTab] = useState(0)
 
+    const handleSelect = (index) => {
+        setSelectedTab(index);
+        const child = children[index];
+        if (child && child.props.onActivate) {
+            child.props.onActivate();
+        }
+    }
+
     return (
         <div className="mb-6">
             <div className="px-4 pt-3">
@@ -13,7 +21,7 @@ const TabControl = ({children}) => {
                         title={item.props.title}
                         index={index}
                         isActive={index === selectedTab}
-                        setSelectedTab={setSelectedTab}
+                        setSelectedTab={handleSelect}
                     />
                 ))}
             </div>

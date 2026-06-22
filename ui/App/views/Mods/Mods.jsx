@@ -23,6 +23,19 @@ const Mods = ({serverStatus}) => {
     const [modPacks, setModPacks] = useState([])
     const [factorioVersion, setFactorioVersion] = useState(null);
     const [fuse, setFuse] = useState(undefined);
+    const [portalLoaded, setPortalLoaded] = useState(false);
+
+    const loadPortalList = () => {
+        if (portalLoaded) return;
+        setPortalLoaded(true);
+        modsResource.portal.list()
+            .then(res => {
+                setFuse(new Fuse(res.results, {
+                    keys: [{name: "name", weight: 2}, {name: "title", weight: 1}],
+                    minMatchCharLength: 3
+                }));
+            });
+    };
     const [isDeletingAllMods, setIsDeletingAllMods] = useState(false);
     const [isUpdatingAllMods, setIsUpdatingAllMods] = useState(false);
     const [updatableMods, setUpdatableMods] = useState([]);
@@ -112,8 +125,8 @@ const Mods = ({serverStatus}) => {
                 />
                 :
                 <TabControl>
-                    <Tab title={t('installMod')}>
-                        <AddMod refetchInstalledMods={fetchInstalledMods} fuse={fuse} setFuse={setFuse}/>
+                    <Tab title={t('installMod')} onActivate={loadPortalList}>
+                        <AddMod refetchInstalledMods={fetchInstalledMods} fuse={fuse}/>
                     </Tab>
                     <Tab title={t('uploadMod')}>
                         <UploadMod refetchInstalledMods={fetchInstalledMods}/>
