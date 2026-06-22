@@ -89,9 +89,10 @@ const Mods = ({serverStatus}) => {
             });
 
         const interval = setInterval(() => {
+            if (document.hidden) return;
             fetchInstalledMods();
             fetchModPacks();
-        }, 5000);
+        }, 2000);
 
         return () => clearInterval(interval);
     }, []);
