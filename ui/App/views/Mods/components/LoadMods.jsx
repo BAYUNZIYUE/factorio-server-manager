@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useRef, useState} from "react";
 import { useTranslation } from 'react-i18next';
 import savesResource from "../../../../api/resources/saves";
 import Select from "../../../components/Select";
@@ -22,6 +22,7 @@ const LoadMods = ({refreshMods}) => {
     const [loadModsData, setLoadModsData] = useState(undefined);
     const [installProgress, setInstallProgress] = useState({current: 0, total: 0});
     const [showProgress, setShowProgress] = useState(false);
+    const progressTimer = useRef(null);
     const [activeCount, setActiveCount] = useState(0);
     const [completedNames, setCompletedNames] = useState([]);
     const [workerStates, setWorkerStates] = useState({});
@@ -55,16 +56,16 @@ const LoadMods = ({refreshMods}) => {
                     setShowProgress(true);
                     setActiveCount(0);
                     setCompletedNames([]);
-                    localStorage.setItem('mod_install_pending', JSON.stringify(data));
+                    clearTimeout(progressTimer.current);
                 } else if (data.type === 'progress') {
                     setInstallProgress({current: data.current, total: data.total});
                     setActiveCount(data.active || 0);
-                    setCompletedNames(prev => {
-                        const next = [...prev, data.name];
-                        localStorage.setItem('mod_install_done', JSON.stringify(next));
-                        return next;
-                    });
-                    setShowProgress(true);
+                    clearTimeout(progressTimer.current);
+                    progressTimer.current = setTimeout(() => {
+                        setShowProgress(false);
+                        setWorkerStates({});
+                        setActiveCount(0);
+                    }, 60 * 1000);
                 } else if (data.type === 'worker') {
                     setWorkerStates(prev => ({
                         ...prev,
@@ -78,8 +79,7 @@ const LoadMods = ({refreshMods}) => {
                     setShowProgress(false);
                     setActiveCount(0);
                     setWorkerStates({});
-                    localStorage.setItem('mod_install_done', 'true');
-                    localStorage.removeItem('mod_install_pending');
+                    clearTimeout(progressTimer.current);
                 }
             } catch (e) {}
         };
@@ -88,6 +88,7 @@ const LoadMods = ({refreshMods}) => {
 
         return () => {
             socket.off('mod_install', handleProgress);
+            clearTimeout(progressTimer.current);
         };
     }, []);
 
