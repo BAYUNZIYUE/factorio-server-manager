@@ -23,37 +23,6 @@ const Mods = ({serverStatus}) => {
     const [modPacks, setModPacks] = useState([])
     const [factorioVersion, setFactorioVersion] = useState(null);
     const [fuse, setFuse] = useState(undefined);
-    const [portalLoaded, setPortalLoaded] = useState(false);
-
-    const loadPortalList = () => {
-        if (portalLoaded) return;
-        const cached = sessionStorage.getItem('mod_portal_cache');
-        if (cached) {
-            try {
-                const {data, time} = JSON.parse(cached);
-                if (Date.now() - time < 3600000) {
-                    setFuse(new Fuse(data, {
-                        keys: [{name: "name", weight: 2}, {name: "title", weight: 1}],
-                        minMatchCharLength: 3
-                    }));
-                    setPortalLoaded(true);
-                    return;
-                }
-            } catch(e) {}
-        }
-        setPortalLoaded(true);
-        modsResource.portal.list()
-            .then(res => {
-                sessionStorage.setItem('mod_portal_cache', JSON.stringify({
-                    data: res.results,
-                    time: Date.now()
-                }));
-                setFuse(new Fuse(res.results, {
-                    keys: [{name: "name", weight: 2}, {name: "title", weight: 1}],
-                    minMatchCharLength: 3
-                }));
-            });
-    };
     const [isDeletingAllMods, setIsDeletingAllMods] = useState(false);
     const [isUpdatingAllMods, setIsUpdatingAllMods] = useState(false);
     const [updatableMods, setUpdatableMods] = useState([]);
@@ -101,6 +70,13 @@ const Mods = ({serverStatus}) => {
                 fetchModPacks();
             })
 
+        modsResource.portal.list()
+            .then(res => {
+                setFuse(new Fuse(res.results, {
+                    keys: [{name: "name", weight: 2}, {name: "title", weight: 1}],
+                    minMatchCharLength: 3
+                }));
+            });
 
         const interval = setInterval(() => {
             if (document.hidden) return;
@@ -152,7 +128,7 @@ const Mods = ({serverStatus}) => {
                 />
                 :
                 <TabControl>
-                    <Tab title={t('installMod')} onActivate={loadPortalList}>
+                    <Tab title={t('installMod')}>
                         <AddMod refetchInstalledMods={fetchInstalledMods} fuse={fuse}/>
                     </Tab>
                     <Tab title={t('uploadMod')}>
