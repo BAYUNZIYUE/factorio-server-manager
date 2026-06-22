@@ -88,6 +88,12 @@ const Mods = ({serverStatus}) => {
                 }));
             });
 
+        const interval = setInterval(() => {
+            fetchInstalledMods();
+            fetchModPacks();
+        }, 5000);
+
+        return () => clearInterval(interval);
     }, []);
 
     const toggleMod = modName => {
