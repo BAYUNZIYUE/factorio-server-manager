@@ -227,6 +227,7 @@ func ModPortalInstallMultipleHandler(w http.ResponseWriter, r *http.Request) {
 				for _, release := range details.Releases {
 					if release.Version.Equals(j.ver) {
 						found = true
+						wsRoom.Send(fmt.Sprintf("{\"type\":\"worker\",\"worker\":%d,\"name\":\"%s\",\"state\":\"downloading\"}", wid, j.name))
 						size, dl := modList.DownloadMod(release.DownloadURL, release.FileName, details.Name)
 						if dl != nil {
 							r.err = dl
