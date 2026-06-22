@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"sync"
 	"time"
 )
 
@@ -29,7 +30,21 @@ type ModPortalStruct struct {
 }
 
 // get all mods uploaded to the factorio modPortal
+var portalCache struct {
+	data      interface{}
+	expiresAt time.Time
+	mu        sync.RWMutex
+}
+
 func ModPortalList() (interface{}, error, int) {
+	portalCache.mu.RLock()
+	if portalCache.data != nil && time.Now().Before(portalCache.expiresAt) {
+		data := portalCache.data
+		portalCache.mu.RUnlock()
+		return data, nil, http.StatusOK
+	}
+	portalCache.mu.RUnlock()
+
 	req, err := http.NewRequest(http.MethodGet, "https://mods.factorio.com/api/mods?page_size=max", nil)
 	if err != nil {
 		return "error", err, http.StatusInternalServerError
@@ -55,6 +70,11 @@ func ModPortalList() (interface{}, error, int) {
 	if err != nil {
 		return "error", err, http.StatusInternalServerError
 	}
+
+	portalCache.mu.Lock()
+	portalCache.data = jsonVal
+	portalCache.expiresAt = time.Now().Add(1 * time.Hour)
+	portalCache.mu.Unlock()
 
 	return jsonVal, nil, resp.StatusCode
 }
