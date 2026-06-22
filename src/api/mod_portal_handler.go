@@ -83,7 +83,7 @@ func ModPortalInstallHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = mods.DownloadMod(data.DownloadURL, data.Filename, data.ModName)
+	_, err = mods.DownloadMod(data.DownloadURL, data.Filename, data.ModName, nil)
 	if err != nil {
 		resp = fmt.Sprintf("Error downloading a mod: %s", err)
 		log.Println(resp)
@@ -229,7 +229,11 @@ func ModPortalInstallMultipleHandler(w http.ResponseWriter, r *http.Request) {
 						found = true
 						size := getContentLength(release.DownloadURL)
 						wsRoom.Send(fmt.Sprintf("{\"type\":\"worker\",\"worker\":%d,\"name\":\"%s\",\"state\":\"downloading\",\"size\":%d}", wid, j.name, size))
-						_, dl := modList.DownloadMod(release.DownloadURL, release.FileName, details.Name)
+						_, dl := modList.DownloadMod(release.DownloadURL, release.FileName, details.Name, func(read, total int64) {
+							pct := 0
+							if total > 0 { pct = int(read * 100 / total) }
+							wsRoom.Send(fmt.Sprintf("{\"type\":\"worker\",\"worker\":%d,\"name\":\"%s\",\"state\":\"downloading\",\"size\":%d,\"pct\":%d}", wid, j.name, size, pct))
+						})
 						if dl != nil {
 							r.err = dl
 							wsRoom.Send(fmt.Sprintf("{\"type\":\"worker\",\"worker\":%d,\"name\":\"%s\",\"state\":\"error\"}", wid, j.name))

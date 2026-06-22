@@ -132,7 +132,7 @@ func (mods *Mods) createMod(modName string, fileName string, fileRc io.Reader) e
 	return nil
 }
 
-func (mods *Mods) DownloadMod(url string, filename string, modId string) (int64, error) {
+func (mods *Mods) DownloadMod(url string, filename string, modId string, progressCb func(int64, int64)) (int64, error) {
 	var err error
 
 	var credentials Credentials
@@ -154,8 +154,6 @@ func (mods *Mods) DownloadMod(url string, filename string, modId string) (int64,
 		return 0, err
 	}
 
-	log.Printf("download complete\n StatusCode: %d\n Status: %s", response.StatusCode, response.Status)
-
 	defer response.Body.Close()
 
 	if response.StatusCode != 200 {
@@ -163,7 +161,17 @@ func (mods *Mods) DownloadMod(url string, filename string, modId string) (int64,
 		return 0, errors.New("Statuscode not 200: " + fmt.Sprint(response.StatusCode))
 	}
 
-	err = mods.createMod(modId, filename, response.Body)
+	size := response.ContentLength
+	var body io.Reader = response.Body
+	if progressCb != nil && size > 0 {
+		body = &progressReader{
+			Reader:   response.Body,
+			Total:    size,
+			Callback: func(read int64) { progressCb(read, size) },
+		}
+	}
+
+	err = mods.createMod(modId, filename, body)
 	if err != nil {
 		log.Printf("error when creating Mod: %s", err)
 		return 0, err
@@ -171,7 +179,23 @@ func (mods *Mods) DownloadMod(url string, filename string, modId string) (int64,
 
 	log.Printf("completed copying the response.Body")
 
-	return response.ContentLength, nil
+	return size, nil
+}
+
+type progressReader struct {
+	Reader   io.Reader
+	Total    int64
+	read     int64
+	Callback func(int64)
+}
+
+func (pr *progressReader) Read(p []byte) (int, error) {
+	n, err := pr.Reader.Read(p)
+	pr.read += int64(n)
+	if pr.Callback != nil {
+		pr.Callback(pr.read)
+	}
+	return n, err
 }
 
 func (mods *Mods) UploadMod(file multipart.File, header *multipart.FileHeader) error {
@@ -213,7 +237,7 @@ func (mods *Mods) UploadMod(file multipart.File, header *multipart.FileHeader) e
 func (mods *Mods) UpdateMod(modName string, url string, filename string) error {
 	var err error
 
-	_, err = mods.DownloadMod(url, filename, modName)
+	_, err = mods.DownloadMod(url, filename, modName, nil)
 	if err != nil {
 		log.Printf("updateMod ... error when downloading the new Mod: %s", err)
 		return err
