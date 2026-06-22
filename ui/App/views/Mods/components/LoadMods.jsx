@@ -30,19 +30,11 @@ const LoadMods = ({refreshMods}) => {
     const [showModList, setShowModList] = useState(false);
 
     useEffect(() => {
-        const stored = localStorage.getItem('mod_install_pending');
-        if (stored) {
-            try {
-                if (localStorage.getItem('mod_install_done') === 'true') {
-                    localStorage.removeItem('mod_install_pending');
-                    localStorage.removeItem('mod_install_done');
-                } else {
-                    const data = JSON.parse(stored);
-                    setInstallProgress({current: 0, total: data.total});
-                    setShowProgress(true);
-                }
-            } catch(e) {}
-        }
+        localStorage.removeItem('mod_install_pending');
+        localStorage.removeItem('mod_install_done');
+        setShowProgress(false);
+        setWorkerStates({});
+        setActiveCount(0);
 
         (async () => {
             setIsFactorioAuthenticated(await modResource.portal.status())
