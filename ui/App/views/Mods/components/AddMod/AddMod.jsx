@@ -8,14 +8,8 @@ const AddMod = ({refetchInstalledMods, fuse, loading}) => {
     const [isFactorioAuthenticated, setIsFactorioAuthenticated] = useState(false);
 
     useEffect(() => {
-        const saved = localStorage.getItem('fsm_portal_auth');
-        if (saved === 'true') {
-            setIsFactorioAuthenticated(true);
-        }
         (async () => {
-            const status = await modResource.portal.status();
-            setIsFactorioAuthenticated(status);
-            localStorage.setItem('fsm_portal_auth', status ? 'true' : '');
+            setIsFactorioAuthenticated(await modResource.portal.status())
         })();
     }, []);
 
