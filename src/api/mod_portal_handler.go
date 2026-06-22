@@ -227,8 +227,9 @@ func ModPortalInstallMultipleHandler(w http.ResponseWriter, r *http.Request) {
 				for _, release := range details.Releases {
 					if release.Version.Equals(j.ver) {
 						found = true
-						wsRoom.Send(fmt.Sprintf("{\"type\":\"worker\",\"worker\":%d,\"name\":\"%s\",\"state\":\"downloading\"}", wid, j.name))
-						size, dl := modList.DownloadMod(release.DownloadURL, release.FileName, details.Name)
+						size := getContentLength(release.DownloadURL)
+						wsRoom.Send(fmt.Sprintf("{\"type\":\"worker\",\"worker\":%d,\"name\":\"%s\",\"state\":\"downloading\",\"size\":%d}", wid, j.name, size))
+						_, dl := modList.DownloadMod(release.DownloadURL, release.FileName, details.Name)
 						if dl != nil {
 							r.err = dl
 							wsRoom.Send(fmt.Sprintf("{\"type\":\"worker\",\"worker\":%d,\"name\":\"%s\",\"state\":\"error\"}", wid, j.name))
@@ -270,4 +271,14 @@ func ModPortalInstallMultipleHandler(w http.ResponseWriter, r *http.Request) {
 	wsRoom.Send(fmt.Sprintf("{\"type\":\"complete\",\"total\":%d}", total))
 
 	resp = modList.ListInstalledMods()
+}
+
+func getContentLength(downloadURL string) int64 {
+	u := "https://mods.factorio.com" + downloadURL
+	resp, err := http.Head(u)
+	if err != nil {
+		return 0
+	}
+	resp.Body.Close()
+	return resp.ContentLength
 }
