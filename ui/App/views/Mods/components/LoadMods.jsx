@@ -189,7 +189,7 @@ const LoadMods = ({refreshMods}) => {
                         if (!ws) return null;
                         const icon = ws.state === 'done' ? '✓' : ws.state === 'error' ? '✗' : '↓';
                         const color = ws.state === 'done' ? 'text-green' : ws.state === 'error' ? 'text-red' : 'text-orange';
-                        const sizeText = ws.size > 0 ? ` (${(ws.size / 1024).toFixed(0)}KB)` : '';
+                        const sizeText = ws.size > 0 ? ' (' + (ws.size / 1024).toFixed(0) + 'KB)' : '';
                         return (
                             <div key={w} className="flex items-center text-xs">
                                 <span className={`${color} w-4`}>{icon}</span>
