@@ -100,6 +100,10 @@ const Layout = ({handleLogout, serverStatus}) => {
                     </div>
                     <div className="py-4 px-2 accentuated">
                         <div className="text-white text-center rounded-sm bg-black shadow-inner mx-4 p-1">
+                            <button className="bg-gray-light hover:bg-orange hover:glow-orange py-2 px-4 w-full block accentuated text-black font-bold mb-1"
+                                    onClick={() => window.dispatchEvent(new CustomEvent('fsm_refresh_mods'))}>
+                                {t('refreshMods', { ns: 'layout' })}
+                            </button>
                             <Button type="danger" className="w-full" onClick={handleLogout}>{t('logout', { ns: 'common' })}</Button>
                         </div>
                     </div>

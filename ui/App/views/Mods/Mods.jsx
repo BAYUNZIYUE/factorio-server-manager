@@ -90,7 +90,16 @@ const Mods = ({serverStatus}) => {
             fetchModPacks();
         }, 2000);
 
-        return () => clearInterval(interval);
+        const handleRefresh = () => {
+            fetchInstalledMods();
+            fetchModPacks();
+        };
+        window.addEventListener('fsm_refresh_mods', handleRefresh);
+
+        return () => {
+            clearInterval(interval);
+            window.removeEventListener('fsm_refresh_mods', handleRefresh);
+        };
     }, []);
 
     const toggleMod = modName => {
