@@ -70,23 +70,6 @@ const Mods = ({serverStatus}) => {
                 fetchModPacks();
             })
 
-        // fetch list of mods
-        modsResource.portal.list()
-            .then(res => {
-                setFuse(new Fuse(res.results, {
-                    keys: [
-                        {
-                            "name": "name",
-                            weight: 2
-                        },
-                        {
-                            "name": "title",
-                            weight: 1
-                        }
-                    ],
-                    minMatchCharLength: 3
-                }));
-            });
 
         const interval = setInterval(() => {
             if (document.hidden) return;
@@ -130,7 +113,7 @@ const Mods = ({serverStatus}) => {
                 :
                 <TabControl>
                     <Tab title={t('installMod')}>
-                        <AddMod refetchInstalledMods={fetchInstalledMods} fuse={fuse}/>
+                        <AddMod refetchInstalledMods={fetchInstalledMods} fuse={fuse} setFuse={setFuse}/>
                     </Tab>
                     <Tab title={t('uploadMod')}>
                         <UploadMod refetchInstalledMods={fetchInstalledMods}/>
