@@ -15,7 +15,7 @@ const LinkModPortal = () => {
     return <a href="https://mods.factorio.com" target="_blank" className="px-2 text-blue hover:text-blue-light">{t('modPortal')} <FontAwesomeIcon icon={faExternalLinkAlt}/></a>
 }
 
-const AddModForm = ({setIsFactorioAuthenticated, fuse, refetchInstalledMods}) => {
+const AddModForm = ({setIsFactorioAuthenticated, fuse, refetchInstalledMods, loading}) => {
 
     const { t } = useTranslation('mods');
     const {register, watch, setValue, handleSubmit} = useForm();
@@ -109,7 +109,7 @@ const AddModForm = ({setIsFactorioAuthenticated, fuse, refetchInstalledMods}) =>
                     : <div className="border border-gray-medium w-full py-2 px-3 text-white">
                         <FontAwesomeIcon icon={faSpinner} spin={true}/> {t('loadingModList')} <LinkModPortal/>
                         <div className="mt-2 w-full bg-gray-dark rounded h-1.5 overflow-hidden">
-                            <div className="bg-orange h-1.5 animate-pulse rounded" style={{width: '100%'}}/>
+                            <div className="bg-orange h-1.5 w-1/3 rounded animate-pulse"/>
                         </div>
                     </div>
                 }
