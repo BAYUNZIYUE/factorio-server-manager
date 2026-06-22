@@ -11,14 +11,13 @@ import FactorioLogin from "./AddMod/components/FactorioLogin";
 import Modal from "../../../components/Modal";
 import socket from "../../../../api/socket";
 
-const LoadMods = ({refreshMods}) => {
+const LoadMods = ({refreshMods, isFactorioAuthenticated, setIsFactorioAuthenticated}) => {
 
     const { t } = useTranslation(['mods', 'common']);
     const [saves, setSaves] = useState([]);
     const {register, reset, handleSubmit} = useForm();
     const [isLoading, setIsLoading] = useState(false);
     const [isDisabled, setIsDisabled] = useState(true);
-    const [isFactorioAuthenticated, setIsFactorioAuthenticated] = useState(false);
     const [loadModsData, setLoadModsData] = useState(undefined);
     const [installProgress, setInstallProgress] = useState({current: 0, total: 0});
     const [showProgress, setShowProgress] = useState(false);
@@ -38,8 +37,6 @@ const LoadMods = ({refreshMods}) => {
         setActiveCount(0);
 
         (async () => {
-            setIsFactorioAuthenticated(await modResource.portal.status())
-
             const s = await savesResource.list()
             setSaves(s);
             if (s.length > 0) {
