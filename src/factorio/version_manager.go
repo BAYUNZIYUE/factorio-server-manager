@@ -71,8 +71,9 @@ func (vm *VersionManager) GetAvailableVersions() ([]Release, error) {
 }
 
 type UpdaterResponse map[string][]struct {
-	From string `json:"from"`
-	To   string `json:"to"`
+	From   string `json:"from"`
+	To     string `json:"to"`
+	Stable string `json:"stable"`
 }
 
 func (vm *VersionManager) GetFullVersionList() ([]Release, error) {
@@ -103,11 +104,15 @@ func (vm *VersionManager) GetFullVersionList() ([]Release, error) {
 	}
 
 	for _, u := range updates {
-		if !seen[u.To] {
-			seen[u.To] = true
+		ver := u.To
+		if ver == "" && u.Stable != "" {
+			ver = u.Stable
+		}
+		if ver != "" && !seen[ver] {
+			seen[ver] = true
 			releases = append(releases, Release{
-				Version: u.To,
-				Stable:  isStableVersion(u.To),
+				Version: ver,
+				Stable:  isStableVersion(ver),
 				Latest:  false,
 			})
 		}
