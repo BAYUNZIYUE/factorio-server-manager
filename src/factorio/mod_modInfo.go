@@ -97,15 +97,19 @@ func (modInfoList *ModInfoList) listInstalledMods() error {
 				if parts[0] != "base" {
 					continue
 				}
-				if len(parts) == 1 {
-					base = modInfo.FactorioVersion
-					op = ">="
-					continue
-				}
+			if len(parts) == 1 {
+				base = modInfo.FactorioVersion
+				op = ">="
+				continue
+			}
+			if len(parts) < 3 {
+				log.Printf("skipping dependency '%s' in '%s': invalid format (expected 'base op version')\n", dep, modInfo.Name)
+				continue
+			}
 
-				op = parts[1]
+			op = parts[1]
 
-				if err := base.UnmarshalText([]byte(parts[2])); err != nil {
+			if err := base.UnmarshalText([]byte(parts[2])); err != nil {
 					log.Printf("skipping dependency '%s' in '%s': %v\n", dep, modInfo.Name, err)
 					continue
 				}
@@ -115,13 +119,14 @@ func (modInfoList *ModInfoList) listInstalledMods() error {
 
 			server := GetFactorioServer()
 
-			// check both the factorio-version and the base mod dependency
-			modInfo.Compatibility = server.Version.GEC(modInfo.FactorioVersion)
-			if modInfo.Compatibility && !base.Equals(NilVersion) {
-				modInfo.Compatibility = server.Version.Compatible(base, op)
+		modInfo.Compatibility = server.Version.GEC(modInfo.FactorioVersion)
+		if modInfo.Compatibility && !base.Equals(NilVersion) {
+			modInfo.Compatibility = server.Version.Compatible(base, op)
+			if base.Greater(modInfo.FactorioVersion) || modInfo.FactorioVersion.Equals(NilVersion) {
 				modInfo.FactorioVersion = base
-				modInfo.DepOp = op
 			}
+			modInfo.DepOp = op
+		}
 
 			modInfoList.Mods = append(modInfoList.Mods, modInfo)
 		}
