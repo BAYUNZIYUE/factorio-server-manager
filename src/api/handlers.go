@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strconv"
 	"sync"
@@ -795,4 +796,82 @@ func UpdateServerSettings(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resp = fmt.Sprintf("Settings successfully saved")
+}
+
+
+// AvailableVersions fetches available Factorio versions from factorio.com API
+func AvailableVersions(w http.ResponseWriter, r *http.Request) {
+    w.Header().Set("Content-Type", "application/json;charset=UTF-8")
+    resp, err := http.Get("https://factorio.com/api/latest-releases")
+    if err != nil {
+        http.Error(w, "Failed to fetch versions", http.StatusInternalServerError)
+        return
+    }
+    defer resp.Body.Close()
+    body, _ := io.ReadAll(resp.Body)
+    w.Write(body)
+}
+
+// InstallFactorio downloads and installs a specific Factorio version
+func InstallFactorio(w http.ResponseWriter, r *http.Request) {
+    var resp interface{}
+    defer func() { WriteResponse(w, resp) }()
+
+    var data struct {
+        Version string `json:"version"`
+    }
+    body, _ := io.ReadAll(r.Body)
+    json.Unmarshal(body, &data)
+
+    if data.Version == "" {
+        data.Version = "stable"
+    }
+
+    config := bootstrap.GetConfig()
+    url := fmt.Sprintf("https://www.factorio.com/get-download/%s/headless/linux64", data.Version)
+    
+    log.Printf("Downloading Factorio %s from %s", data.Version, url)
+
+    out, err := os.Create("/tmp/factorio_install.tar.xz")
+    if err != nil {
+        w.WriteHeader(http.StatusInternalServerError)
+        resp = fmt.Sprintf("Error creating temp file: %s", err)
+        return
+    }
+    defer out.Close()
+
+    dlResp, err := http.Get(url)
+    if err != nil {
+        w.WriteHeader(http.StatusInternalServerError)
+        resp = fmt.Sprintf("Error downloading Factorio: %s", err)
+        return
+    }
+    defer dlResp.Body.Close()
+    io.Copy(out, dlResp.Body)
+
+    cmd := exec.Command("tar", "-xf", "/tmp/factorio_install.tar.xz", "-C", filepath.Dir(config.FactorioDir))
+    if err := cmd.Run(); err != nil {
+        w.WriteHeader(http.StatusInternalServerError)
+        resp = fmt.Sprintf("Error extracting Factorio: %s", err)
+        return
+    }
+
+    os.Remove("/tmp/factorio_install.tar.xz")
+    resp = fmt.Sprintf("Factorio %s installed successfully", data.Version)
+    log.Println(resp)
+}
+
+// RemoveFactorio removes the Factorio installation
+func RemoveFactorio(w http.ResponseWriter, r *http.Request) {
+    var resp interface{}
+    defer func() { WriteResponse(w, resp) }()
+
+    config := bootstrap.GetConfig()
+    if err := os.RemoveAll(config.FactorioDir); err != nil {
+        w.WriteHeader(http.StatusInternalServerError)
+        resp = fmt.Sprintf("Error removing Factorio: %s", err)
+        return
+    }
+    resp = "Factorio installation removed successfully"
+    log.Println(resp)
 }

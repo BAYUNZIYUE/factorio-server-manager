@@ -1,252 +1,302 @@
-import React, {useEffect, useRef, useState} from "react";
-import { useTranslation } from 'react-i18next';
+import React, {useEffect, useState} from "react";
 import savesResource from "../../../../api/resources/saves";
-import Select from "../../../components/Select";
 import Label from "../../../components/Label";
-import {useForm} from "react-hook-form";
 import Button from "../../../components/Button";
 import modsResource from "../../../../api/resources/mods";
-import modResource from "../../../../api/resources/mods";
 import FactorioLogin from "./AddMod/components/FactorioLogin";
-import Modal from "../../../components/Modal";
 import socket from "../../../../api/socket";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {useTranslation} from "react-i18next";
+import {faSpinner, faCheck, faTimes, faMinusCircle, faExternalLinkAlt} from "@fortawesome/free-solid-svg-icons";
 
-const LoadMods = ({refreshMods, isFactorioAuthenticated, setIsFactorioAuthenticated}) => {
+const DLC_MODS = new Set(['elevated-rails', 'quality', 'space-age']);
 
-    const { t } = useTranslation(['mods', 'common']);
+const STATUS_ICON = {
+    downloading:   <FontAwesomeIcon icon={faSpinner} spin={true} className="text-orange"/>,
+    downloaded:    <FontAwesomeIcon icon={faCheck} className="text-green"/>,
+    installed:     <FontAwesomeIcon icon={faCheck} className="text-green"/>,
+    wrong_version: <FontAwesomeIcon icon={faCheck} className="text-yellow-500"/>,
+    missing:       <FontAwesomeIcon icon={faTimes} className="text-red"/>,
+    builtin:       <FontAwesomeIcon icon={faMinusCircle} className="text-blue-400"/>,
+    not_found:     <FontAwesomeIcon icon={faTimes} className="text-red"/>,
+};
+
+const STATUS_TEXT = {
+    downloading:   "Downloading...",
+    downloaded:    "Downloaded",
+    installed:     "Installed",
+    wrong_version: "Wrong version",
+    missing:       "Missing",
+    builtin:       "Built-in / DLC",
+    not_found:     "Not found on portal",
+};
+
+const LoadMods = ({refreshMods}) => {
+    const {t} = useTranslation();
     const [saves, setSaves] = useState([]);
-    const {register, reset, handleSubmit} = useForm();
+    const [selectedSave, setSelectedSave] = useState("");
     const [isLoading, setIsLoading] = useState(false);
+    const [isSyncing, setIsSyncing] = useState(false);
     const [isDisabled, setIsDisabled] = useState(true);
-    const [loadModsData, setLoadModsData] = useState(undefined);
-    const [installProgress, setInstallProgress] = useState({current: 0, total: 0});
-    const [showProgress, setShowProgress] = useState(false);
-    const progressTimer = useRef(null);
-    const [activeCount, setActiveCount] = useState(0);
-    const [completedNames, setCompletedNames] = useState([]);
-    const [workerStates, setWorkerStates] = useState({});
-    const [modList, setModList] = useState([]);
-    const [selectedMods, setSelectedMods] = useState(new Set());
-    const [showModList, setShowModList] = useState(false);
+    const [isFactorioAuthenticated, setIsFactorioAuthenticated] = useState(false);
+    const [modRows, setModRows] = useState([]);
+    const [checkedMods, setCheckedMods] = useState({});
+    const [syncError, setSyncError] = useState(null);
+    const [currentMod, setCurrentMod] = useState(null);
+    const [warning, setWarning] = useState(null);
 
     useEffect(() => {
-        localStorage.removeItem('mod_install_pending');
-        localStorage.removeItem('mod_install_done');
-        setShowProgress(false);
-        setWorkerStates({});
-        setActiveCount(0);
-
         (async () => {
-            const s = await savesResource.list()
+            setIsFactorioAuthenticated(await modsResource.portal.status());
+            const s = await savesResource.list();
             setSaves(s);
             if (s.length > 0) {
                 setIsDisabled(false);
+                setSelectedSave(s[0].name);
             }
-            reset();
         })();
+    }, []);
 
-        const handleProgress = (msg) => {
-            try {
-                const data = JSON.parse(typeof msg === 'string' ? msg : JSON.stringify(msg));
-                if (data.type === 'start') {
-                    setInstallProgress({current: 0, total: data.total});
-                    setShowProgress(true);
-                    setActiveCount(0);
-                    setCompletedNames([]);
-                    clearTimeout(progressTimer.current);
-                } else if (data.type === 'progress') {
-                    setInstallProgress({current: data.current, total: data.total});
-                    setActiveCount(data.active || 0);
-                    clearTimeout(progressTimer.current);
-                    progressTimer.current = setTimeout(() => {
-                        setShowProgress(false);
-                        setWorkerStates({});
-                        setActiveCount(0);
-                    }, 60 * 1000);
-                } else if (data.type === 'worker') {
-                    setWorkerStates(prev => ({
-                        ...prev,
-                        [data.worker]: {
-                            name: data.name,
-                            state: data.state,
-                            size: data.size || 0,
-                            pct: data.pct || 0
-                        }
-                    }));
-                } else if (data.type === 'complete') {
-                    setShowProgress(false);
-                    setActiveCount(0);
-                    setWorkerStates({});
-                    clearTimeout(progressTimer.current);
+    useEffect(() => {
+        const handler = (message) => {
+            const data = JSON.parse(message);
+            if (data.status === "progress") {
+                setCurrentMod(data.mod);
+                setModRows(rows => rows.map(r =>
+                    r.name === data.mod ? {...r, status: "downloading"} : r
+                ));
+            } else if (data.status === "done") {
+                setIsSyncing(false);
+                setCurrentMod(null);
+                setWarning(data.warning || null);
+                if (data.mods) {
+                    setModRows(data.mods);
+                    setCheckedMods({});
                 }
-            } catch (e) {}
+                refreshMods();
+            } else if (data.status === "error") {
+                setIsSyncing(false);
+                setCurrentMod(null);
+                setSyncError(data.message);
+            }
         };
-        socket.on('mod_install', handleProgress);
-        socket.emit('mod install subscribe');
 
+        socket.on('mods_sync', handler);
+        socket.emit('mods sync subscribe');
         return () => {
-            socket.off('mod_install', handleProgress);
-            clearTimeout(progressTimer.current);
+            socket.off('mods_sync', handler);
+            socket.emit('mods sync unsubscribe');
         };
     }, []);
 
-    const loadModsRequested = async data => {
+    const onReadSave = async () => {
+        if (!selectedSave) return;
         setIsLoading(true);
-        const result = await savesResource.mods(data.save);
-        const mods = result?.mods || [];
-        
-        if (mods.length === 0) {
-            window.flash(t('noModsFound', { ns: 'mods' }), "green");
-            setIsLoading(false);
-            return;
-        }
-
-        setModList(mods.filter(m => m.name !== 'base'));
-        setSelectedMods(new Set(mods.filter(m => m.name !== 'base').map(m => m.name)));
-        setLoadModsData(data);
-        setShowModList(true);
-        setIsLoading(false);
-    }
-
-    const toggleMod = (name) => {
-        const next = new Set(selectedMods);
-        if (next.has(name)) {
-            next.delete(name);
-        } else {
-            next.add(name);
-        }
-        setSelectedMods(next);
-    }
-
-    const selectAll = () => {
-        setSelectedMods(new Set(modList.map(m => m.name)));
-    }
-
-    const deselectAll = () => {
-        setSelectedMods(new Set());
-    }
-
-    const loadMods = async () => {
-        const data = loadModsData;
-        setShowModList(false);
-        setLoadModsData(undefined);
-        setIsLoading(true);
+        setModRows([]);
+        setCheckedMods({});
+        setSyncError(null);
+        setWarning(null);
 
         try {
-            await modResource.deleteAll();
-            const toInstall = modList.filter(m => selectedMods.has(m.name));
-            
-            if (toInstall.length === 0) {
-                window.flash(t('noModsSelected', { ns: 'mods' }), "gray-light");
-                return;
-            }
-
-            await modResource.portal.installMultiple(toInstall);
-            refreshMods();
-            window.flash(t('modsLoaded').replace('{save}', data.save), "green");
-        } catch (e) {
-            window.flash(t('errorOccurred', { ns: 'common' }), "red");
+            const mods = await modsResource.getFromSave(selectedSave);
+            setModRows(mods || []);
+            // По умолчанию отмечаем missing и wrong_version
+            const checked = {};
+            (mods || []).forEach(m => {
+                if (m.status === 'missing' || m.status === 'wrong_version') {
+                    checked[m.name] = true;
+                }
+            });
+            setCheckedMods(checked);
+        } catch(e) {
+            setSyncError("Failed to read save: " + e.message);
         } finally {
             setIsLoading(false);
-            setShowProgress(false);
         }
+    };
+
+    const onSync = async () => {
+        const toSync = modRows
+            .filter(m => checkedMods[m.name])
+            .map(m => m.name);
+        if (toSync.length === 0) return;
+
+        setIsSyncing(true);
+        setSyncError(null);
+        try {
+            const selectedModNames = Object.keys(checkedMods).filter(k => checkedMods[k]);
+            await modsResource.syncFromSave(selectedSave, selectedModNames);
+        } catch(e) {
+            setIsSyncing(false);
+            setSyncError("Failed to start sync: " + e.message);
+        }
+    };
+
+    const toggleCheck = (name) => {
+        setCheckedMods(prev => ({...prev, [name]: !prev[name]}));
+    };
+
+    const selectAll = () => {
+        const checked = {};
+        modRows.forEach(m => {
+            if (m.status !== 'builtin' && m.status !== 'installed') {
+                checked[m.name] = true;
+            }
+        });
+        setCheckedMods(checked);
+    };
+
+    const clearAll = () => setCheckedMods({});
+
+    const checkedCount = Object.values(checkedMods).filter(Boolean).length;
+
+    if (!isFactorioAuthenticated) {
+        return <FactorioLogin setIsFactorioAuthenticated={setIsFactorioAuthenticated}/>;
     }
 
-    return isFactorioAuthenticated
-        ? <form onSubmit={handleSubmit(loadModsRequested)}>
-            <Label text={t('save', { ns: 'common' })} htmlFor="save"/>
-            <Select
-                register={register('save')}
-                className="mb-4"
+    return (
+        <div>
+            {/* Выбор сейва */}
+            <Label text="Save" htmlFor="save"/>
+            <select
+                className="shadow appearance-none border w-full py-2 px-3 text-black mb-4"
                 disabled={isDisabled}
-                options={saves?.map(save => new Object({
-                    name: save.name,
-                    value: save.name
-                }))}
-            />
-            <div className="flex space-x-2">
-                <Button isSubmit={true} isDisabled={isDisabled || isLoading}>{t('loadMods')}</Button>
-                {showProgress && (
-                    <Button type="danger" onClick={() => window.location.reload()}>{t('cancel', { ns: 'common' })}</Button>
-                )}
-            </div>
-            {showProgress && (
-                <div className="mt-4">
-                    <div className="flex justify-between text-sm text-gray-light mb-1">
-                        <span>{t('installingMods', { ns: 'mods' })} ({activeCount} workers)</span>
-                        <span>{installProgress.current}/{installProgress.total}</span>
-                    </div>
-                    <div className="w-full bg-gray-dark rounded h-2 mb-3">
-                        <div
-                            className="bg-green h-2 rounded transition-all duration-300"
-                            style={{width: `${installProgress.total > 0 ? (installProgress.current / installProgress.total * 100) : 0}%`}}
-                        />
-                    </div>
-                    {[0,1,2,3,4].map(w => {
-                        const ws = workerStates[w];
-                        if (!ws) return null;
-                        const icon = ws.state === 'done' ? '✓' : ws.state === 'error' ? '✗' : '↓';
-                        const color = ws.state === 'done' ? 'text-green' : ws.state === 'error' ? 'text-red' : 'text-orange';
-                        const sizeText = ws.size > 0 ? ' (' + (ws.size / 1024).toFixed(0) + 'KB)' : ' (...KB)';
-                        const pct = ws.pct || 0;
-                        const showBar = ws.state === 'downloading' || ws.state === 'done' || ws.state === 'error';
-                        return (
-                            <div key={w} className="mb-1">
-                                <div className="flex items-center text-xs">
-                                    <span className={color + ' w-4'}>{icon}</span>
-                                    <span className="text-gray-light truncate flex-1">{ws.name}{sizeText}</span>
-                                    {ws.state === 'downloading' ? <span className="text-gray-light ml-1">{pct}%</span> : null}
-                                </div>
-                                <div className="w-full bg-gray-dark rounded h-1 ml-4" style={{opacity: showBar ? 1 : 0.15}}>
-                                    <div className="bg-orange h-1 rounded" style={{width: pct + '%'}}/>
-                                </div>
-                            </div>
-                        );
-                    })}
+                value={selectedSave}
+                onChange={e => { setSelectedSave(e.target.value); setModRows([]); setCheckedMods({}); }}
+            >
+                {saves?.map(save => (
+                    <option key={save.name} value={save.name}>{save.name}</option>
+                ))}
+            </select>
+
+            <Button
+                isDisabled={isDisabled || isLoading}
+                isLoading={isLoading}
+                onClick={onReadSave}
+                className="mr-2"
+            >
+                Read Mods from Save
+            </Button>
+
+            {/* Ошибка */}
+            {syncError && (
+                <div className="mt-4 p-3 bg-red-100 text-red font-bold">
+                    ⚠ {syncError}
                 </div>
             )}
-            <Modal
-                title={t('loadModsTitle')}
-                isOpen={showModList}
-                content={
-                    <div>
-                        <p className="mb-3 text-sm">{t('selectModsToInstall', { ns: 'mods' })}</p>
-                        <div className="flex space-x-2 mb-3">
-                            <Button size="sm" onClick={selectAll}>{t('selectAll', { ns: 'mods' })}</Button>
-                            <Button size="sm" onClick={deselectAll}>{t('deselectAll', { ns: 'mods' })}</Button>
-                        </div>
-                        <div className="max-h-96 overflow-y-auto">
-                            <table className="w-full">
-                                <tbody>
-                                    {modList.map(mod => (
-                                        <tr key={mod.name} className="border-b border-gray-light cursor-pointer hover:bg-gray-dark"
-                                            onClick={() => toggleMod(mod.name)}>
-                                            <td className="py-1 pr-2">
-                                                <input type="checkbox" checked={selectedMods.has(mod.name)} readOnly
-                                                    className="cursor-pointer" />
-                                            </td>
-                                            <td className="py-1 text-dirty-white">{mod.name}</td>
-                                            <td className="py-1 text-gray-light text-sm text-right">{mod.version}</td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                }
-                actions={
-                    <div className="flex space-x-2">
-                        <Button size="sm" type="danger" onClick={() => { setShowModList(false); setLoadModsData(undefined); }}>
-                            {t('cancel', { ns: 'common' })}
-                        </Button>
-                        <Button size="sm" type="success" onClick={loadMods}>
-                            {t('installSelected', { ns: 'mods' }).replace('{count}', selectedMods.size)}
+
+            {/* Предупреждение */}
+            {warning && (
+                <div className="mt-4 p-3 bg-yellow-100 text-yellow-800">
+                    ⚠ {warning}
+                </div>
+            )}
+
+            {/* Таблица модов */}
+            {modRows.length > 0 && (
+                <div className="mt-4">
+                    {/* Кнопки выбора */}
+                    <div className="flex mb-2 gap-2">
+                        <Button size="sm" onClick={selectAll}>Select missing</Button>
+                        <Button size="sm" onClick={clearAll}>Clear selection</Button>
+                        <Button
+                            size="sm"
+                            isDisabled={checkedCount === 0 || isSyncing}
+                            isLoading={isSyncing}
+                            onClick={onSync}
+                        >
+                            Sync selected ({checkedCount})
                         </Button>
                     </div>
-                }
-            />
-        </form>
-        : <FactorioLogin setIsFactorioAuthenticated={setIsFactorioAuthenticated}/>
-}
+
+                    {/* Прогресс */}
+                    {currentMod && (
+                        <div className="mb-2 text-sm text-orange">
+                            <FontAwesomeIcon icon={faSpinner} spin={true} className="mr-2"/>
+                            Downloading: {currentMod}
+                        </div>
+                    )}
+
+                    <table className="w-full text-sm">
+                        <thead>
+                            <tr className="border-b font-bold">
+                                <td className="py-1 pr-2 w-6"></td>
+                                <td className="py-1 pr-4">Mod</td>
+                                <td className="py-1 pr-4">Required</td>
+                                <td className="py-1 pr-4">Installed</td>
+                                <td className="py-1">Status</td>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {/* DLC группа */}
+                            {modRows.some(m => DLC_MODS.has(m.name)) && (() => {
+                                const dlcMods = modRows.filter(m => DLC_MODS.has(m.name));
+                                const dlcKey = 'dlc-group';
+                                const allInstalled = dlcMods.every(m => m.status === 'installed' || m.status === 'builtin');
+                                return (
+                                    <tr key={dlcKey} className="border-b hover:bg-gray-100 cursor-pointer bg-blue-50"
+                                        onClick={() => !allInstalled && toggleCheck(dlcKey)}>
+                                        <td className="py-1 pr-2"></td>
+                                        <td className="py-1 pr-4 italic text-blue-600">
+                                            Space Age DLC
+                                            <span className="ml-2 text-xs text-gray-500">
+                                                (elevated-rails, quality, space-age)
+                                            </span>
+                                        </td>
+                                        <td className="py-1 pr-4">{dlcMods[0]?.version_required}</td>
+                                        <td className="py-1 pr-4">{dlcMods[0]?.version_installed || '—'}</td>
+                                        <td className="py-1">
+                                            <span className="mr-2">{STATUS_ICON[allInstalled ? 'installed' : 'builtin']}</span>
+                                            {allInstalled ? 'Installed' : 'Built-in / DLC'}
+                                        </td>
+                                    </tr>
+                                );
+                            })()}
+                            {/* Остальные моды */}
+                            {modRows.filter(m => !DLC_MODS.has(m.name)).map((mod, i) => (
+                                <tr
+                                    key={i}
+                                    className="border-b hover:bg-gray-100 cursor-pointer"
+                                    onClick={() => mod.status !== 'builtin' && toggleCheck(mod.name)}
+                                >
+                                    <td className="py-1 pr-2">
+                                        {mod.status !== 'builtin' && mod.status !== 'installed' && (
+                                            <input
+                                                type="checkbox"
+                                                checked={!!checkedMods[mod.name]}
+                                                onChange={() => toggleCheck(mod.name)}
+                                                onClick={e => e.stopPropagation()}
+                                            />
+                                        )}
+                                    </td>
+                                    <td className="py-1 pr-4">
+                                        {mod.name}
+                                        {mod.status !== 'builtin' && (
+                                            <a
+                                                href={mod.portal_url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="ml-2 text-blue hover:text-blue-light"
+                                                onClick={e => e.stopPropagation()}
+                                            >
+                                                <FontAwesomeIcon icon={faExternalLinkAlt} size="xs"/>
+                                            </a>
+                                        )}
+                                    </td>
+                                    <td className="py-1 pr-4">{mod.version_required}</td>
+                                    <td className="py-1 pr-4">{mod.version_installed || '—'}</td>
+                                    <td className="py-1">
+                                        <span className="mr-2">{STATUS_ICON[mod.status]}</span>
+                                        {STATUS_TEXT[mod.status] || mod.status}
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            )}
+        </div>
+    );
+};
 
 export default LoadMods;

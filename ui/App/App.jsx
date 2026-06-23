@@ -17,6 +17,7 @@ import Console from "./views/Console";
 import Help from "./views/Help";
 import ServerVersion from "./views/ServerVersion";
 import socket from "../api/socket";
+import "./i18n";
 import {Flash} from "./components/Flash";
 
 

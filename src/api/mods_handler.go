@@ -331,7 +331,6 @@ func LoadModsFromSaveHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json;charset=UTF-8")
 
-	//Get Data out of the request
 	var saveFileStruct struct {
 		Name string `json:"saveFile"`
 	}
@@ -366,3 +365,75 @@ func LoadModsFromSaveHandler(w http.ResponseWriter, r *http.Request) {
 	resp = header
 }
 
+// SyncModsFromSaveHandler запускает синк модов из сейва в горутине.
+// Прогресс идёт через WebSocket room "mods_sync".
+// Сервер не стартует пока идёт синк.
+func SyncModsFromSaveHandler(w http.ResponseWriter, r *http.Request) {
+	var resp interface{}
+	defer func() {
+		WriteResponse(w, resp)
+	}()
+	w.Header().Set("Content-Type", "application/json;charset=UTF-8")
+
+	var syncRequest struct {
+		Name     string   `json:"saveFile"`
+		ModNames []string `json:"modNames"`
+	}
+
+	var err error
+	resp, err = ReadFromRequestBody(w, r, &syncRequest)
+	if err != nil {
+		return
+	}
+
+	if factorio.IsModsSyncing() {
+		w.WriteHeader(http.StatusConflict)
+		resp = "mod sync already in progress"
+		return
+	}
+
+	config := bootstrap.GetConfig()
+	savePath := filepath.Join(config.FactorioSavesDir, syncRequest.Name)
+
+	if _, err := os.Stat(savePath); os.IsNotExist(err) {
+		w.WriteHeader(http.StatusBadRequest)
+		resp = fmt.Sprintf("save file not found: %s", syncRequest.Name)
+		return
+	}
+
+	go factorio.SyncModsFromSave(savePath, syncRequest.ModNames)
+	resp = map[string]string{"status": "started"}
+}
+
+func GetModsFromSaveHandler(w http.ResponseWriter, r *http.Request) {
+	var resp interface{}
+	defer func() { WriteResponse(w, resp) }()
+	w.Header().Set("Content-Type", "application/json;charset=UTF-8")
+
+	var saveFileStruct struct {
+		Name string `json:"saveFile"`
+	}
+	var err error
+	resp, err = ReadFromRequestBody(w, r, &saveFileStruct)
+	if err != nil {
+		return
+	}
+
+	config := bootstrap.GetConfig()
+	savePath := filepath.Join(config.FactorioSavesDir, saveFileStruct.Name)
+
+	if _, err := os.Stat(savePath); os.IsNotExist(err) {
+		w.WriteHeader(http.StatusBadRequest)
+		resp = fmt.Sprintf("save file not found: %s", saveFileStruct.Name)
+		return
+	}
+
+	mods, err := factorio.GetModsFromSave(savePath)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		resp = fmt.Sprintf("error reading mods from save: %s", err)
+		return
+	}
+
+	resp = mods
+}

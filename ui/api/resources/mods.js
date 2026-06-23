@@ -32,7 +32,23 @@ const mods = {
         const response = await client.post('/api/mods/delete/all');
         return response.data;
     },
+    getFromSave: async saveFile => {
+        const response = await client.post('/api/saves/mods/list', {saveFile});
+        return response.data;
+    },
+    syncFromSave: async (saveFile, modNames) => {
+        const response = await client.post('/api/saves/mods/sync', {saveFile, modNames});
+        return response.data;
+    },
     downloadAllURL: '/api/mods/download',
+    getFromSave: async saveFile => {
+        const response = await client.post('/api/saves/mods', {saveFile});
+        return response.data;
+    },
+    syncFromSave: async (saveFile, modNames) => {
+        const response = await client.post('/api/mods/sync', {saveFile, modNames});
+        return response.data;
+    },
     portal: {
         login: async (username, token) => {
             const response = await client.post('/api/mods/portal/login', {

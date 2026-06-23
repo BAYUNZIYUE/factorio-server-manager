@@ -1,27 +1,29 @@
 import React, {useEffect, useState} from "react";
-import { useTranslation } from 'react-i18next';
-import i18n from '../../i18n';
 import {NavLink, Outlet} from "react-router-dom";
 import Button from "./Button";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faBars} from "@fortawesome/free-solid-svg-icons";
 import {Flash} from "./Flash";
+import ChangeLangDialog from "./ChangeLangDialog";
+import { useTranslation } from "react-i18next";
 
 const Layout = ({handleLogout, serverStatus}) => {
 
-    const { t } = useTranslation(['layout', 'common', 'controls']);
+    const { t, i18n } = useTranslation();
+
     const [isNavCollapsed, setIsNavCollapsed] = useState(true);
+    const [isChangingLang, setIsChangingLang] = useState(false);
 
     const Status = ({info}) => {
 
-        let text = t('UNKNOWN', { ns: 'controls' });
+        let text = t("controls.unknown");
         let color = 'gray-light';
 
         if (info && info.running) {
-            text = t('RUNNING', { ns: 'controls' });
+            text = t("controls.running");
             color = 'green';
         } else if (info && !info.running) {
-            text = t('STOPPED', { ns: 'controls' });
+            text = t("controls.stopped");
             color = 'red';
         }
 
@@ -51,7 +53,7 @@ const Layout = ({handleLogout, serverStatus}) => {
             <div className="w-full md:w-88 md:fixed md:top-0 md:left-0 bg-gray-dark md:h-screen overflow-y-auto">
                 <div className="py-4 px-2 accentuated">
                     <div className="mx-4 justify-between flex text-center">
-                        <span className="text-dirty-white text-xl">{t('appTitle', { ns: 'layout' })}</span>
+                        <span className="text-dirty-white text-xl">{t("main_title")}</span>
                         <button
                             className="md:hidden cursor-pointer text-white hover:text-dirty-white"
                             onClick={() => setIsNavCollapsed(!isNavCollapsed)}
@@ -62,49 +64,39 @@ const Layout = ({handleLogout, serverStatus}) => {
                 </div>
                 <div className={isNavCollapsed ? "hidden md:block" : "block"}>
                     <div className="py-4 px-2 accentuated">
-                        <h1 className="text-dirty-white text-lg mb-2 mx-4">{t('serverStatus', { ns: 'layout' })}</h1>
+                        <h1 className="text-dirty-white text-lg mb-2 mx-4">{t("server_status")}</h1>
                         <div className="mx-4 mb-4 text-center">
                             <Status info={serverStatus}/>
                         </div>
                     </div>
                     <div className="py-4 px-2 accentuated">
-                        <h1 className="text-dirty-white text-lg mb-2 mx-4">{t('serverManagement', { ns: 'layout' })}</h1>
+                        <h1 className="text-dirty-white text-lg mb-2 mx-4">{t("server_management")}</h1>
                         <div className="text-white text-center rounded-sm bg-black shadow-inner mx-4 p-1">
-                            <Link to="/">{t('linkControls', { ns: 'layout' })}</Link>
-                            <Link to="/saves">{t('linkSaves', { ns: 'layout' })}</Link>
-                            <Link to="/mods">{t('linkMods', { ns: 'layout' })}</Link>
-                            <Link to="/server-version">{t('linkServerVersion', { ns: 'layout' })}</Link>
-                            <Link to="/server-settings">{t('linkServerSettings', { ns: 'layout' })}</Link>
-                            <Link to="/game-settings">{t('linkGameSettings', { ns: 'layout' })}</Link>
-                            <Link to="/console">{t('linkConsole', { ns: 'layout' })}</Link>
-                            <Link to="/logs" last={true}>{t('linkLogs', { ns: 'layout' })}</Link>
+                            <Link to="/">{t("controls.title")}</Link>
+                            <Link to="/saves">{t("saves.title")}</Link>
+                            <Link to="/mods">{t("mods.title")}</Link>
+                            <Link to="/server-settings">{t("server_settings.title")}</Link>
+                            <Link to="/game-settings">{t("game_settings.title")}</Link>
+                            <Link to="/console">{t("console.title")}</Link>
+                            <Link to="/logs" last={true}>{t("logs.title")}</Link>
                         </div>
                     </div>
                     <div className="py-4 px-2 accentuated">
-                        <h1 className="text-dirty-white text-lg mb-2 mx-4">{t('fsmAdministration', { ns: 'layout' })}</h1>
+                        <h1 className="text-dirty-white text-lg mb-2 mx-4">{t("FSM_administration")}</h1>
                         <div className="text-white text-center rounded-sm bg-black shadow-inner mx-4 p-1">
-                            <Link to="/user-management">{t('linkUsers', { ns: 'layout' })}</Link>
-                            <Link to="/help" last={true}>{t('linkHelp', { ns: 'layout' })}</Link>
-                        </div>
-                        <div className="mt-4 mx-4">
-                            <label className="text-dirty-white text-sm block mb-1">{t('languageLabel', { ns: 'layout' })}</label>
-                            <select
-                                className="w-full bg-gray-dark text-white border border-gray-light rounded px-2 py-1 text-sm"
-                                value={i18n.language}
-                                onChange={(e) => { i18n.changeLanguage(e.target.value); }}
-                            >
-                                <option value="en">English</option>
-                                <option value="zh-CN">简体中文</option>
-                            </select>
+                            <Link to="/user-management">{t("users.title")}</Link>
+                            <Button className="w-full mb-1" onClick={() => setIsChangingLang(true)}>{t("lang")}</Button>
+                            <Link to="/help" last={true}>{t("help.title")}</Link>
+                            <ChangeLangDialog
+                                isOpen={isChangingLang}
+                                close={() => setIsChangingLang(false)}
+                                onSuccess={() => console.log("new lang apply")}
+                            />
                         </div>
                     </div>
                     <div className="py-4 px-2 accentuated">
                         <div className="text-white text-center rounded-sm bg-black shadow-inner mx-4 p-1">
-                            <button className="bg-gray-light hover:bg-orange hover:glow-orange py-2 px-4 w-full block accentuated text-black font-bold mb-1"
-                                    onClick={() => window.dispatchEvent(new CustomEvent('fsm_refresh_mods'))}>
-                                {t('refreshMods', { ns: 'layout' })}
-                            </button>
-                            <Button type="danger" className="w-full" onClick={handleLogout}>{t('logout', { ns: 'common' })}</Button>
+                            <Button type="danger" className="w-full" onClick={handleLogout}>{t("logout")}</Button>
                         </div>
                     </div>
                     <div className="accentuated-t accentuated-x md:block hidden"/>

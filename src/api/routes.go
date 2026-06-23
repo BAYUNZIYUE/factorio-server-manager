@@ -176,6 +176,18 @@ var apiRoutes = Routes{
 		LoadModsFromSaveHandler,
 		true,
 	}, {
+		"GetModsFromSave",
+		"POST",
+		"/saves/mods/list",
+		GetModsFromSaveHandler,
+		true,
+	}, {
+		"SyncModsFromSave",
+		"POST",
+		"/saves/mods/sync",
+		SyncModsFromSaveHandler,
+		true,
+	}, {
 		"LogTail",
 		"GET",
 		"/log/tail",
@@ -217,6 +229,24 @@ var apiRoutes = Routes{
 		"/server/facVersion",
 		FactorioVersion,
 		false,
+	}, {
+		"AvailableVersions",
+		"GET",
+		"/server/availableVersions",
+		AvailableVersions,
+		false,
+	}, {
+		"InstallFactorio",
+		"POST",
+		"/server/install",
+		InstallFactorio,
+		true,
+	}, {
+		"RemoveFactorio",
+		"DELETE",
+		"/server/install",
+		RemoveFactorio,
+		true,
 	}, {
 		"LogoutUser",
 		"GET",

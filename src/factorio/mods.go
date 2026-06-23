@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -23,28 +24,12 @@ type LoginSuccessResponse struct {
 }
 
 func DeleteAllMods() error {
-	var err error
 	config := bootstrap.GetConfig()
-	modsDirInfo, err := os.Stat(config.FactorioModsDir)
+	err := clearModsDir(config.FactorioModsDir)
 	if err != nil {
-		log.Printf("error getting stats of FactorioModsDir: %s", err)
+		log.Printf("Error deleting all mods: %s", err)
 		return err
 	}
-
-	modsDirPerm := modsDirInfo.Mode().Perm()
-
-	err = os.RemoveAll(config.FactorioModsDir)
-	if err != nil {
-		log.Printf("removing FactorioModsDir failed: %s", err)
-		return err
-	}
-
-	err = os.Mkdir(config.FactorioModsDir, modsDirPerm)
-	if err != nil {
-		log.Printf("error recreating modPackDir: %s", err)
-		return err
-	}
-
 	return nil
 }
 
@@ -186,4 +171,19 @@ func ModStartUp() {
 			os.RemoveAll(oldModpackDir)
 		}
 	}
+}
+
+// clearModsDir удаляет содержимое директории, но не саму директорию.
+// Используется вместо os.RemoveAll когда директория примонтирована как Docker volume.
+func clearModsDir(dir string) error {
+	entries, err := ioutil.ReadDir(dir)
+	if err != nil {
+		return fmt.Errorf("clearModsDir ReadDir: %v", err)
+	}
+	for _, entry := range entries {
+		if err := os.RemoveAll(filepath.Join(dir, entry.Name())); err != nil {
+			return fmt.Errorf("clearModsDir remove %s: %v", entry.Name(), err)
+		}
+	}
+	return nil
 }
