@@ -8,12 +8,14 @@ import Checkbox from "../components/Checkbox";
 import InputPassword from "../components/InputPassword";
 import Button from "../components/Button";
 import {useForm} from "react-hook-form";
+import settingDescriptions from "./settingDescriptions";
 
 const ServerSettings = () => {
 
     const { t } = useTranslation('serverSettings');
     const [settings, setSettings] = useState();
     const [numberInputs, setNumberInputs] = useState([]);
+    const [showTranslation, setShowTranslation] = useState(false);
 
     const {register, handleSubmit, formState: {errors}, control} = useForm();
 
@@ -145,6 +147,11 @@ const ServerSettings = () => {
                             return (
                                 <div className="mb-4" key={`wrapper-${key}`}>
                                     {formTypeField(key, value, label)}
+                                    {showTranslation && settingDescriptions[key] && (
+                                        <p className="text-sm text-orange mt-1">
+                                            {settingDescriptions[key].zh + (settingDescriptions[key].en ? ' (' + settingDescriptions[key].en + ')' : '')}
+                                        </p>
+                                    )}
                                     <p className="text-sm italic">{comment}</p>
                                 </div>
                             )
@@ -152,7 +159,12 @@ const ServerSettings = () => {
                     </>
                 }
                 actions={
-                    <Button isSubmit={true} type="success">{t('saveSettings')}</Button>
+                    <div className="flex space-x-2">
+                        <Button isSubmit={true} type="success">{t('saveSettings')}</Button>
+                        <Button type="default" onClick={() => setShowTranslation(!showTranslation)}>
+                            {showTranslation ? t('hideTranslation') : t('showTranslation')}
+                        </Button>
+                    </div>
                 }
             />
         </form>

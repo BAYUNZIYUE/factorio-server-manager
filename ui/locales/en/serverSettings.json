@@ -26,5 +26,7 @@
   "startingAreaSize": "Starting Area Size",
   "peacefulMode": "Peaceful Mode",
   "researchQueue": "Research Queue",
-  "technologyPriceMultiplier": "Technology Price Multiplier"
+  "technologyPriceMultiplier": "Technology Price Multiplier",
+  "showTranslation": "Show Description",
+  "hideTranslation": "Hide Description"
 }

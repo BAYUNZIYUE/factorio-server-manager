@@ -26,5 +26,7 @@
   "startingAreaSize": "起始区域大小",
   "peacefulMode": "和平模式",
   "researchQueue": "研究队列",
-  "technologyPriceMultiplier": "科技价格倍率"
+  "technologyPriceMultiplier": "科技价格倍率",
+  "showTranslation": "显示说明",
+  "hideTranslation": "隐藏说明"
 }
