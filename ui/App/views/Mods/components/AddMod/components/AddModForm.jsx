@@ -107,9 +107,7 @@ const AddModForm = ({setIsFactorioAuthenticated, fuse, refetchInstalledMods, loa
                 { typeof fuse !== "undefined"
                     ? <Input register={register('mod',{required: true})} hasAutoComplete={false} onKeyDown={handleKeyDown}/>
                     : <div className="border border-gray-medium w-full py-2 px-3 text-white">
-                        <FontAwesomeIcon icon={faSpinner} spin={true}/>
-                        {loading ? ' ' + t('loadingModList') : ' ' + t('downloadComplete', { ns: 'common' }) + '...'}
-                        <LinkModPortal/>
+                        <FontAwesomeIcon icon={faSpinner} spin={true}/> {t('loadingModList')} <LinkModPortal/>
                     </div>
                 }
                 {suggestedMods.length > 0 &&
