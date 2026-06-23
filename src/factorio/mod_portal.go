@@ -110,13 +110,8 @@ func ModPortalModDetails(modId string) (ModPortalStruct, error, int) {
 
 	server := GetFactorioServer()
 
-	installedBaseVersion := Version{}
-	_ = installedBaseVersion.UnmarshalText([]byte(server.BaseModVersion))
-	requiredVersion := NilVersion
-
 	for key, release := range mod.Releases {
-		requiredVersion = release.InfoJSON.FactorioVersion
-		release.Compatibility = installedBaseVersion.Compatible(requiredVersion, ">=")
+		release.Compatibility = server.Version.GEC(release.InfoJSON.FactorioVersion)
 		mod.Releases[key] = release
 	}
 
