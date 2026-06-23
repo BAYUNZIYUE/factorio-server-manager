@@ -14,6 +14,8 @@ import CreateModPack from "./components/CreateModPack";
 import ModPack from "./components/ModPack";
 import ModList from "./components/ModList";
 import ConfirmDialog from "../../components/ConfirmDialog";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 
 const Mods = ({serverStatus}) => {
 
@@ -139,19 +141,31 @@ const Mods = ({serverStatus}) => {
                 />
                 :
                 !authChecked ? null :
-                <TabControl>
-                    <Tab title={t('installMod')}>
-                        <AddMod refetchInstalledMods={fetchInstalledMods} fuse={fuse} loading={portalLoading}
-                                isFactorioAuthenticated={isFactorioAuthenticated} setIsFactorioAuthenticated={setIsFactorioAuthenticated}/>
-                    </Tab>
-                    <Tab title={t('uploadMod')}>
-                        <UploadMod refetchInstalledMods={fetchInstalledMods}/>
-                    </Tab>
-                    <Tab title={t('loadModsFromSave')}>
-                        <LoadMods refreshMods={fetchInstalledMods}
-                                  isFactorioAuthenticated={isFactorioAuthenticated} setIsFactorioAuthenticated={setIsFactorioAuthenticated}/>
-                    </Tab>
-                </TabControl>
+                <div>
+                    {portalLoading &&
+                        <div className="mb-4 p-4 bg-gray-dark rounded-sm">
+                            <div className="flex items-center text-dirty-white">
+                                <FontAwesomeIcon icon={faSpinner} spin className="mr-2"/>
+                                {t('loadingModList')}
+                            </div>
+                        </div>
+                    }
+                    <div className={portalLoading ? 'opacity-50 pointer-events-none' : ''}>
+                        <TabControl>
+                            <Tab title={t('installMod')}>
+                                <AddMod refetchInstalledMods={fetchInstalledMods} fuse={fuse} loading={portalLoading}
+                                        isFactorioAuthenticated={isFactorioAuthenticated} setIsFactorioAuthenticated={setIsFactorioAuthenticated}/>
+                            </Tab>
+                            <Tab title={t('uploadMod')}>
+                                <UploadMod refetchInstalledMods={fetchInstalledMods}/>
+                            </Tab>
+                            <Tab title={t('loadModsFromSave')}>
+                                <LoadMods refreshMods={fetchInstalledMods}
+                                          isFactorioAuthenticated={isFactorioAuthenticated} setIsFactorioAuthenticated={setIsFactorioAuthenticated}/>
+                            </Tab>
+                        </TabControl>
+                    </div>
+                </div>
             }
             <Panel
                 title={t('mods')}
