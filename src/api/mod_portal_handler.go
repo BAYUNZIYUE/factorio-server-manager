@@ -48,6 +48,13 @@ func ModPortalModInfoHandler(w http.ResponseWriter, r *http.Request) {
 	resp, err, statusCode = factorio.ModPortalModDetails(modId)
 
 	if err != nil {
+		if statusCode == http.StatusNotFound {
+			w.WriteHeader(http.StatusNotFound)
+			resp = struct {
+				Message string `json:"message"`
+			}{"Mod not found on Factorio portal"}
+			return
+		}
 		resp = fmt.Sprintf("Error in getting mod details from mod portal: %s", err)
 		log.Println(resp)
 		w.WriteHeader(http.StatusInternalServerError)

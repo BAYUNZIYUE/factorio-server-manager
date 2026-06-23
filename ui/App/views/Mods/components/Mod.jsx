@@ -20,7 +20,8 @@ const Mod = ({mod, factorioVersion, toggleMod, deleteMod, updateMod, addUpdatabl
     useEffect(() => {
         if (!disabled) {
             (async () => {
-                const data = await modsResource.portal.info(mod.name)
+                try {
+                    const data = await modsResource.portal.info(mod.name)
 
                 //get newest COMPATIBLE release
                 let newestRelease;
@@ -59,6 +60,7 @@ const Mod = ({mod, factorioVersion, toggleMod, deleteMod, updateMod, addUpdatabl
                     setNewVersion(null);
                 }
 
+            } catch (e) {}
             })();
         }
     }, [mod]);
