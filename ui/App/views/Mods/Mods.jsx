@@ -29,6 +29,7 @@ const Mods = ({serverStatus}) => {
     const [updatableMods, setUpdatableMods] = useState([]);
     const [showDeleteAllConfirm, setShowDeleteAllConfirm] = useState(false);
     const [isFactorioAuthenticated, setIsFactorioAuthenticated] = useState(false);
+    const [authChecked, setAuthChecked] = useState(false);
 
     const addUpdatableMod = mod => {
         setUpdatableMods(mods => [...mods, mod])
@@ -65,8 +66,13 @@ const Mods = ({serverStatus}) => {
     }
 
     useEffect(() => {
-        modsResource.portal.status().then(setIsFactorioAuthenticated);
+        modsResource.portal.status().then(auth => {
+            setIsFactorioAuthenticated(auth);
+            setAuthChecked(true);
+        });
+    }, []);
 
+    useEffect(() => {
         server.factorioVersion()
             .then(data => {
                 setFactorioVersion(data.base_mod_version)
@@ -132,6 +138,7 @@ const Mods = ({serverStatus}) => {
                        }
                 />
                 :
+                !authChecked ? null :
                 <TabControl>
                     <Tab title={t('installMod')}>
                         <AddMod refetchInstalledMods={fetchInstalledMods} fuse={fuse} loading={portalLoading}
