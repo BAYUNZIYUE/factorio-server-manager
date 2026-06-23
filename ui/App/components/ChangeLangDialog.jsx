@@ -19,6 +19,7 @@ function ChangeLangDialog({isOpen, close, onSuccess}) {
                 <>
                     <Button className="w-full" onClick={() => changeLang("en")}>English</Button>
                     <Button className="w-full" onClick={() => changeLang("ru")}>Русский</Button>
+                    <Button className="w-full" onClick={() => changeLang("zh")}>简体中文</Button>
                     {/* Other languages */}
                 </>
             }

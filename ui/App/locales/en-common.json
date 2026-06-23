@@ -1,0 +1,17 @@
+{
+  "username": "Username",
+  "password": "Password",
+  "upload": "Upload",
+  "name": "Name",
+  "actions": "Actions",
+  "role": "Role",
+  "email": "Email",
+  "save": "Save",
+  "logout": "Logout",
+  "cancel": "Cancel",
+  "create": "Create",
+  "confirm": "Confirm",
+  "change": "Change",
+  "install": "Install",
+  "load": "Load"
+}
