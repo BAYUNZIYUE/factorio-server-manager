@@ -75,6 +75,7 @@ const Layout = ({handleLogout, serverStatus}) => {
                             <Link to="/">{t("controls.title")}</Link>
                             <Link to="/saves">{t("saves.title")}</Link>
                             <Link to="/mods">{t("mods.title")}</Link>
+                            <Link to="/server-version">{t("serverVersion.title")}</Link>
                             <Link to="/server-settings">{t("server_settings.title")}</Link>
                             <Link to="/game-settings">{t("game_settings.title")}</Link>
                             <Link to="/console">{t("console.title")}</Link>
