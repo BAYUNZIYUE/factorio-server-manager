@@ -8,11 +8,14 @@ import (
 )
 
 func TailLog() ([]string, error) {
+	config := bootstrap.GetConfig()
+	return TailLogFile(config.FactorioLog)
+}
+
+func TailLogFile(path string) ([]string, error) {
 	result := []string{}
 
-	config := bootstrap.GetConfig()
-
-	t, err := tail.TailFile(config.FactorioLog, tail.Config{Follow: false})
+	t, err := tail.TailFile(path, tail.Config{Follow: false})
 	if err != nil {
 		log.Printf("Error tailing log %s", err)
 		return result, err
