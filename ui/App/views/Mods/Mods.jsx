@@ -32,6 +32,7 @@ const Mods = ({serverStatus}) => {
     const [showDeleteAllConfirm, setShowDeleteAllConfirm] = useState(false);
     const [isFactorioAuthenticated, setIsFactorioAuthenticated] = useState(false);
     const [authChecked, setAuthChecked] = useState(false);
+    const [isSyncing, setIsSyncing] = useState(false);
 
     const addUpdatableMod = mod => {
         setUpdatableMods(mods => {
@@ -131,10 +132,11 @@ const Mods = ({serverStatus}) => {
     }
 
     let disabled = serverStatus.running
+    let isBusy = disabled || isDeletingAllMods || isUpdatingAllMods || isSyncing
 
     return (
         <div>
-            {disabled ?
+            {isBusy ?
                 <Panel className="mb-6"
                        content={
                             <div className="text-red font-bold text-xl">
@@ -165,7 +167,8 @@ const Mods = ({serverStatus}) => {
                             <Tab title={t('loadModsFromSave')}>
                                 <LoadMods refreshMods={fetchInstalledMods}
                                           isFactorioAuthenticated={isFactorioAuthenticated}
-                                          setIsFactorioAuthenticated={setIsFactorioAuthenticated} />
+                                          setIsFactorioAuthenticated={setIsFactorioAuthenticated}
+                                          setIsSyncing={setIsSyncing} />
                             </Tab>
                         </TabControl>
                     </div>
@@ -186,12 +189,12 @@ const Mods = ({serverStatus}) => {
                 }
                 actions={
                     <>
-                        {
-                            !disabled &&
+                         {
+                            !isBusy &&
                             <Button size="sm" className="mr-2" isLoading={isUpdatingAllMods}
                                     onClick={updateAllMods}>{t('updateAllMods')}</Button>
                         }
-                        {!disabled ? (
+                        {!isBusy ? (
                             <>
                                 <a className="bg-gray-light py-1 px-2 hover:glow-orange hover:bg-orange inline-block accentuated text-black font-bold"
                                    href={modsResource.downloadAllURL}>{t('downloadAllMods')}</a>

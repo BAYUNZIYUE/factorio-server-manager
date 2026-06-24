@@ -21,7 +21,7 @@ const STATUS_ICON = {
     not_found:     <FontAwesomeIcon icon={faTimes} className="text-red"/>,
 };
 
-const LoadMods = ({refreshMods, isFactorioAuthenticated, setIsFactorioAuthenticated}) => {
+const LoadMods = ({refreshMods, isFactorioAuthenticated, setIsFactorioAuthenticated, setIsSyncing}) => {
     const {t} = useTranslation('mods');
     const [saves, setSaves] = useState([]);
     const [selectedSave, setSelectedSave] = useState("");
@@ -58,6 +58,7 @@ const LoadMods = ({refreshMods, isFactorioAuthenticated, setIsFactorioAuthentica
                 ));
             } else if (data.status === "done") {
                 setIsSyncing(false);
+                if (setIsSyncing) setIsSyncing(false);
                 setCurrentMod(null);
                 setWarning(data.warning || null);
                 if (data.mods) {
@@ -67,6 +68,7 @@ const LoadMods = ({refreshMods, isFactorioAuthenticated, setIsFactorioAuthentica
                 refreshMods();
             } else if (data.status === "error") {
                 setIsSyncing(false);
+                if (setIsSyncing) setIsSyncing(false);
                 setCurrentMod(null);
                 setSyncError(data.message);
             }
@@ -110,6 +112,7 @@ const LoadMods = ({refreshMods, isFactorioAuthenticated, setIsFactorioAuthentica
         if (toSync.length === 0) return;
 
         setIsSyncing(true);
+        if (setIsSyncing) setIsSyncing(true);
         setSyncError(null);
         try {
             await modsResource.syncFromSave(selectedSave, toSync);
