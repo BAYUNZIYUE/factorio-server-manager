@@ -75,24 +75,10 @@ const Mod = ({mod, factorioVersion, toggleMod, deleteMod, updateMod, addUpdatabl
     return (
         <tr className="py-1">
             <td className="pr-4">
-                {mod.title}
-                {displayDeps.length > 0 && (
-                    <span className="ml-1 text-gray-light cursor-pointer select-none"
-                          onClick={() => setDepsOpen(!depsOpen)}>
-                        <FontAwesomeIcon icon={depsOpen ? faCaretDown : faCaretRight} className="mr-1 text-xs"/>
-                        <span className="text-xs">{displayDeps.length}</span>
-                    </span>
-                )}
-                {depsOpen && displayDeps.length > 0 && (
-                    <div className="mt-1 pl-2 border-l-2 border-gray-dark text-xs text-gray-light">
-                        {displayDeps.map((d, i) => (
-                            <div key={i} className="whitespace-nowrap">{d}</div>
-                        ))}
-                        {deps.length > 10 && (
-                            <div className="text-gray">... and {deps.length - 10} more</div>
-                        )}
-                    </div>
-                )}
+                {mod.compatibility
+                    ? <FontAwesomeIcon className="text-green" icon={faCheck}/>
+                    : <FontAwesomeIcon className="text-red" icon={faTimes}/>
+                }
             </td>
             <td className="pr-4">
                 {
@@ -114,10 +100,24 @@ const Mod = ({mod, factorioVersion, toggleMod, deleteMod, updateMod, addUpdatabl
                 }
             </td>
             <td className="pr-4">
-                {mod.compatibility
-                    ? <FontAwesomeIcon className="text-green" icon={faCheck}/>
-                    : <FontAwesomeIcon className="text-red" icon={faTimes}/>
-                }
+                {mod.title}
+                {displayDeps.length > 0 && (
+                    <span className="ml-1 text-gray-light cursor-pointer select-none"
+                          onClick={() => setDepsOpen(!depsOpen)}>
+                        <FontAwesomeIcon icon={depsOpen ? faCaretDown : faCaretRight} className="mr-1 text-xs"/>
+                        <span className="text-xs">{displayDeps.length}</span>
+                    </span>
+                )}
+                {depsOpen && displayDeps.length > 0 && (
+                    <div className="mt-1 pl-2 border-l-2 border-gray-dark text-xs text-gray-light">
+                        {displayDeps.map((d, i) => (
+                            <div key={i} className="whitespace-nowrap">{d}</div>
+                        ))}
+                        {deps.length > 10 && (
+                            <div className="text-gray">... and {deps.length - 10} more</div>
+                        )}
+                    </div>
+                )}
             </td>
             <td className="pr-4">
                 {mod.version}

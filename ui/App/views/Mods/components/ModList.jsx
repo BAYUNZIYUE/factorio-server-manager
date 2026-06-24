@@ -25,9 +25,9 @@ const ModList = ({mods, factorioVersion, updateMod, toggleMod, deleteMod, addUpd
         <table className="w-full">
             <thead>
                 <tr className="text-left py-1">
-                    <th>{t('Name')}</th>
-                    <th>{t('Enabled')}</th>
                     <th>{t('Compatibility')}</th>
+                    <th>{t('Enabled')}</th>
+                    <th>{t('Name')}</th>
                     <th>{t('Mod Version')}</th>
                     <th>{t('Factorio Version')}</th>
                     <th>{t('File Size')}</th>
@@ -37,8 +37,8 @@ const ModList = ({mods, factorioVersion, updateMod, toggleMod, deleteMod, addUpd
             <tbody>
                 {factorioVersion !== null && dlcMods.length > 0 && (
                     <tr className="py-1 bg-blue-50 hover:bg-blue-100">
-                        <td className="pr-4 italic text-blue-600">
-                            {t('Space Age DLC')}
+                        <td className="pr-4">
+                            <FontAwesomeIcon className="text-green" icon={faCheck}/>
                         </td>
                         <td className="pr-4">
                             {disabled
@@ -52,8 +52,8 @@ const ModList = ({mods, factorioVersion, updateMod, toggleMod, deleteMod, addUpd
                                                        icon={faToggleOff} onClick={toggleDLC}/>
                             }
                         </td>
-                        <td className="pr-4">
-                            <FontAwesomeIcon className="text-green" icon={faCheck}/>
+                        <td className="pr-4 italic text-blue-600">
+                            {t('Space Age DLC')}
                         </td>
                         <td className="pr-4">{dlcMods[0]?.version}</td>
                         <td className="pr-4">{dlcMods[0]?.factorio_version}</td>
