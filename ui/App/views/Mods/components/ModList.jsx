@@ -2,11 +2,13 @@ import Mod from "./Mod";
 import React from "react";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faCheck, faTimes, faToggleOff, faToggleOn} from "@fortawesome/free-solid-svg-icons";
+import { useTranslation } from 'react-i18next';
 
 const DLC_MODS = new Set(['elevated-rails', 'quality', 'space-age']);
 
 const ModList = ({mods, factorioVersion, updateMod, toggleMod, deleteMod, addUpdatableMod = null, disabled = false}) => {
 
+    const { t } = useTranslation('mods');
     const dlcMods = mods.filter(m => DLC_MODS.has(m.name));
     const regularMods = mods.filter(m => !DLC_MODS.has(m.name));
     const dlcEnabled = dlcMods.some(m => m.enabled);
@@ -24,11 +26,12 @@ const ModList = ({mods, factorioVersion, updateMod, toggleMod, deleteMod, addUpd
         <table className="w-full">
             <thead>
                 <tr className="text-left py-1">
-                    <th>Name</th>
-                    <th>Enabled</th>
-                    <th>Compatibility</th>
-                    <th>Mod Version</th>
-                    <th>Factorio Version</th>
+                    <th>{t('Name')}</th>
+                    <th>{t('Enabled')}</th>
+                    <th>{t('Compatibility')}</th>
+                    <th>{t('Mod Version')}</th>
+                    <th>{t('Factorio Version')}</th>
+                    <th>{t('File Size')}</th>
                     <th/>
                 </tr>
             </thead>
@@ -37,7 +40,7 @@ const ModList = ({mods, factorioVersion, updateMod, toggleMod, deleteMod, addUpd
                 {factorioVersion !== null && dlcMods.length > 0 && (
                     <tr className="py-1 bg-blue-50 hover:bg-blue-100">
                         <td className="pr-4 italic text-blue-600">
-                            Space Age DLC
+                            {t('Space Age DLC')}
                             <span className="ml-2 text-xs text-gray-500 not-italic">
                                 (elevated-rails, quality, space-age)
                             </span>

@@ -3,10 +3,11 @@ import savesResource from "../../../../api/resources/saves";
 import Label from "../../../components/Label";
 import Button from "../../../components/Button";
 import modsResource from "../../../../api/resources/mods";
+import {useTranslation} from "react-i18next";
 import FactorioLogin from "./AddMod/components/FactorioLogin";
 import socket from "../../../../api/socket";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {useTranslation} from "react-i18next";
+
 import {faSpinner, faCheck, faTimes, faMinusCircle, faExternalLinkAlt} from "@fortawesome/free-solid-svg-icons";
 
 const DLC_MODS = new Set(['elevated-rails', 'quality', 'space-age']);
@@ -22,13 +23,13 @@ const STATUS_ICON = {
 };
 
 const STATUS_TEXT = {
-    downloading:   "Downloading...",
-    downloaded:    "Downloaded",
-    installed:     "Installed",
-    wrong_version: "Wrong version",
-    missing:       "Missing",
-    builtin:       "Built-in / DLC",
-    not_found:     "Not found on portal",
+    downloading:   t("downloadingStatus"),
+    downloaded:    t("downloadedStatus"),
+    installed:     t("installedStatus"),
+    wrong_version: t("wrongVersionStatus"),
+    missing:       t("missingStatus"),
+    builtin:       t("builtinStatus"),
+    not_found:     t("notFoundStatus"),
 };
 
 const LoadMods = ({refreshMods, isFactorioAuthenticated, setIsFactorioAuthenticated}) => {
@@ -110,7 +111,7 @@ const LoadMods = ({refreshMods, isFactorioAuthenticated, setIsFactorioAuthentica
             });
             setCheckedMods(checked);
         } catch(e) {
-            setSyncError("Failed to read save: " + e.message);
+            setSyncError(`${t("failedToReadSave")}: ${e.message}`);
         } finally {
             setIsLoading(false);
         }
@@ -129,7 +130,7 @@ const LoadMods = ({refreshMods, isFactorioAuthenticated, setIsFactorioAuthentica
             await modsResource.syncFromSave(selectedSave, selectedModNames);
         } catch(e) {
             setIsSyncing(false);
-            setSyncError("Failed to start sync: " + e.message);
+            setSyncError(`${t("failedToStartSync")}: ${e.message}`);
         }
     };
 
@@ -158,7 +159,7 @@ const LoadMods = ({refreshMods, isFactorioAuthenticated, setIsFactorioAuthentica
     return (
         <div>
             {/* Выбор сейва */}
-            <Label text="Save" htmlFor="save"/>
+            <Label text={t("mods:save")} htmlFor="save"/>
             <select
                 className="shadow appearance-none border w-full py-2 px-3 text-black mb-4"
                 disabled={isDisabled}
@@ -176,7 +177,7 @@ const LoadMods = ({refreshMods, isFactorioAuthenticated, setIsFactorioAuthentica
                 onClick={onReadSave}
                 className="mr-2"
             >
-                Read Mods from Save
+                {t("readModsFromSave")}
             </Button>
 
             {/* Ошибка */}
@@ -198,15 +199,15 @@ const LoadMods = ({refreshMods, isFactorioAuthenticated, setIsFactorioAuthentica
                 <div className="mt-4">
                     {/* Кнопки выбора */}
                     <div className="flex mb-2 gap-2">
-                        <Button size="sm" onClick={selectAll}>Select missing</Button>
-                        <Button size="sm" onClick={clearAll}>Clear selection</Button>
+                        <Button size="sm" onClick={selectAll}>{t("selectMissing")}</Button>
+                        <Button size="sm" onClick={clearAll}>{t("clearSelection")}</Button>
                         <Button
                             size="sm"
                             isDisabled={checkedCount === 0 || isSyncing}
                             isLoading={isSyncing}
                             onClick={onSync}
                         >
-                            Sync selected ({checkedCount})
+                            {t("syncSelected")} ({checkedCount})
                         </Button>
                     </div>
 
@@ -214,7 +215,7 @@ const LoadMods = ({refreshMods, isFactorioAuthenticated, setIsFactorioAuthentica
                     {currentMod && (
                         <div className="mb-2 text-sm text-orange">
                             <FontAwesomeIcon icon={faSpinner} spin={true} className="mr-2"/>
-                            Downloading: {currentMod}
+                            {t("downloadingStatus")}: {currentMod}
                         </div>
                     )}
 
@@ -222,10 +223,10 @@ const LoadMods = ({refreshMods, isFactorioAuthenticated, setIsFactorioAuthentica
                         <thead>
                             <tr className="border-b font-bold">
                                 <td className="py-1 pr-2 w-6"></td>
-                                <td className="py-1 pr-4">Mod</td>
-                                <td className="py-1 pr-4">Required</td>
-                                <td className="py-1 pr-4">Installed</td>
-                                <td className="py-1">Status</td>
+                                <td className="py-1 pr-4">{t("mod")}</td>
+                                <td className="py-1 pr-4">{t("required")}</td>
+                                <td className="py-1 pr-4">{t("installed")}</td>
+                                <td className="py-1">{t("status")}</td>
                             </tr>
                         </thead>
                         <tbody>
