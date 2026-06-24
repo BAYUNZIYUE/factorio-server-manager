@@ -49,7 +49,11 @@ const ModList = ({mods, factorioVersion, updateMod, toggleMod, deleteMod, addUpd
             if (typeof vb === 'string') vb = vb.toLowerCase();
             if (va == null) return 1;
             if (vb == null) return -1;
-            return va < vb ? -dir : va > vb ? dir : 0;
+            const cmp = va < vb ? -dir : va > vb ? dir : 0;
+            if (cmp !== 0) return cmp;
+            const nameCmp = (a.name || '').localeCompare(b.name || '');
+            if (nameCmp !== 0) return nameCmp;
+            return (a.version || '').localeCompare(b.version || '');
         });
     }, [regularMods, sortCol, sortDir]);
 
@@ -201,7 +205,7 @@ const ModList = ({mods, factorioVersion, updateMod, toggleMod, deleteMod, addUpd
                         </tr>
                     )}
                     {factorioVersion !== null && sortedMods.map(mod => (
-                        <Mod mod={mod} key={mod.name}
+                        <Mod mod={mod} key={mod.file_name || mod.name}
                              updateMod={updateMod} toggleMod={toggleMod} deleteMod={deleteMod}
                              addUpdatableMod={addUpdatableMod} factorioVersion={factorioVersion}
                              disabled={disabled} visibleCols={visibleCols} />
