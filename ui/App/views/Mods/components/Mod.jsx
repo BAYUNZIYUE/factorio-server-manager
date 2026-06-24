@@ -74,7 +74,7 @@ const Mod = ({mod, factorioVersion, toggleMod, deleteMod, updateMod, addUpdatabl
     const vis = visibleCols || ['compatibility','enabled','name','version','factorio'];
 
     return (
-        <tr className="py-1">
+        <tr className="py-1 border-b border-gray-dark">
             {vis.includes('compatibility') && (
             <td className="pr-4">
                 {mod.compatibility

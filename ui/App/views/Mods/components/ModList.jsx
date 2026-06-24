@@ -98,13 +98,13 @@ const ModList = ({mods, factorioVersion, updateMod, toggleMod, deleteMod, addUpd
             </div>
             <table className="w-full">
                 <thead>
-                    <tr className="text-left py-1">
-                        {vis('compatibility') && <th className="cursor-pointer select-none" onClick={() => handleSort('compatibility')}>{t('Compatibility')}<SortIcon colKey="compatibility"/></th>}
-                        {vis('enabled') && <th className="cursor-pointer select-none" onClick={() => handleSort('enabled')}>{t('Enabled')}<SortIcon colKey="enabled"/></th>}
-                        {vis('name') && <th className="cursor-pointer select-none" onClick={() => handleSort('name')}>{t('Name')}<SortIcon colKey="name"/></th>}
-                        {vis('version') && <th className="cursor-pointer select-none" onClick={() => handleSort('version')}>{t('Mod Version')}<SortIcon colKey="version"/></th>}
-                        {vis('factorio') && <th>{t('Factorio Version')}</th>}
-                        {vis('size') && <th className="cursor-pointer select-none" onClick={() => handleSort('size')}>{t('File Size')}<SortIcon colKey="size"/></th>}
+                    <tr className="text-left py-1 border-b border-gray-medium">
+                        {vis('compatibility') && <th className="cursor-pointer select-none border-r border-gray-medium px-2" onClick={() => handleSort('compatibility')}>{t('Compatibility')}<SortIcon colKey="compatibility"/></th>}
+                        {vis('enabled') && <th className="cursor-pointer select-none border-r border-gray-medium px-2" onClick={() => handleSort('enabled')}>{t('Enabled')}<SortIcon colKey="enabled"/></th>}
+                        {vis('name') && <th className="cursor-pointer select-none border-r border-gray-medium px-2" onClick={() => handleSort('name')}>{t('Name')}<SortIcon colKey="name"/></th>}
+                        {vis('version') && <th className="cursor-pointer select-none border-r border-gray-medium px-2" onClick={() => handleSort('version')}>{t('Mod Version')}<SortIcon colKey="version"/></th>}
+                        {vis('factorio') && <th className="border-r border-gray-medium px-2">{t('Factorio Version')}</th>}
+                        {vis('size') && <th className="cursor-pointer select-none border-r border-gray-medium px-2" onClick={() => handleSort('size')}>{t('File Size')}<SortIcon colKey="size"/></th>}
                         <th style={{width: 30}}/>
                     </tr>
                 </thead>
