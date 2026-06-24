@@ -160,8 +160,7 @@ const Mods = ({serverStatus}) => {
                                 <UploadMod refetchInstalledMods={fetchInstalledMods}/>
                             </Tab>
                             <Tab title={t('loadModsFromSave')}>
-                                <LoadMods refreshMods={fetchInstalledMods}
-                                          isFactorioAuthenticated={isFactorioAuthenticated} setIsFactorioAuthenticated={setIsFactorioAuthenticated}/>
+                                <LoadMods refreshMods={fetchInstalledMods} />
                             </Tab>
                         </TabControl>
                     </div>

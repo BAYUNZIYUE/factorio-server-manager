@@ -5,5 +5,6 @@
   "FSM_administration": "FSM 管理",
   "lang": "语言",
   "logout": "退出登录",
-  "UNKNOWN": "未知"
+  "UNKNOWN": "未知",
+  "refresh": "刷新模组列表"
 }
