@@ -44,6 +44,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - React #31 crash: axios interceptor no longer passes Object to Flash component
 - Mod page black screen: portal API calls limited to initial mount (was 153 calls every 2s)
 - Auth gate prevents login form flash (authChecked before tab render)
+- Shared Factorio auth state restored across all mod tabs (AddMod + LoadMods) —
+  parent component checks portal login once, children receive via props;
+  merged Joey's LoadMods rewrite regressed this with local state — fixed via prop drilling
 - Updater API stable tag compatibility for 2.1.7 detection
 - save.go: fmt.Errorf escaped percent signs fixed (20+ instances)
 
