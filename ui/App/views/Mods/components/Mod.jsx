@@ -6,7 +6,9 @@ import {
     faTimes,
     faToggleOff,
     faToggleOn,
-    faTrashAlt
+    faTrashAlt,
+    faCaretDown,
+    faCaretRight
 } from "@fortawesome/free-solid-svg-icons";
 import modsResource from "../../../../api/resources/mods";
 import React, {useEffect, useState} from "react";
@@ -17,6 +19,7 @@ const Mod = ({mod, factorioVersion, toggleMod, deleteMod, updateMod, addUpdatabl
     const [newVersion, setNewVersion] = useState(null)
     const [icon, setIcon] = useState(faArrowCircleUp)
     const [checked, setChecked] = useState(false)
+    const [depsOpen, setDepsOpen] = useState(false)
 
     useEffect(() => {
         if (!disabled && !checked) {
@@ -25,7 +28,6 @@ const Mod = ({mod, factorioVersion, toggleMod, deleteMod, updateMod, addUpdatabl
                 try {
                     const data = await modsResource.portal.info(mod.name)
 
-                //get newest COMPATIBLE release
                 let newestRelease;
                 data.releases.forEach(release => {
                     if (
@@ -67,9 +69,31 @@ const Mod = ({mod, factorioVersion, toggleMod, deleteMod, updateMod, addUpdatabl
         }
     }, [mod]);
 
+    const deps = mod.dependencies || [];
+    const displayDeps = deps.filter(d => d && d.trim()).slice(0, 10);
+
     return (
         <tr className="py-1">
-            <td className="pr-4">{mod.title}</td>
+            <td className="pr-4">
+                {mod.title}
+                {displayDeps.length > 0 && (
+                    <span className="ml-1 text-gray-light cursor-pointer select-none"
+                          onClick={() => setDepsOpen(!depsOpen)}>
+                        <FontAwesomeIcon icon={depsOpen ? faCaretDown : faCaretRight} className="mr-1 text-xs"/>
+                        <span className="text-xs">{displayDeps.length}</span>
+                    </span>
+                )}
+                {depsOpen && displayDeps.length > 0 && (
+                    <div className="mt-1 pl-2 border-l-2 border-gray-dark text-xs text-gray-light">
+                        {displayDeps.map((d, i) => (
+                            <div key={i} className="whitespace-nowrap">{d}</div>
+                        ))}
+                        {deps.length > 10 && (
+                            <div className="text-gray">... and {deps.length - 10} more</div>
+                        )}
+                    </div>
+                )}
+            </td>
             <td className="pr-4">
                 {
                     disabled
@@ -81,12 +105,12 @@ const Mod = ({mod, factorioVersion, toggleMod, deleteMod, updateMod, addUpdatabl
                         :
                         mod.enabled
                             ? <FontAwesomeIcon className="cursor-pointer hover:text-green-light text-green"
-                                               icon={faToggleOn}
-                                               onClick={() => toggleMod(mod.name)}/>
+                                                icon={faToggleOn}
+                                                onClick={() => toggleMod(mod.name)}/>
                             :
                             <FontAwesomeIcon className="cursor-pointer hover:text-red-light text-red"
-                                             icon={faToggleOff}
-                                             onClick={() => toggleMod(mod.name)}/>
+                                              icon={faToggleOff}
+                                              onClick={() => toggleMod(mod.name)}/>
                 }
             </td>
             <td className="pr-4">
@@ -119,4 +143,3 @@ const Mod = ({mod, factorioVersion, toggleMod, deleteMod, updateMod, addUpdatabl
 }
 
 export default Mod;
-

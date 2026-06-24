@@ -122,6 +122,9 @@ func (modInfoList *ModInfoList) listInstalledMods() error {
 		modInfo.Compatibility = server.Version.GEC(modInfo.FactorioVersion)
 		if modInfo.Compatibility && !base.Equals(NilVersion) {
 			modInfo.Compatibility = server.Version.Compatible(base, op)
+		}
+
+		if !base.Equals(NilVersion) {
 			if base.Greater(modInfo.FactorioVersion) || modInfo.FactorioVersion.Equals(NilVersion) {
 				modInfo.FactorioVersion = base
 			}
