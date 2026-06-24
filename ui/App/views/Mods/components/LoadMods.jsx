@@ -31,14 +31,13 @@ const STATUS_TEXT = {
     not_found:     "Not found on portal",
 };
 
-const LoadMods = ({refreshMods}) => {
+const LoadMods = ({refreshMods, isFactorioAuthenticated, setIsFactorioAuthenticated}) => {
     const {t} = useTranslation();
     const [saves, setSaves] = useState([]);
     const [selectedSave, setSelectedSave] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [isSyncing, setIsSyncing] = useState(false);
     const [isDisabled, setIsDisabled] = useState(true);
-    const [isFactorioAuthenticated, setIsFactorioAuthenticated] = useState(false);
     const [modRows, setModRows] = useState([]);
     const [checkedMods, setCheckedMods] = useState({});
     const [syncError, setSyncError] = useState(null);
@@ -47,7 +46,9 @@ const LoadMods = ({refreshMods}) => {
 
     useEffect(() => {
         (async () => {
-            setIsFactorioAuthenticated(await modsResource.portal.status());
+            if (!isFactorioAuthenticated) {
+                setIsFactorioAuthenticated(await modsResource.portal.status());
+            }
             const s = await savesResource.list();
             setSaves(s);
             if (s.length > 0) {
