@@ -65,5 +65,6 @@
   "failedToStartSync": "启动同步失败",
   "mod": "模组",
   "required": "需要版本",
-  "status": "状态"
+  "status": "状态",
+  "columns": "列"
 }

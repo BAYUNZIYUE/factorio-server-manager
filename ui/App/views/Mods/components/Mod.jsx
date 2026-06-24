@@ -14,7 +14,7 @@ import modsResource from "../../../../api/resources/mods";
 import React, {useEffect, useState} from "react";
 import {coerce, gt, satisfies} from "semver";
 
-const Mod = ({mod, factorioVersion, toggleMod, deleteMod, updateMod, addUpdatableMod, disabled = false}) => {
+const Mod = ({mod, factorioVersion, toggleMod, deleteMod, updateMod, addUpdatableMod, disabled = false, visibleCols}) => {
 
     const [newVersion, setNewVersion] = useState(null)
     const [icon, setIcon] = useState(faArrowCircleUp)
@@ -71,15 +71,19 @@ const Mod = ({mod, factorioVersion, toggleMod, deleteMod, updateMod, addUpdatabl
 
     const deps = mod.dependencies || [];
     const displayDeps = deps.filter(d => d && d.trim()).slice(0, 10);
+    const vis = visibleCols || ['compatibility','enabled','name','version','factorio'];
 
     return (
         <tr className="py-1">
+            {vis.includes('compatibility') && (
             <td className="pr-4">
                 {mod.compatibility
                     ? <FontAwesomeIcon className="text-green" icon={faCheck}/>
                     : <FontAwesomeIcon className="text-red" icon={faTimes}/>
                 }
             </td>
+            )}
+            {vis.includes('enabled') && (
             <td className="pr-4">
                 {
                     disabled
@@ -99,6 +103,8 @@ const Mod = ({mod, factorioVersion, toggleMod, deleteMod, updateMod, addUpdatabl
                                               onClick={() => toggleMod(mod.name)}/>
                 }
             </td>
+            )}
+            {vis.includes('name') && (
             <td className="pr-4">
                 {mod.title}
                 {displayDeps.length > 0 && (
@@ -119,6 +125,8 @@ const Mod = ({mod, factorioVersion, toggleMod, deleteMod, updateMod, addUpdatabl
                     </div>
                 )}
             </td>
+            )}
+            {vis.includes('version') && (
             <td className="pr-4">
                 {mod.version}
                 {!disabled && newVersion && <FontAwesomeIcon spin={icon === faSpinner}
@@ -128,9 +136,15 @@ const Mod = ({mod, factorioVersion, toggleMod, deleteMod, updateMod, addUpdatabl
                                                         .finally(() => setIcon(faArrowCircleUp))
                                                 }}
                                                 className="hover:text-orange cursor-pointer ml-1"
-                                                icon={icon}/>}</td>
+                                                icon={icon}/>}
+            </td>
+            )}
+            {vis.includes('factorio') && (
             <td className="pr-4">{mod.dep_op ? mod.dep_op + ' ' + mod.factorio_version : mod.factorio_version}</td>
+            )}
+            {vis.includes('size') && (
             <td className="pr-4 text-gray-light text-sm">{mod.file_size > 0 ? ((mod.file_size / 1024).toFixed(0) + ' KB') : '-'}</td>
+            )}
             {
                 !disabled &&
                 <td className="pr-4">
