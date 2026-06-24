@@ -37,6 +37,14 @@
 - [ ] Proper FSM login (registration form on first launch)
 
 ### Server
+- [ ] Controls page info panel — merge Game Settings into Controls dashboard:
+  - Remove standalone `/game-settings` page (mostly empty config.ini view)
+  - Add read-only info section below start/stop controls:
+    - Factorio version + base mod version
+    - Data paths (read-data / write-data)
+    - Installed / compatible / incompatible mod counts
+    - Save file count + last modified
+    - (future) uptime, player count
 - [ ] Server Status tab refactor:
   - Autostart checkbox
   - Factorio version dropdown with auto-download
