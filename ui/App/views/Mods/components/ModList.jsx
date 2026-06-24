@@ -15,7 +15,6 @@ const ModList = ({mods, factorioVersion, updateMod, toggleMod, deleteMod, addUpd
 
     const toggleDLC = () => {
         dlcMods.forEach(m => {
-            // Если хотя бы один включён — выключаем все, иначе включаем все
             if (dlcEnabled === m.enabled) {
                 toggleMod(m.name);
             }
@@ -36,14 +35,10 @@ const ModList = ({mods, factorioVersion, updateMod, toggleMod, deleteMod, addUpd
                 </tr>
             </thead>
             <tbody>
-                {/* DLC группа */}
                 {factorioVersion !== null && dlcMods.length > 0 && (
                     <tr className="py-1 bg-blue-50 hover:bg-blue-100">
                         <td className="pr-4 italic text-blue-600">
                             {t('Space Age DLC')}
-                            <span className="ml-2 text-xs text-gray-500 not-italic">
-                                (elevated-rails, quality, space-age)
-                            </span>
                         </td>
                         <td className="pr-4">
                             {disabled
@@ -62,13 +57,13 @@ const ModList = ({mods, factorioVersion, updateMod, toggleMod, deleteMod, addUpd
                         </td>
                         <td className="pr-4">{dlcMods[0]?.version}</td>
                         <td className="pr-4">{dlcMods[0]?.factorio_version}</td>
+                        <td className="pr-4 text-gray-light text-sm">-</td>
                         <td/>
                     </tr>
                 )}
-                {/* Остальные моды */}
                 {factorioVersion !== null && regularMods.map(
-                    (mod, i) =>
-                        <Mod mod={mod} key={i}
+                    (mod) =>
+                        <Mod mod={mod} key={mod.name}
                              updateMod={updateMod}
                              toggleMod={toggleMod}
                              deleteMod={deleteMod}
