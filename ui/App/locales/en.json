@@ -204,5 +204,8 @@
     "title": "Game Settings"
   },
   "lang": "Language",
-  "refresh": "Refresh Mods"
+  "refresh": "Refresh Mods",
+  "serverVersion": {
+    "title": "Server Version"
+  }
 }

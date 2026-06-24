@@ -1,6 +1,8 @@
 {
   "title": "控制台",
+  "console": "控制台",
   "send": "发送",
-  "command": "命令",
+  "command": "指令",
+  "consoleNotAvailable": "控制台不可用（服务器未运行）",
   "placeholder": "输入指令..."
 }

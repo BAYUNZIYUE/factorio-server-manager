@@ -233,5 +233,6 @@
   "installedTab": "已安装",
   "addModTab": "添加模组",
   "loadModsTab": "加载模组",
-  "modPacksTab": "模组包"
+  "modPacksTab": "模组包",
+  "refresh": "刷新"
 }

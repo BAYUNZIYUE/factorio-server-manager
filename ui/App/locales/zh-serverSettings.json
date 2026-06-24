@@ -1,5 +1,11 @@
 {
   "title": "服务器设置",
+  "serverSettings": "服务器设置",
+  "gameSettings": "游戏设置",
+  "saveSettings": "保存设置",
+  "settingsSaved": "设置已保存",
+  "showTranslation": "显示说明",
+  "hideTranslation": "隐藏说明",
   "admins": "管理员",
   "name": "服务器名称",
   "description": "服务器描述",
@@ -24,9 +30,5 @@
   "autosave_interval": "自动保存间隔",
   "autosave_slots": "自动保存槽位数",
   "non_blocking_saving": "非阻塞保存",
-  "afk_autokick_interval": "挂机踢出时间",
-  "require_user_verification_label": "需要验证用户身份",
-  "visibility_label": "服务器可见性",
-  "show_descriptions": "显示说明",
-  "hide_descriptions": "隐藏说明"
+  "afk_autokick_interval": "挂机踢出时间"
 }

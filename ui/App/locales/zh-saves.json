@@ -1,12 +1,18 @@
 {
   "title": "存档管理",
-  "dl_save": "下载存档",
-  "upload_save": "上传存档",
-  "remove_save": "删除存档",
-  "create_save": "创建存档",
-  "no_saves": "没有存档",
-  "delete_confirm": "确认删除存档？",
-  "name": "存档名称",
+  "saves": "存档",
+  "actions": "操作",
+  "name": "名称",
   "lastModifiedAt": "最后修改",
-  "size": "大小"
+  "size": "大小",
+  "upload": "上传",
+  "uploadSave": "上传存档",
+  "createSave": "创建存档",
+  "createSaveDisabled": "创建存档已禁用（服务器运行中）",
+  "saveFile": "存档文件",
+  "savefileName": "存档文件名",
+  "saveNameRequired": "请输入存档名称",
+  "selectFile": "选择文件",
+  "no_saves": "没有存档",
+  "delete_confirm": "确认删除存档？"
 }
