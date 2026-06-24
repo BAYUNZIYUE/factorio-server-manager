@@ -79,7 +79,6 @@ const Layout = ({handleLogout, serverStatus}) => {
                             <Link to="/server-settings">{t("server_settings.title")}</Link>
                             <Link to="/game-settings">{t("game_settings.title")}</Link>
                             <Link to="/console">{t("console.title")}</Link>
-                            <Link to="/logs" last={true}>{t("logs.title")}</Link>
                         </div>
                     </div>
                     <div className="py-4 px-2 accentuated">

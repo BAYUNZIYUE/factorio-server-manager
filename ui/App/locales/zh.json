@@ -123,7 +123,7 @@
     "title": "游戏设置"
   },
   "console": {
-    "title": "控制台",
+    "title": "终端",
     "send": "发送",
     "command": "命令",
     "placeholder": "输入指令..."
