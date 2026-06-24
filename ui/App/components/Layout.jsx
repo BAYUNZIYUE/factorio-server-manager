@@ -110,7 +110,7 @@ const Layout = ({handleLogout, serverStatus}) => {
 
             {/*Main*/}
             <div className="md:ml-88 min-h-screen">
-                <div className="container md:mx-auto pt-16 md:px-6">
+                <div className="w-full pt-16 md:px-6">
                     <Outlet />
                     <Flash/>
                 </div>
