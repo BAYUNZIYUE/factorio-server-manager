@@ -11,8 +11,17 @@
 - [x] DLC mods auto-detected and grouped in UI with single toggle
 - [x] DLC mods visible in installed mods list with enable/disable
 - [x] Server start blocked while mod sync is in progress
-- [x] i18n support (EN/RU)
+- [x] i18n support (EN/RU/zh-CN)
 - [x] Token-based authentication on factorio.com
+- [x] Server version manager (download/update/downgrade Factorio from UI)
+- [x] 5-thread concurrent mod downloading with progress bars
+- [x] Upload mod multi-file support
+- [x] Mod portal list caching (1 hour)
+- [x] Factorio 2.1 compatibility (GEC version checking)
+- [x] Factorio 2.0 save header parser (readFromV2)
+- [x] Server settings Chinese descriptions (Factorio Wiki based)
+- [x] Auth gate preventing login form flash
+- [x] 401 auto-redirect to login page
 
 ## 🚧 Planned
 
@@ -20,6 +29,7 @@
 - [ ] Auto-resolve mod dependencies when creating a new save
 - [ ] Portal link icon next to each mod in the list
 - [ ] Row highlight on hover in mod list
+- [ ] Batch update all compatible mods for current server version
 
 ### Authentication
 - [ ] Show logged-in username on mod portal tab

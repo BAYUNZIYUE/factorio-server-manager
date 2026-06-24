@@ -3,6 +3,53 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [0.12.0] - TBD
+
+### Added
+- Server version manager: download, update, and downgrade Factorio server from UI - Thanks to @BAYUNZIYUE
+  - Full version list from updater.factorio.com (stable/experimental)
+  - Async install with WebSocket real-time progress
+- Mod sync from save: read mod list from level.dat0 with exact versions - Thanks to @joey00797-cell
+  - Selective sync with checkboxes
+  - WebSocket download progress for each mod
+- DLC mods (elevated-rails, quality, space-age) detected from mod-list.json
+  - Grouped in UI with single toggle - Thanks to @joey00797-cell
+- i18n internationalization via i18next framework with zh-CN translations - Thanks to @joey00797-cell, @BAYUNZIYUE
+- Language switcher dialog (EN / RU / 中文)
+- 5-thread concurrent mod downloading with per-worker progress bars
+- Upload mod multi-file support with progress
+- Mod list auto-refresh every 2s with background-tab skip
+- TabControl onActivate support for lazy portal list loading
+- Server settings Chinese descriptions toggle (27 items based on Factorio Wiki)
+- File size display in mod list
+- IP/port memory in Controls page (localStorage)
+- Cache mod portal list for 1 hour (~60x speedup)
+- Token-based Factorio authentication support
+
+### Changed
+- Factorio version display uniformly prefixed with `>=`
+- Mod portal releases compatibility now uses Factorio-aware GEC (same major.minor required)
+- DepOp no longer hardcoded to `>=` — reflects actual dependency operator
+- Portal "Mod not found" returns 404 JSON instead of 500 error
+- File lock timeout increased to 30s to prevent deadlocks
+- Docker build cache for go mod download and npm install
+
+### Fixed
+- Factorio 2.1 compatibility: mods with different minor version correctly marked incompatible
+- save.go: Factorio 2.0 save header parsing (readFromV2, 192-line complete rewrite)
+- mod_modInfo.go: base dependency version override (old `base >= 0.18` no longer overwrites info.json factorio_version: 2.0)
+- mod_modInfo.go: dependency parsing bounds check (prevents crash on malformed deps)
+- Corrupted mod zip files gracefully skipped instead of crashing FSM
+- 401 auto-redirect to login page (replace instead of push state)
+- React #31 crash: axios interceptor no longer passes Object to Flash component
+- Mod page black screen: portal API calls limited to initial mount (was 153 calls every 2s)
+- Auth gate prevents login form flash (authChecked before tab render)
+- Updater API stable tag compatibility for 2.1.7 detection
+- save.go: fmt.Errorf escaped percent signs fixed (20+ instances)
+
+### Removed
+- removeAll on Docker volume replaced with proper mod directory clear - Thanks to @joey00797-cell
+
 ## [0.11.0] - TBD
 ### Changed
 - Configuration environment variables are now uppercase and prefixed with FSM
