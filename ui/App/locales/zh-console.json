@@ -4,5 +4,12 @@
   "send": "发送",
   "command": "指令",
   "consoleNotAvailable": "控制台不可用（服务器未运行）",
-  "placeholder": "输入 Factorio 指令..."
+  "placeholder": "输入 Factorio 指令...",
+  "fontSize": "字体",
+  "wrap": "换行",
+  "small": "小",
+  "medium": "中",
+  "large": "大",
+  "on": "开",
+  "off": "关"
 }
