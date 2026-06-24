@@ -1,0 +1,12 @@
+{
+  "title": "用户管理",
+  "addUser": "添加用户",
+  "username": "用户名",
+  "password": "密码",
+  "role": "角色",
+  "email": "邮箱",
+  "actions": "操作",
+  "confirmDelete": "确认删除用户？",
+  "usernameRequired": "请输入用户名",
+  "passwordRequired": "请输入密码"
+}

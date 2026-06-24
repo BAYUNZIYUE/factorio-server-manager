@@ -1,0 +1,12 @@
+{
+  "title": "存档管理",
+  "dl_save": "下载存档",
+  "upload_save": "上传存档",
+  "remove_save": "删除存档",
+  "create_save": "创建存档",
+  "no_saves": "没有存档",
+  "delete_confirm": "确认删除存档？",
+  "name": "存档名称",
+  "lastModifiedAt": "最后修改",
+  "size": "大小"
+}
