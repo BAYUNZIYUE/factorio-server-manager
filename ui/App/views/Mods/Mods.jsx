@@ -34,7 +34,10 @@ const Mods = ({serverStatus}) => {
     const [authChecked, setAuthChecked] = useState(false);
 
     const addUpdatableMod = mod => {
-        setUpdatableMods(mods => [...mods, mod])
+        setUpdatableMods(mods => {
+            if (mods.some(m => m.modName === mod.modName)) return mods;
+            return [...mods, mod];
+        });
     };
 
     const fetchInstalledMods = () => {

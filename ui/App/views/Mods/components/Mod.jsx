@@ -16,9 +16,11 @@ const Mod = ({mod, factorioVersion, toggleMod, deleteMod, updateMod, addUpdatabl
 
     const [newVersion, setNewVersion] = useState(null)
     const [icon, setIcon] = useState(faArrowCircleUp)
+    const [checked, setChecked] = useState(false)
 
     useEffect(() => {
-        if (!disabled) {
+        if (!disabled && !checked) {
+            setChecked(true);
             (async () => {
                 try {
                     const data = await modsResource.portal.info(mod.name)
