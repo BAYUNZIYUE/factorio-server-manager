@@ -172,8 +172,8 @@ func (modInfoList *ModInfoList) deleteMod(modName string) error {
 		}
 	}
 
-	log.Printf("the mod-file for mod %s doesn't exist!", modName)
-	return errors.New("the mod-file for mod " + modName + " doesn't exist!")
+	log.Printf("mod %s not found as zip — nothing to delete", modName)
+	return nil
 }
 
 func (modInfo *ModInfo) getModInfo(reader *zip.Reader) error {

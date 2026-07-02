@@ -12,10 +12,10 @@ import server from "../api/resources/server";
 import Mods from "./views/Mods/Mods";
 import UserManagement from "./views/UserManagement/UserManagment";
 import ServerSettings from "./views/ServerSettings";
-import GameSettings from "./views/GameSettings";
 import Console from "./views/Console";
 import Help from "./views/Help";
 import ServerVersion from "./views/ServerVersion";
+import EventLog from "./views/EventLog";
 import socket from "../api/socket";
 import "./i18n";
 import {Flash} from "./components/Flash";
@@ -66,12 +66,12 @@ const App = () => {
                         <Route path="saves" element={<Saves serverStatus={serverStatus}/>}/>
                         <Route path="mods" element={<Mods serverStatus={serverStatus}/>}/>
                         <Route path="server-settings" element={<ServerSettings serverStatus={serverStatus}/>}/>
-                        <Route path="game-settings" element={<GameSettings serverStatus={serverStatus}/>}/>
                         <Route path="console" element={<Console serverStatus={serverStatus}/>}/>
                         <Route path="logs" element={<Logs serverStatus={serverStatus}/>}/>
                         <Route path="user-management" element={<UserManagement serverStatus={serverStatus}/>}/>
                         <Route path="help" element={<Help serverStatus={serverStatus}/>}/>
                         <Route path="server-version" element={<ServerVersion serverStatus={serverStatus}/>}/>
+                        <Route path="event-log" element={<EventLog/>}/>
                     </Route>
                 </Route>
             </Routes>

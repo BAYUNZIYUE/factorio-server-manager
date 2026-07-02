@@ -10,10 +10,17 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/OpenFactorioServerManager/factorio-server-manager/api/websocket"
 	"github.com/OpenFactorioServerManager/factorio-server-manager/bootstrap"
 	"github.com/OpenFactorioServerManager/factorio-server-manager/factorio"
 	"github.com/OpenFactorioServerManager/factorio-server-manager/lockfile"
 )
+
+func broadcastModEvent(evt interface{}) {
+	data, _ := json.Marshal(evt)
+	room := websocket.WebsocketHub.GetRoom("mods_events")
+	room.Send(string(data))
+}
 
 func CreateNewMods(w http.ResponseWriter) (modList factorio.Mods, resp interface{}, err error) {
 	config := bootstrap.GetConfig()
@@ -127,11 +134,11 @@ func ModDeleteHandler(w http.ResponseWriter, r *http.Request) {
 		log.Println(resp)
 		return
 	}
+	broadcastModEvent(map[string]string{"type": "mod_deleted", "name": data.Name})
 	resp = map[string]string{"status": "ok", "name": data.Name}
 }
 
 func ModDeleteAllHandler(w http.ResponseWriter, r *http.Request) {
-	var err error
 	var resp interface{}
 
 	defer func() {
@@ -140,15 +147,23 @@ func ModDeleteAllHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json;charset=UTF-8")
 
-	//delete mods folder
-	err = factorio.DeleteAllMods()
-	if err != nil {
+	config := bootstrap.GetConfig()
+
+	mods, listErr := factorio.NewMods(config.FactorioModsDir)
+	if listErr == nil {
+		for _, mod := range mods.ModInfoList.Mods {
+			broadcastModEvent(map[string]string{"type": "mod_deleted", "name": mod.Name})
+		}
+	}
+
+	if err := factorio.DeleteAllMods(); err != nil {
 		resp = fmt.Sprintf("Error deleting all mods: %s", err)
 		log.Println(resp)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
+	broadcastModEvent(map[string]string{"type": "mods_cleared"})
 	resp = nil
 }
 
@@ -386,12 +401,6 @@ func SyncModsFromSaveHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if factorio.IsModsSyncing() {
-		w.WriteHeader(http.StatusConflict)
-		resp = "mod sync already in progress"
-		return
-	}
-
 	config := bootstrap.GetConfig()
 	savePath := filepath.Join(config.FactorioSavesDir, syncRequest.Name)
 
@@ -403,6 +412,12 @@ func SyncModsFromSaveHandler(w http.ResponseWriter, r *http.Request) {
 
 	go factorio.SyncModsFromSave(savePath, syncRequest.ModNames)
 	resp = map[string]string{"status": "started"}
+}
+
+func CancelModsSyncHandler(w http.ResponseWriter, r *http.Request) {
+	factorio.CancelModsSync()
+	resp := map[string]string{"status": "cancelled"}
+	WriteResponse(w, resp)
 }
 
 func GetModsFromSaveHandler(w http.ResponseWriter, r *http.Request) {

@@ -40,15 +40,11 @@ const mods = {
         const response = await client.post('/api/saves/mods/sync', {saveFile, modNames});
         return response.data;
     },
+    cancelSync: async () => {
+        const response = await client.post('/api/saves/mods/sync/cancel');
+        return response.data;
+    },
     downloadAllURL: '/api/mods/download',
-    getFromSave: async saveFile => {
-        const response = await client.post('/api/saves/mods', {saveFile});
-        return response.data;
-    },
-    syncFromSave: async (saveFile, modNames) => {
-        const response = await client.post('/api/mods/sync', {saveFile, modNames});
-        return response.data;
-    },
     portal: {
         login: async (username, token) => {
             const response = await client.post('/api/mods/portal/login', {
@@ -81,10 +77,23 @@ const mods = {
             const response = await client.get('/api/mods/portal/list');
             return response.data
         },
-        info: async mod => {
-            const response = await client.get(`/api/mods/portal/info/${mod}`);
-            return response.data;
-        }
+        info: (() => {
+            let queue = Promise.resolve();
+            return async (mod) => {
+                const prev = queue;
+                let resolve;
+                queue = new Promise(r => { resolve = r; });
+                await prev;
+                try {
+                    const response = await client.get(`/api/mods/portal/info/${mod}`);
+                    resolve();
+                    return response.data;
+                } catch (e) {
+                    resolve();
+                    throw e;
+                }
+            };
+        })(),
     },
     packs: {
         list: async () => {

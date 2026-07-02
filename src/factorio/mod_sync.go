@@ -1,14 +1,19 @@
 package factorio
 
 import (
-	"encoding/json"
-	"fmt"
-	"io/ioutil"
-	"log"
 	"bytes"
 	"compress/flate"
 	"compress/zlib"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"io"
+	"io/ioutil"
+	"log"
 	"net/http"
+	"os"
+	"path/filepath"
+	"sync"
 	"sync/atomic"
 
 	"github.com/OpenFactorioServerManager/factorio-server-manager/api/websocket"
@@ -16,9 +21,14 @@ import (
 )
 
 var modsSyncing atomic.Bool
+var modsSyncCancel atomic.Bool
 
 func IsModsSyncing() bool {
 	return modsSyncing.Load()
+}
+
+func CancelModsSync() {
+	modsSyncCancel.Store(true)
 }
 
 type ModSyncResult struct {
@@ -28,14 +38,16 @@ type ModSyncResult struct {
 }
 
 type ModSyncProgress struct {
-	Type    string        `json:"type"`
-	Status  string        `json:"status"`
-	Current int           `json:"current,omitempty"`
-	Total   int           `json:"total,omitempty"`
-	Mod     string        `json:"mod,omitempty"`
-	Message string        `json:"message,omitempty"`
-	Warning string        `json:"warning,omitempty"`
-	Mods    []ModSyncResult `json:"mods,omitempty"`
+	Type       string          `json:"type"`
+	Status     string          `json:"status"`
+	Current    int             `json:"current,omitempty"`
+	Total      int             `json:"total,omitempty"`
+	Mod        string          `json:"mod,omitempty"`
+	Message    string          `json:"message,omitempty"`
+	Warning    string          `json:"warning,omitempty"`
+	Mods       []ModSyncResult `json:"mods,omitempty"`
+	Downloaded int64           `json:"downloaded,omitempty"`
+	Size       int64           `json:"size,omitempty"`
 }
 
 // baseModNames — моды которые есть в любом vanilla + DLC сейве
@@ -84,6 +96,7 @@ func normalizeVersion(v Version) string {
 }
 
 var ErrModNotOnPortal = fmt.Errorf("mod not available on portal (builtin or DLC)")
+var ErrVersionNotFound = fmt.Errorf("requested version not found on portal")
 
 // LevelDatMod хранит мод из level.dat0
 type LevelDatMod struct {
@@ -178,12 +191,9 @@ func getModRelease(modName string, version string) (portalModRelease, error) {
 		Releases []portalModRelease `json:"releases"`
 	}
 	if err := json.Unmarshal(body, &fullInfo); err == nil {
-		// no-category — DLC заглушка без релизов
-		if fullInfo.Category == "no-category" {
+		if fullInfo.Category == "no-category" && len(fullInfo.Releases) == 0 {
 			return portalModRelease{}, ErrModNotOnPortal
 		}
-		// internal без релизов — встроенный DLC (elevated-rails, space-age)
-		// internal с релизами — обычный мод (flib)
 		if fullInfo.Category == "internal" && len(fullInfo.Releases) == 0 {
 			return portalModRelease{}, ErrModNotOnPortal
 		}
@@ -200,6 +210,10 @@ func getModRelease(modName string, version string) (portalModRelease, error) {
 		}
 	}
 
+	if len(info.Releases) > 0 {
+		return info.Releases[0], ErrVersionNotFound
+	}
+
 	return portalModRelease{}, fmt.Errorf("version %s not found for mod %s on portal", version, modName)
 }
 
@@ -213,6 +227,7 @@ func SyncModsFromSave(savePath string, modNames []string) {
 		return
 	}
 	defer modsSyncing.Store(false)
+	modsSyncCancel.Store(false)
 
 	config := bootstrap.GetConfig()
 
@@ -297,77 +312,154 @@ func SyncModsFromSave(savePath string, modNames []string) {
 		return
 	}
 
-	// 5. Качаем недостающие
-	for i, saveMod := range toDownload {
-		wantVersion := normalizeVersion(saveMod.Version)
+	sem := make(chan struct{}, 5)
+	var wg sync.WaitGroup
+	var resultsMu sync.Mutex
 
-		sendSyncProgress(ModSyncProgress{
-			Status:  "progress",
-			Current: i + 1,
-			Total:   total,
-			Mod:     saveMod.Name,
-		})
+	for _, saveMod := range toDownload {
+		saveMod := saveMod
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			defer func() {
+				if r := recover(); r != nil {
+					log.Printf("PANIC in sync goroutine for %s: %v", saveMod.Name, r)
+				}
+			}()
 
-		// Сначала проверяем локальный список DLC/базовых модов
-		if baseModNames[saveMod.Name] {
-			log.Printf("SyncModsFromSave: %s is builtin/DLC (local list), skipping", saveMod.Name)
-			results = append(results, ModSyncResult{Name: saveMod.Name, Version: wantVersion, Status: "builtin"})
-			continue
-		}
+			wantVersion := normalizeVersion(saveMod.Version)
 
-		release, err := getModRelease(saveMod.Name, wantVersion)
-		if err == ErrModNotOnPortal {
-			log.Printf("SyncModsFromSave: %s is builtin/DLC, skipping", saveMod.Name)
-			results = append(results, ModSyncResult{Name: saveMod.Name, Version: wantVersion, Status: "builtin"})
-			continue
-		}
-		if err != nil {
-			results = append(results, ModSyncResult{Name: saveMod.Name, Version: wantVersion, Status: "not_found"})
-			log.Printf("SyncModsFromSave: %s not found on portal: %v", saveMod.Name, err)
-			continue
-		}
-
-		mods, err = NewMods(config.FactorioModsDir)
-		if err != nil {
-			sendSyncProgress(ModSyncProgress{Status: "error", Message: fmt.Sprintf("cannot refresh mods: %v", err)})
-			return
-		}
-
-		if _, err = mods.DownloadMod(release.DownloadURL, release.FileName, saveMod.Name, nil); err != nil {
-			results = append(results, ModSyncResult{Name: saveMod.Name, Version: wantVersion, Status: "not_found"})
-			log.Printf("SyncModsFromSave: download failed for %s: %v", saveMod.Name, err)
-			continue
-		}
-
-		results = append(results, ModSyncResult{Name: saveMod.Name, Version: wantVersion, Status: "downloaded"})
-		log.Printf("SyncModsFromSave: downloaded %s %s (%d/%d)", saveMod.Name, wantVersion, i+1, total)
-	}
-
-	// Обновляем mod-list.json — включаем нужные, выключаем лишние
-	finalMods, err := NewMods(config.FactorioModsDir)
-	if err == nil {
-		// Строим set модов из сейва
-		saveModSet := make(map[string]bool)
-		for _, saveMod := range header.Mods {
-			if saveMod.Name != "base" {
-				saveModSet[saveMod.Name] = true
+			if baseModNames[saveMod.Name] {
+				resultsMu.Lock()
+				results = append(results, ModSyncResult{Name: saveMod.Name, Version: wantVersion, Status: "builtin"})
+				resultsMu.Unlock()
+				sendSyncProgress(ModSyncProgress{Status: "builtin", Mod: saveMod.Name})
+				return
 			}
-		}
-		// Включаем моды из сейва, выключаем остальные
-		for i, m := range finalMods.ModSimpleList.Mods {
-			if m.Name == "base" {
-				continue
+
+			sem <- struct{}{}
+			defer func() { <-sem }()
+
+			if modsSyncCancel.Load() {
+				return
 			}
-			if saveModSet[m.Name] {
-				finalMods.ModSimpleList.Mods[i].Enabled = true
+
+			release, err := getModRelease(saveMod.Name, wantVersion)
+			if err == ErrModNotOnPortal {
+				resultsMu.Lock()
+				results = append(results, ModSyncResult{Name: saveMod.Name, Version: wantVersion, Status: "builtin"})
+				resultsMu.Unlock()
+				sendSyncProgress(ModSyncProgress{Status: "builtin", Mod: saveMod.Name})
+				return
+			}
+			if errors.Is(err, ErrVersionNotFound) {
+				resultsMu.Lock()
+				results = append(results, ModSyncResult{Name: saveMod.Name, Version: wantVersion, Status: "version_mismatch"})
+				resultsMu.Unlock()
+				info, _ := json.Marshal(map[string]string{
+					"downloadUrl": release.DownloadURL,
+					"fileName":    release.FileName,
+					"latest":      release.Version,
+				})
+				sendSyncProgress(ModSyncProgress{Status: "version_mismatch", Mod: saveMod.Name, Message: string(info)})
+				return
+			}
+			if err != nil {
+				resultsMu.Lock()
+				results = append(results, ModSyncResult{Name: saveMod.Name, Version: wantVersion, Status: "not_found"})
+				resultsMu.Unlock()
+				sendSyncProgress(ModSyncProgress{Status: "not_found", Mod: saveMod.Name})
+				return
+			}
+
+			sendSyncProgress(ModSyncProgress{Status: "progress", Total: total, Mod: saveMod.Name})
+
+			cfg := bootstrap.GetConfig()
+			creds := Credentials{}
+			if _, statusErr := creds.Load(); statusErr != nil {
+				resultsMu.Lock()
+				results = append(results, ModSyncResult{Name: saveMod.Name, Version: wantVersion, Status: "not_found"})
+				resultsMu.Unlock()
+				sendSyncProgress(ModSyncProgress{Status: "not_found", Mod: saveMod.Name})
+				return
+			}
+
+			dlURL := "https://mods.factorio.com" + release.DownloadURL + "?username=" + creds.Username + "&token=" + creds.Userkey
+			dlResp, dlErr := http.Get(dlURL)
+			if dlErr != nil {
+				resultsMu.Lock()
+				results = append(results, ModSyncResult{Name: saveMod.Name, Version: wantVersion, Status: "not_found"})
+				resultsMu.Unlock()
+				sendSyncProgress(ModSyncProgress{Status: "not_found", Mod: saveMod.Name})
+				return
+			}
+			defer dlResp.Body.Close()
+
+			if dlResp.StatusCode != 200 {
+				resultsMu.Lock()
+				results = append(results, ModSyncResult{Name: saveMod.Name, Version: wantVersion, Status: "not_found"})
+				resultsMu.Unlock()
+				sendSyncProgress(ModSyncProgress{Status: "not_found", Mod: saveMod.Name})
+				return
+			}
+
+			filePath := filepath.Join(cfg.FactorioModsDir, release.FileName)
+			FileLock.LockW(filePath)
+			defer FileLock.Unlock(filePath)
+			outFile, createErr := os.Create(filePath)
+			if createErr != nil {
+				resultsMu.Lock()
+				results = append(results, ModSyncResult{Name: saveMod.Name, Version: wantVersion, Status: "not_found"})
+				resultsMu.Unlock()
+				sendSyncProgress(ModSyncProgress{Status: "not_found", Mod: saveMod.Name})
+				return
+			}
+
+			totalSize := dlResp.ContentLength
+			var written int64
+			if totalSize > 0 {
+				buf := make([]byte, 32*1024)
+				for {
+					if modsSyncCancel.Load() {
+						break
+					}
+					n, readErr := dlResp.Body.Read(buf)
+					if n > 0 {
+						_, writeErr := outFile.Write(buf[:n])
+						if writeErr != nil {
+							break
+						}
+						written += int64(n)
+						sendSyncProgress(ModSyncProgress{
+							Status:     "progress",
+							Total:      total,
+							Mod:        saveMod.Name,
+							Downloaded: written,
+							Size:       totalSize,
+						})
+					}
+					if readErr != nil {
+						break
+					}
+				}
 			} else {
-				finalMods.ModSimpleList.Mods[i].Enabled = false
+				written, _ = io.Copy(outFile, dlResp.Body)
 			}
-		}
-		if saveErr := finalMods.ModSimpleList.saveModInfoJson(); saveErr != nil {
-			log.Printf("SyncModsFromSave: error saving mod-list.json: %v", saveErr)
-		}
+			outFile.Close()
+
+			resultsMu.Lock()
+			results = append(results, ModSyncResult{Name: saveMod.Name, Version: wantVersion, Status: "downloaded"})
+			resultsMu.Unlock()
+			log.Printf("SyncModsFromSave: downloaded %s %s", saveMod.Name, wantVersion)
+
+			sendSyncProgress(ModSyncProgress{
+				Status: "downloaded",
+				Mod:    saveMod.Name,
+			})
+		}()
 	}
+
+	wg.Wait()
 
 	sendSyncProgress(ModSyncProgress{Status: "done", Total: total, Mods: results, Warning: vanillaWarning})
 }

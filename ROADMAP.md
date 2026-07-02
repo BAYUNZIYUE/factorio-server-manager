@@ -23,6 +23,33 @@
 - [x] Auth gate preventing login form flash
 - [x] 401 auto-redirect to login page
 
+## 📂 Worktree 隔离开发
+
+```
+主目录:    /workspace/projects/factorio-server-manager-joey       (当前功能)
+参考目录:  /workspace/projects/factorio-server-manager-develop    (joey/develop)
+
+新功能:
+  git worktree add ../factorio-server-manager-<slug> -b feat/<slug>
+  cd ../factorio-server-manager-<slug>
+  # 开发、构建、测试...
+  # 完成后: git push && git worktree remove ../factorio-server-manager-<slug>
+```
+
+## 🧪 测试流程（每次改动必做）
+
+修改代码后，必须闭环验证以下步骤：
+
+1. **构建**: `npm run build && go build`
+2. **部署**: `cp -r app/* /home/game/fsm/app/ && cp factorio-server-manager /home/game/fsm/`
+3. **重启**: `kill $(pgrep factorio-server); cd /home/game/fsm && setsid ./factorio-server-manager ...`
+4. **登录**: Playwright 打开 `/login` → 输入凭据 → 确认跳转到主页
+5. **功能页**: 导航到改动的页面，等待 15 秒
+6. **检查**: 控制台 0 个 JS Error，页面正常渲染
+7. **交互**: 点击/拖拽核心功能，确认不崩溃
+
+> 每次提交前跑一遍，不允许「改完就提交」。
+
 ## 🚧 Planned
 
 ### Mods

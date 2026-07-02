@@ -6,15 +6,15 @@ const Panel = ({title, content, actions, className}) => {
             <div className="px-4 py-2 text-xl text-dirty-white font-bold">
                 {title}
             </div>
-            <div className="text-white rounded-sm bg-gray-medium shadow-inner mx-4 px-6 pt-4 pb-6">
-                {content}
-            </div>
             {actions
-                ? <div className="mx-4 pt-4">
+                ? <div className="mx-4 pb-4">
                     {actions}
                 </div>
                 : null
             }
+            <div className="text-white rounded-sm bg-gray-medium shadow-inner mx-4 px-6 pt-4 pb-6">
+                {content}
+            </div>
         </div>
     )
 }

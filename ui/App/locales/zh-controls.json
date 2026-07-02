@@ -20,5 +20,11 @@
   "stopServer": "停止服务器",
   "saveStopServer": "保存并停止",
   "saveSettings": "保存设置",
-  "settingsSaved": "设置已保存"
+  "settingsSaved": "设置已保存",
+  "players": "在线玩家",
+  "uptime": "运行时长",
+  "compatible": "兼容",
+  "incompatible": "不兼容",
+  "chat": "聊天",
+  "noChatYet": "暂无聊天消息"
 }

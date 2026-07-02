@@ -37,14 +37,76 @@ type VersionManager struct {
 	Credentials    *Credentials
 }
 
-func (vm *VersionManager) GetCurrentVersion() (string, error) {
-	cmd := exec.Command(vm.FactorioBinary, "--version")
+func checkBinaryVersion(binPath string) (string, error) {
+	info, err := os.Stat(binPath)
+	if err != nil {
+		return "", fmt.Errorf("failed to stat binary: %w", err)
+	}
+	src, err := os.Open(binPath)
+	if err != nil {
+		return "", fmt.Errorf("failed to open binary: %w", err)
+	}
+	defer src.Close()
+
+	tmpFile, err := os.CreateTemp("", "factorio-version-*")
+	if err != nil {
+		return "", fmt.Errorf("failed to create temp file: %w", err)
+	}
+	tmpPath := tmpFile.Name()
+	defer os.Remove(tmpPath)
+
+	if _, err := io.Copy(tmpFile, src); err != nil {
+		tmpFile.Close()
+		return "", fmt.Errorf("failed to copy binary: %w", err)
+	}
+	tmpFile.Close()
+	src.Close()
+
+	if err := os.Chmod(tmpPath, info.Mode()); err != nil {
+		return "", fmt.Errorf("failed to chmod temp binary: %w", err)
+	}
+
+	cmd := exec.Command(tmpPath, "--version")
 	output, err := cmd.Output()
 	if err != nil {
-		return "", fmt.Errorf("failed to get current version: %w", err)
+		return "", fmt.Errorf("failed to read version: %w", err)
 	}
-	line := string(output)
-	return parseVersionLine(line)
+	return parseVersionLine(string(output))
+}
+
+func (vm *VersionManager) GetCurrentVersion() (string, error) {
+	return checkBinaryVersion(vm.FactorioBinary)
+}
+
+func RefreshServerVersion() error {
+	server := GetFactorioServer()
+	config := bootstrap.GetConfig()
+
+	ver, err := checkBinaryVersion(config.FactorioBinary)
+	if err != nil {
+		return fmt.Errorf("failed to read version: %w", err)
+	}
+
+	reg := regexp.MustCompile("Version.*?((\\d+\\.)?(\\d+\\.)?(\\*|\\d+)+)")
+	found := reg.FindStringSubmatch(ver)
+	if len(found) < 2 {
+		return fmt.Errorf("could not parse version from: %s", ver)
+	}
+
+	if err := server.Version.UnmarshalText([]byte(found[1])); err != nil {
+		return fmt.Errorf("could not parse version: %w", err)
+	}
+
+	baseModInfoFile := filepath.Join(config.FactorioBaseModDir, "info.json")
+	bmifBa, err := ioutil.ReadFile(baseModInfoFile)
+	if err == nil {
+		var modInfo ModInfo
+		if err := json.Unmarshal(bmifBa, &modInfo); err == nil {
+			server.BaseModVersion = modInfo.Version
+		}
+	}
+
+	return nil
 }
 
 func (vm *VersionManager) GetAvailableVersions() ([]Release, error) {
@@ -205,37 +267,6 @@ func (pr *ProgressReader) Read(p []byte) (int, error) {
 		pr.OnProgress(pct)
 	}
 	return n, err
-}
-
-func RefreshServerVersion() error {
-	server := GetFactorioServer()
-	config := bootstrap.GetConfig()
-
-	out, err := exec.Command(config.FactorioBinary, "--version").Output()
-	if err != nil {
-		return fmt.Errorf("failed to read version: %w", err)
-	}
-
-	reg := regexp.MustCompile("Version.*?((\\d+\\.)?(\\d+\\.)?(\\*|\\d+)+)")
-	found := reg.FindStringSubmatch(string(out))
-	if len(found) < 2 {
-		return fmt.Errorf("could not parse version from: %s", string(out))
-	}
-
-	if err := server.Version.UnmarshalText([]byte(found[1])); err != nil {
-		return fmt.Errorf("could not parse version: %w", err)
-	}
-
-	baseModInfoFile := filepath.Join(config.FactorioBaseModDir, "info.json")
-	bmifBa, err := ioutil.ReadFile(baseModInfoFile)
-	if err == nil {
-		var modInfo ModInfo
-		if err := json.Unmarshal(bmifBa, &modInfo); err == nil {
-			server.BaseModVersion = modInfo.Version
-		}
-	}
-
-	return nil
 }
 
 func NewVersionManager() *VersionManager {

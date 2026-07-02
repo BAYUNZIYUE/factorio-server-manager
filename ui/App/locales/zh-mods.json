@@ -47,7 +47,6 @@
   "Enabled": "启用",
   "Compatibility": "兼容性",
   "Mod Version": "模组版本",
-  "Factorio Version": "Factorio 版本",
   "Space Age DLC": "太空时代 DLC",
   "File Size": "文件大小",
   "readModsFromSave": "从存档读取模组",
@@ -66,5 +65,17 @@
   "mod": "模组",
   "required": "需要版本",
   "status": "状态",
-  "columns": "列"
+  "columns": "列",
+  "syncingInProgress": "模组同步中，部分操作暂时禁用",
+  "Game Ver": "游戏版本",
+  "Other Actions": "其他操作",
+  "active": "进行中",
+  "completed": "已完成",
+  "pending": "等待中",
+  "failed": "失败",
+  "downloading": "下载中",
+  "expandAll": "展开全部",
+  "collapseAll": "收起全部",
+  "enableAllMods": "启用全部模组",
+  "disableAllMods": "禁用全部模组"
 }

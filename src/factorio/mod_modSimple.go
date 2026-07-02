@@ -6,7 +6,10 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"sync"
 )
+
+var modListWriteMu sync.Mutex
 
 type ModSimple struct {
 	Name    string `json:"name"`
@@ -70,14 +73,15 @@ func (modSimpleList *ModSimpleList) listInstalledMods() error {
 }
 
 func (modSimpleList *ModSimpleList) saveModInfoJson() error {
-	var err error
+	modListWriteMu.Lock()
+	defer modListWriteMu.Unlock()
 
-	//build json of current state
 	newJson, _ := json.MarshalIndent(modSimpleList, "", "    ")
 
-	err = ioutil.WriteFile(modSimpleList.Destination+"/mod-list.json", newJson, 0664)
-	if err != nil {
-		log.Printf("error when writing new mod-list: %s", err)
+	path := modSimpleList.Destination + "/mod-list.json"
+
+	if err := ioutil.WriteFile(path, newJson, 0664); err != nil {
+		log.Printf("error when writing mod-list: %s", err)
 		return err
 	}
 

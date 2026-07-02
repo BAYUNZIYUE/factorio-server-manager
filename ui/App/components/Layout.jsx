@@ -77,7 +77,6 @@ const Layout = ({handleLogout, serverStatus}) => {
                             <Link to="/mods">{t("mods.title")}</Link>
                             <Link to="/server-version">{t("serverVersion.title")}</Link>
                             <Link to="/server-settings">{t("server_settings.title")}</Link>
-                            <Link to="/game-settings">{t("game_settings.title")}</Link>
                             <Link to="/console">{t("console.title")}</Link>
                         </div>
                     </div>
@@ -86,7 +85,8 @@ const Layout = ({handleLogout, serverStatus}) => {
                         <div className="text-white text-center rounded-sm bg-black shadow-inner mx-4 p-1">
                             <Link to="/user-management">{t("users.title")}</Link>
                             <Button className="w-full mb-1" onClick={() => setIsChangingLang(true)}>{t("lang")}</Button>
-                            <Link to="/help" last={true}>{t("help.title")}</Link>
+                            <Link to="/help">{t("help.title")}</Link>
+                            <Link to="/event-log" last={true}>事件日志</Link>
                             <ChangeLangDialog
                                 isOpen={isChangingLang}
                                 close={() => setIsChangingLang(false)}

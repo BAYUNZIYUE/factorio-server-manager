@@ -26,13 +26,13 @@ function ConfirmDialog({title, content, isOpen, close, onSuccess, closeImmediate
         <Modal
             title={title}
             content={content}
+            isOpen={isOpen}
             actions={
                 <>
-                    <Button size="sm" type="danger" className="mr-2" onClick={close}>{t('cancel')}</Button>
+                    <Button size="sm" onClick={close}>{t('cancel')}</Button>
                     <Button size="sm" isLoading={isLoading} type="success" onClick={confirm}>{t('confirm')}</Button>
                 </>
             }
-            isOpen={isOpen}
         />
     );
 }

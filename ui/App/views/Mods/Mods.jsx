@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import modsResource from "../../../api/resources/mods";
 import Button from "../../components/Button";
 import server from "../../../api/resources/server";
+import socket from "../../../api/socket";
 import TabControl from "../../components/Tabs/TabControl";
 import Tab from "../../components/Tabs/Tab";
 import AddMod from "./components/AddMod/AddMod";
@@ -42,12 +43,12 @@ const Mods = ({serverStatus}) => {
     };
 
     const fetchInstalledMods = () => {
-        modsResource.installed()
+        return modsResource.installed()
             .then(setInstalledMods);
     };
 
     const fetchModPacks = () => {
-        modsResource.packs.list()
+        return modsResource.packs.list()
             .then(setModPacks)
     }
 
@@ -97,18 +98,31 @@ const Mods = ({serverStatus}) => {
 
         const interval = setInterval(() => {
             if (document.hidden) return;
-            fetchInstalledMods();
-            fetchModPacks();
+            fetchInstalledMods().catch(() => {});
+            fetchModPacks().catch(() => {});
         }, 2000);
 
+        const handleModEvent = (message) => {
+            const data = JSON.parse(message);
+            if (data.type === "mod_deleted") {
+                setInstalledMods(prev => prev.filter(m => m.name !== data.name));
+            } else if (data.type === "mods_cleared") {
+                setInstalledMods([]);
+            }
+        };
+        socket.on('mods_events', handleModEvent);
+        socket.emit('mods events subscribe');
+
         const handleRefresh = () => {
-            fetchInstalledMods();
-            fetchModPacks();
+            fetchInstalledMods().catch(() => {});
+            fetchModPacks().catch(() => {});
         };
         window.addEventListener('fsm_refresh_mods', handleRefresh);
 
         return () => {
             clearInterval(interval);
+            socket.off('mods_events', handleModEvent);
+            socket.emit('mods events unsubscribe');
             window.removeEventListener('fsm_refresh_mods', handleRefresh);
         };
     }, []);
@@ -131,12 +145,26 @@ const Mods = ({serverStatus}) => {
             .then(fetchInstalledMods)
     }
 
+    const enableAllMods = () => {
+        const toEnable = installedMods.filter(m => !m.enabled && m.name !== 'base');
+        Promise.all(toEnable.map(m => toggleMod(m.name)))
+            .then(fetchInstalledMods)
+            .catch(() => fetchInstalledMods());
+    }
+
+    const disableAllMods = () => {
+        const toDisable = installedMods.filter(m => m.enabled && m.name !== 'base');
+        Promise.all(toDisable.map(m => toggleMod(m.name)))
+            .then(fetchInstalledMods)
+            .catch(() => fetchInstalledMods());
+    }
+
     let disabled = serverStatus.running
     let isBusy = disabled || isDeletingAllMods || isUpdatingAllMods || isSyncing
 
     return (
         <div>
-            {isBusy ?
+            {disabled && !isSyncing &&
                 <Panel className="mb-6"
                        content={
                             <div className="text-red font-bold text-xl">
@@ -144,8 +172,22 @@ const Mods = ({serverStatus}) => {
                             </div>
                        }
                 />
-                :
-                !authChecked ? null :
+            }
+            {isSyncing &&
+                <Panel className="mb-6"
+                       content={
+                            <div className="flex items-center justify-between">
+                                <div className="text-orange font-bold text-xl">
+                                    {t('syncingInProgress')}
+                                </div>
+                                <Button size="sm" type="danger" onClick={() => modsResource.cancelSync()}>
+                                    取消同步
+                                </Button>
+                            </div>
+                       }
+                />
+            }
+            {!authChecked ? null :
                 <div>
                     {portalLoading &&
                         <div className="mb-4 p-4 bg-gray-dark rounded-sm">
@@ -168,7 +210,7 @@ const Mods = ({serverStatus}) => {
                                 <LoadMods refreshMods={fetchInstalledMods}
                                           isFactorioAuthenticated={isFactorioAuthenticated}
                                           setIsFactorioAuthenticated={setIsFactorioAuthenticated}
-                                          setIsSyncing={setIsSyncing} />
+                                          onSyncingChange={setIsSyncing} />
                             </Tab>
                         </TabControl>
                     </div>
@@ -198,6 +240,8 @@ const Mods = ({serverStatus}) => {
                             <>
                                 <a className="bg-gray-light py-1 px-2 hover:glow-orange hover:bg-orange inline-block accentuated text-black font-bold"
                                    href={modsResource.downloadAllURL}>{t('downloadAllMods')}</a>
+                                <Button size="sm" className="ml-2" onClick={enableAllMods}>{t('enableAllMods')}</Button>
+                                <Button size="sm" className="ml-2" onClick={disableAllMods}>{t('disableAllMods')}</Button>
                                 <Button size="sm" type="danger" className="ml-2"
                                     isLoading={isDeletingAllMods}
                                     onClick={() => setShowDeleteAllConfirm(true)}>{t('deleteAllMods')}</Button>

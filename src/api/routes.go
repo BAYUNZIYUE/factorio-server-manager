@@ -181,12 +181,18 @@ var apiRoutes = Routes{
 		"/saves/mods/list",
 		GetModsFromSaveHandler,
 		true,
-	}, {
+	}, 	{
 		"SyncModsFromSave",
 		"POST",
 		"/saves/mods/sync",
 		SyncModsFromSaveHandler,
 		true,
+	}, {
+		"CancelModsSync",
+		"POST",
+		"/saves/mods/sync/cancel",
+		CancelModsSyncHandler,
+		false,
 	}, {
 		"LogTail",
 		"GET",

@@ -8,8 +8,9 @@ const client = Axios.create({
 });
 
 client.interceptors.response.use(res => res, err => {
+    const url = err.config?.url || '';
     if (!err.response) {
-        if (window.flash) window.flash("Network error or request timeout", "red");
+        if (window.flash && !url.includes('/portal/info/')) window.flash("Network error or request timeout", "red");
         return Promise.reject(err);
     }
     const status = err.response.status;
@@ -22,7 +23,7 @@ client.interceptors.response.use(res => res, err => {
         }
     } else if (status === 404) {
         // 404 is expected for portal "mod not found" — don't flash
-    } else {
+    } else if (!url.includes('/portal/info/')) {
         if (window.flash) {
             const data = err.response.data;
             const msg = typeof data === 'string' ? data

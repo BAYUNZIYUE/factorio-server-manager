@@ -46,7 +46,7 @@
     "removeInstallation": "卸载"
   },
   "server_settings": {
-    "title": "服务器设置",
+    "title": "配置管理",
     "admins": "管理员",
     "name": "服务器名称",
     "description": "服务器描述",
@@ -176,7 +176,7 @@
     "factorio_login_error_message": "用户名或密码不匹配"
   },
   "serverVersion": {
-    "title": "服务器版本",
+    "title": "版本管理",
     "current": "当前版本",
     "available": "可用版本",
     "stable": "稳定版",

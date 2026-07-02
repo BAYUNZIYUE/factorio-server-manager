@@ -1,8 +1,14 @@
-import React, {useState} from "react";
+import React, {useState, useEffect} from "react";
 import TabTitle from "./TabTitle";
 
-const TabControl = ({children}) => {
+const TabControl = ({children, activeIndex}) => {
     const [selectedTab, setSelectedTab] = useState(0)
+
+    useEffect(() => {
+        if (activeIndex !== undefined && activeIndex !== selectedTab) {
+            setSelectedTab(activeIndex);
+        }
+    }, [activeIndex]);
 
     const handleSelect = (index) => {
         setSelectedTab(index);
