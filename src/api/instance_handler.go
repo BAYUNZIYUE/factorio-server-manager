@@ -6,8 +6,10 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"path/filepath"
 	"regexp"
 
+	"github.com/OpenFactorioServerManager/factorio-server-manager/bootstrap"
 	"github.com/OpenFactorioServerManager/factorio-server-manager/instance"
 	"github.com/gorilla/mux"
 )
@@ -181,3 +183,78 @@ func errMsg(err error) string {
 	}
 	return err.Error()
 }
+
+// ===== Instance-scoped wrapper handlers =====
+// These wrapper handlers temporarily redirect global config paths to the
+// instance-specific paths before calling the existing handler functions.
+// This allows the legacy handler code (which reads from bootstrap.GetConfig())
+// to operate on the correct instance without requiring per-handler refactoring.
+
+// wrapInstanceSavesHandler wraps a save handler to use the instance's saves directory.
+func wrapInstanceSavesHandler(fn http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		inst, ok := r.Context().Value(instanceKey).(*instance.Instance)
+		if !ok {
+			http.Error(w, "no instance in context", http.StatusInternalServerError)
+			return
+		}
+		// Temporarily redirect global config to instance saves dir
+		globalCfg := bootstrap.GetConfig()
+		origSavesDir := globalCfg.FactorioSavesDir
+		globalCfg.FactorioSavesDir = inst.Server().SavesDir()
+		defer func() { globalCfg.FactorioSavesDir = origSavesDir }()
+		fn(w, r)
+	}
+}
+
+// Instance-scoped save handler variables that use the instance's saves directory.
+var ListInstanceSaves = wrapInstanceSavesHandler(ListSaves)
+var DLInstanceSave = wrapInstanceSavesHandler(DLSave)
+var UploadInstanceSave = wrapInstanceSavesHandler(UploadSave)
+var RemoveInstanceSave = wrapInstanceSavesHandler(RemoveSave)
+var CreateInstanceSave = wrapInstanceSavesHandler(CreateSaveHandler)
+
+// wrapInstanceConfigHandler wraps a settings/log/config handler to use the instance's paths.
+func wrapInstanceConfigHandler(fn http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		inst, ok := r.Context().Value(instanceKey).(*instance.Instance)
+		if !ok {
+			http.Error(w, "no instance in context", http.StatusInternalServerError)
+			return
+		}
+		globalCfg := bootstrap.GetConfig()
+
+		origSettings := globalCfg.SettingsFile
+		origConfigDir := globalCfg.FactorioConfigDir
+		origAdminFile := globalCfg.FactorioAdminFile
+		origBinary := globalCfg.FactorioBinary
+		origLog := globalCfg.FactorioLog
+		origConsoleLog := globalCfg.ConsoleLogFile
+		origConfigFile := globalCfg.FactorioConfigFile
+
+		globalCfg.SettingsFile = inst.Server().SettingsFile()
+		globalCfg.FactorioConfigDir = inst.Server().ConfigDir()
+		globalCfg.FactorioAdminFile = filepath.Join(inst.Server().ConfigDir(), "server-adminlist.json")
+		globalCfg.FactorioBinary = inst.Server().BinaryPath()
+		globalCfg.FactorioLog = filepath.Join(inst.Server().ConfigDir(), "factorio-current.log")
+		globalCfg.ConsoleLogFile = inst.Server().ConsoleLog()
+		globalCfg.FactorioConfigFile = filepath.Join(inst.Server().ConfigDir(), "config.ini")
+
+		defer func() {
+			globalCfg.SettingsFile = origSettings
+			globalCfg.FactorioConfigDir = origConfigDir
+			globalCfg.FactorioAdminFile = origAdminFile
+			globalCfg.FactorioBinary = origBinary
+			globalCfg.FactorioLog = origLog
+			globalCfg.ConsoleLogFile = origConsoleLog
+			globalCfg.FactorioConfigFile = origConfigFile
+		}()
+		fn(w, r)
+	}
+}
+
+// Instance-scoped config handler variables that use the instance's config paths.
+var GetInstanceSettings = wrapInstanceConfigHandler(GetServerSettings)
+var UpdateInstanceSettings = wrapInstanceConfigHandler(UpdateServerSettings)
+var InstanceLogTail = wrapInstanceConfigHandler(LogTail)
+var InstanceLoadConfig = wrapInstanceConfigHandler(LoadConfig)
