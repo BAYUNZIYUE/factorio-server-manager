@@ -50,7 +50,7 @@ func (m *InstanceManager) Repair(name string) (*Instance, error) {
 			gamePort = p
 		}
 	}
-	rconPort := randomPortRange(40000, 45000)
+	rconPort := RandomPortRange(40000, 45000)
 
 	meta := InstanceMetadata{
 		Name:            name,
@@ -123,7 +123,8 @@ func extractPortFromSettings(data []byte) int {
 	return 0
 }
 
-func randomPortRange(min, max int) int {
+// RandomPortRange returns a random port in the range [min, max).
+func RandomPortRange(min, max int) int {
 	rand.Seed(time.Now().UnixNano())
 	return rand.Intn(max-min) + min
 }

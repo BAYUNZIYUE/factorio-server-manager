@@ -72,7 +72,7 @@ func MigrateToMultiInstance(config bootstrap.Config) error {
 		Name:        "default",
 		DisplayName: "Default",
 		GamePort:    34197,
-		RconPort:    randomPortRange(40000, 45000),
+		RconPort:    RandomPortRange(40000, 45000),
 		BindIP:      "0.0.0.0",
 		Autostart:   false,
 		CreatedAt:   time.Now().UTC(),
