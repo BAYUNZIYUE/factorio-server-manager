@@ -21,6 +21,20 @@ import (
 	"github.com/OpenFactorioServerManager/rcon"
 )
 
+// ServerConfig holds per-instance configuration for a Factorio server.
+type ServerConfig struct {
+	InstanceName string
+	BinaryPath   string
+	SavesDir     string
+	ModsDir      string
+	ConfigDir    string
+	SettingsFile string
+	GamePort     int
+	RconPort     int
+	BindIP       string
+	ConsoleLog   string
+}
+
 type Server struct {
 	Cmd            *exec.Cmd              `json:"-"`
 	Savefile       string                 `json:"savefile"`
@@ -36,6 +50,24 @@ type Server struct {
 	Settings       map[string]interface{} `json:"-"`
 	Rcon           *rcon.RemoteConsole    `json:"-"`
 	LogChan        chan []string          `json:"-"`
+	config         ServerConfig           `json:"-"`
+}
+
+// NewServer creates a new Server with per-instance configuration.
+func NewServer(instanceDir string, cfg ServerConfig) *Server {
+	srv := &Server{
+		Settings: make(map[string]interface{}),
+		config:   cfg,
+	}
+	srv.BindIP = cfg.BindIP
+	if srv.BindIP == "" {
+		srv.BindIP = "0.0.0.0"
+	}
+	srv.Port = cfg.GamePort
+	if srv.Port == 0 {
+		srv.Port = 34197
+	}
+	return srv
 }
 
 var instantiated Server
