@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -23,16 +24,17 @@ import (
 
 // ServerConfig holds per-instance configuration for a Factorio server.
 type ServerConfig struct {
-	InstanceName string
-	BinaryPath   string
-	SavesDir     string
-	ModsDir      string
-	ConfigDir    string
-	SettingsFile string
-	GamePort     int
-	RconPort     int
-	BindIP       string
-	ConsoleLog   string
+	InstanceName    string
+	BinaryPath      string
+	SavesDir        string
+	ModsDir         string
+	ConfigDir       string
+	SettingsFile    string
+	GamePort        int
+	RconPort        int
+	BindIP          string
+	ConsoleLog      string
+	CredentialsFile string
 }
 
 type Server struct {
@@ -51,13 +53,15 @@ type Server struct {
 	Rcon           *rcon.RemoteConsole    `json:"-"`
 	LogChan        chan []string          `json:"-"`
 	config         ServerConfig           `json:"-"`
+	InstanceName   string                 `json:"-"`
 }
 
 // NewServer creates a new Server with per-instance configuration.
 func NewServer(instanceDir string, cfg ServerConfig) *Server {
 	srv := &Server{
-		Settings: make(map[string]interface{}),
-		config:   cfg,
+		Settings:     make(map[string]interface{}),
+		config:       cfg,
+		InstanceName: cfg.InstanceName,
 	}
 	srv.BindIP = cfg.BindIP
 	if srv.BindIP == "" {
@@ -67,20 +71,36 @@ func NewServer(instanceDir string, cfg ServerConfig) *Server {
 	if srv.Port == 0 {
 		srv.Port = 34197
 	}
+	if data, err := os.ReadFile(cfg.SettingsFile); err == nil {
+		json.Unmarshal(data, &srv.Settings)
+	}
 	return srv
 }
 
+// Deprecated: Global singleton — retained for backward compat during multi-instance migration.
+// Use NewServer() + InstanceAccessor/InstanceManager instead.
 var instantiated Server
+
+// Deprecated: Retained for backward compat during multi-instance migration.
 var once sync.Once
 
 func (server *Server) SetRunning(newState bool) {
 	if server.Running != newState {
-		log.Println("new state, will also send to correct room")
 		server.Running = newState
-		wsRoom := websocket.WebsocketHub.GetRoom("server_status")
+		roomName := server.wsRoomName("server_status")
+		wsRoom := websocket.WebsocketHub.GetRoom(roomName)
 		response, _ := json.Marshal(server)
 		wsRoom.Send(string(response))
 	}
+}
+
+// wsRoomName builds an instance-scoped WebSocket room name.
+// Falls back to legacy global room name if InstanceName is empty.
+func (server *Server) wsRoomName(kind string) string {
+	if server.InstanceName != "" {
+		return fmt.Sprintf("instance/%s/%s", server.InstanceName, kind)
+	}
+	return kind
 }
 
 func (server *Server) GetRunning() bool {
@@ -107,10 +127,13 @@ func (server *Server) autostart() {
 
 }
 
+// Deprecated: Use NewServer() + Instance accessor pattern instead.
 func SetFactorioServer(server Server) {
 	instantiated = server
 }
 
+// Deprecated: Use NewServer() with InstanceManager pattern instead.
+// Retained for backward compat during multi-instance migration.
 func NewFactorioServer() (err error) {
 	server := Server{}
 	server.Settings = make(map[string]interface{})
@@ -250,6 +273,7 @@ func NewFactorioServer() (err error) {
 	return
 }
 
+// Deprecated: Use InstanceAccessor.GetRunningInstances() or InstanceManager.Get() instead.
 func GetFactorioServer() (f *Server) {
 	return &instantiated
 }
@@ -371,7 +395,7 @@ func (server *Server) parseRunningCommand(std io.ReadCloser) (err error) {
 		}
 
 		// send the reported line per websocket
-		wsRoom := websocket.WebsocketHub.GetRoom("gamelog")
+		wsRoom := websocket.WebsocketHub.GetRoom(server.wsRoomName("gamelog"))
 		go wsRoom.Send(text)
 
 		line := strings.Fields(text)
@@ -409,8 +433,11 @@ func (server *Server) parseRunningCommand(std io.ReadCloser) (err error) {
 }
 
 func (server *Server) writeLog(logline string) error {
-	config := bootstrap.GetConfig()
-	logfileName := config.ConsoleLogFile
+	logfileName := server.config.ConsoleLog
+	if logfileName == "" {
+		globalConfig := bootstrap.GetConfig()
+		logfileName = globalConfig.ConsoleLogFile
+	}
 	file, err := os.OpenFile(logfileName, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
 	if err != nil {
 		log.Printf("Cannot open logfile %s for appending Factorio Server output: %s", logfileName, err)
@@ -435,6 +462,22 @@ func (server *Server) checkLogError(logline []string) error {
 	return nil
 }
 
+// InstanceAccessor is implemented by the instance package to break the import cycle
+// between factorio ↔ instance. The instance.InstanceManager satisfies this interface.
+type InstanceAccessor interface {
+	GetRunningInstances() []ServerInstanceInfo
+}
+
+// ServerInstanceInfo pairs an instance name with its Server for rcon/broadcast use.
+type ServerInstanceInfo struct {
+	Name   string
+	Server *Server
+}
+
+// GlobalInstanceManager is set by main.go during startup.
+// Used by websocket control handlers to broadcast rcon commands to running instances.
+var GlobalInstanceManager InstanceAccessor
+
 func init() {
 	websocket.WebsocketHub.RegisterControlHandler <- serverWebsocketControl
 }
@@ -444,17 +487,32 @@ func serverWebsocketControl(controls websocket.WsControls) {
 	log.Println(controls)
 	if controls.Type == "command" {
 		command := controls.Value
-		server := GetFactorioServer()
-		if server.GetRunning() {
-			log.Printf("Received command: %v", command)
-
-			reqId, err := server.Rcon.Write(command)
-			if err != nil {
-				log.Printf("Error sending rcon command: %s", err)
-				return
+		if GlobalInstanceManager != nil {
+			for _, info := range GlobalInstanceManager.GetRunningInstances() {
+				if info.Server.GetRunning() {
+					reqId, err := info.Server.Rcon.Write(command)
+					if err != nil {
+						log.Printf("Error sending rcon command to %s: %v", info.Name, err)
+						continue
+					}
+					log.Printf("Command sent to %s, id: %v", info.Name, reqId)
+				}
 			}
-
-			log.Printf("Command send to Factorio: %s, with rcon request id: %v", command, reqId)
 		}
 	}
 }
+
+// SavesDir returns the per-instance saves directory path.
+func (s *Server) SavesDir() string { return s.config.SavesDir }
+
+// ConfigDir returns the per-instance config directory path.
+func (s *Server) ConfigDir() string { return s.config.ConfigDir }
+
+// BinaryPath returns the per-instance Factorio binary path.
+func (s *Server) BinaryPath() string { return s.config.BinaryPath }
+
+// ConsoleLog returns the per-instance console log file path, or empty if unset.
+func (s *Server) ConsoleLog() string { return s.config.ConsoleLog }
+
+// SettingsFile returns the per-instance server-settings.json path.
+func (s *Server) SettingsFile() string { return s.config.SettingsFile }

@@ -201,6 +201,20 @@ func (m *InstanceManager) ByPort(port int) *Instance {
 func (m *InstanceManager) StartOperation() { m.startMu.Lock() }
 func (m *InstanceManager) EndOperation()   { m.startMu.Unlock() }
 
+// GetRunningInstances returns instance info for all instances, satisfying factorio.InstanceAccessor.
+func (m *InstanceManager) GetRunningInstances() []factorio.ServerInstanceInfo {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	list := make([]factorio.ServerInstanceInfo, 0, len(m.instances))
+	for name, inst := range m.instances {
+		list = append(list, factorio.ServerInstanceInfo{
+			Name:   name,
+			Server: inst.Server(),
+		})
+	}
+	return list
+}
+
 func (m *InstanceManager) validatePortsLocked() error {
 	ports := make(map[int]string)
 	for _, inst := range m.instances {
