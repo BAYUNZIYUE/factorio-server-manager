@@ -22,22 +22,26 @@ func (s *Save) String() string {
 	return s.Name
 }
 
-// Lists save files in factorio/saves
-func ListSaves() (saves []Save, err error) {
-	config := bootstrap.GetConfig()
+// ListSavesInDir lists save files in the given directory.
+func ListSavesInDir(savesDir string) (saves []Save, err error) {
 	saves = []Save{}
-	err = filepath.Walk(config.FactorioSavesDir, func(path string, info os.FileInfo, err error) error {
-		if info == nil || (info.IsDir() && info.Name() == "saves") {
+	err = filepath.Walk(savesDir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if info == nil || info.IsDir() {
 			return nil
 		}
-		saves = append(saves, Save{
-			info.Name(),
-			info.ModTime(),
-			info.Size(),
-		})
+		saves = append(saves, Save{info.Name(), info.ModTime(), info.Size()})
 		return nil
 	})
 	return
+}
+
+// Lists save files in factorio/saves
+func ListSaves() (saves []Save, err error) {
+	config := bootstrap.GetConfig()
+	return ListSavesInDir(config.FactorioSavesDir)
 }
 
 func FindSave(name string) (*Save, error) {
