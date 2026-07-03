@@ -3,6 +3,8 @@ package api
 import (
 	"log"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/OpenFactorioServerManager/factorio-server-manager/api/websocket"
@@ -32,6 +34,15 @@ func ServerOffMiddleware(next http.Handler) http.Handler {
 		}
 		return
 	})
+}
+
+var spaHandler = func(w http.ResponseWriter, r *http.Request) {
+	path := filepath.Join("app", r.URL.Path)
+	if _, err := os.Stat(path); err == nil {
+		http.ServeFile(w, r, path)
+		return
+	}
+	http.ServeFile(w, r, filepath.Join("app", "index.html"))
 }
 
 func NewRouter() *mux.Router {
@@ -185,11 +196,10 @@ func NewRouter() *mux.Router {
 		Name("Server version").
 		Handler(http.StripPrefix("/server-version", http.FileServer(http.Dir("./app/"))))
 
-	// catch all route
-	mainRouter.PathPrefix("/").
-		Methods("GET").
-		Name("Index").
-		Handler(http.FileServer(http.Dir("./app/")))
+	// SPA: serve static files if they exist, otherwise serve index.html
+	mainRouter.PathPrefix("/instances").Methods("GET").Name("Instances").HandlerFunc(spaHandler)
+	mainRouter.PathPrefix("/instance").Methods("GET").Name("Instance").HandlerFunc(spaHandler)
+	mainRouter.PathPrefix("/").Methods("GET").Name("Index").HandlerFunc(spaHandler)
 
 	return mainRouter
 }
