@@ -2,6 +2,7 @@ package websocket
 
 import (
 	"reflect"
+	"strings"
 
 	"github.com/OpenFactorioServerManager/factorio-server-manager/bootstrap"
 )
@@ -171,12 +172,10 @@ func (room *wsRoom) run() {
 		case client := <-room.register:
 			room.clients[client] = true
 
-			// some hardcoded stuff for gamelog room
-			if room.name == "gamelog" {
-				// send cached log to registered client
+			if strings.HasSuffix(room.name, "/gamelog") {
 				for _, logLine := range LogCache {
 					client.send <- wsMessage{
-						RoomName: "gamelog",
+						RoomName: room.name,
 						Message:  logLine,
 					}
 				}
@@ -204,9 +203,7 @@ func (room *wsRoom) run() {
 				}
 			}
 
-			// some hardcoded stuff for gamelog room
-			if room.name == "gamelog" {
-				// add the line to the cache
+			if strings.HasSuffix(room.name, "/gamelog") {
 				LogCache = append(LogCache, message.Message.(string))
 				config := bootstrap.GetConfig()
 

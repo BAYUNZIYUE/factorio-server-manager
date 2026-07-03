@@ -29,6 +29,9 @@ type ModsResultList struct {
 
 var FileLock lockfile.FileLock = lockfile.NewLock()
 
+// TODO(multi-instance): Update WebSocket room references in this file to use
+// instance-prefixed room names once mod operations become instance-scoped.
+
 func NewMods(destination string) (Mods, error) {
 	var err error
 	var mods Mods

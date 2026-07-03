@@ -82,7 +82,11 @@ func InstallVersion(w http.ResponseWriter, r *http.Request) {
 
 	go func() {
 		vm := factorio.NewVersionManager()
-		wsRoom := websocket.WebsocketHub.GetRoom("server_version")
+		roomName := "server_version"
+		if vm.InstanceName != "" {
+			roomName = fmt.Sprintf("instance/%s/server_version", vm.InstanceName)
+		}
+		wsRoom := websocket.WebsocketHub.GetRoom(roomName)
 
 		err := vm.DownloadAndInstall(data.Version, func(percent int) {
 			factorio.SetInstallStatus(factorio.InstallStatus{

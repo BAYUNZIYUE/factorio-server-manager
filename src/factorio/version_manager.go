@@ -35,6 +35,7 @@ type VersionManager struct {
 	FactorioDir    string
 	FactorioBinary string
 	Credentials    *Credentials
+	InstanceName   string
 }
 
 func checkBinaryVersion(binPath string) (string, error) {
