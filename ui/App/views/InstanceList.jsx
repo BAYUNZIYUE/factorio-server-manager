@@ -50,8 +50,8 @@ const InstanceList = () => {
     if (loading) return <div className="text-center py-8 text-gray-light">{L.loading}</div>;
 
     return (
-        <div className="space-y-6">
-            <div className="flex justify-between items-center">
+        <div className="space-y-6 px-4 sm:px-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                 <h1 className="text-2xl text-dirty-white font-bold">{L.title}</h1>
                 <div className="flex gap-2">
                     <Link to="/instances/create"><Button size="sm" type="success">{L.createNew}</Button></Link>
@@ -66,7 +66,7 @@ const InstanceList = () => {
                     </div>
                 }/>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {instances.map(inst => (
                         <div key={inst.name} className="accentuated rounded-sm bg-gray-dark p-4 cursor-pointer hover:bg-gray-medium transition-colors"
                             onClick={() => navigate(`/instance/${inst.name}`)}>
