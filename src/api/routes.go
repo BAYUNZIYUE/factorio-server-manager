@@ -1,9 +1,12 @@
 package api
 
 import (
+	"log"
+	"net/http"
+	"strings"
+
 	"github.com/OpenFactorioServerManager/factorio-server-manager/api/websocket"
 	"github.com/OpenFactorioServerManager/factorio-server-manager/factorio"
-	"net/http"
 
 	"github.com/gorilla/mux"
 )
@@ -48,6 +51,61 @@ func NewRouter() *mux.Router {
 	serverOffRouter.Use(ServerOffMiddleware)
 
 	apiRouter.NewRoute().Subrouter()
+
+	// Instance management routes
+	apiRouter.Methods("GET").Path("/instances").Name("ListInstances").HandlerFunc(ListInstances)
+	apiRouter.Methods("POST").Path("/instances").Name("CreateInstance").HandlerFunc(CreateInstance)
+	apiRouter.Methods("DELETE").Path("/instances/{name}").Name("DeleteInstance").HandlerFunc(DeleteInstance)
+	apiRouter.Methods("POST").Path("/instances/repair").Name("RepairInstance").HandlerFunc(RepairInstance)
+	apiRouter.Methods("POST").Path("/instances/check-port").Name("CheckPortConflict").HandlerFunc(CheckPortConflict)
+	apiRouter.Methods("GET").Path("/instances/{name}").Name("GetInstance").HandlerFunc(GetInstance)
+
+	// Instance-scoped subrouter with InstanceMiddleware
+	instanceRouter := apiRouter.PathPrefix("/instance/{name}").Subrouter()
+	instanceRouter.Use(InstanceMiddleware)
+
+	// Instance operations
+	instanceRouter.Methods("POST").Path("/start").Name("StartInstance").HandlerFunc(StartInstance)
+	instanceRouter.Methods("POST").Path("/stop").Name("StopInstance").HandlerFunc(StopInstance)
+	instanceRouter.Methods("POST").Path("/kill").Name("KillInstance").HandlerFunc(KillInstance)
+	instanceRouter.Methods("GET").Path("/status").Name("InstanceStatus").HandlerFunc(InstanceStatus)
+	instanceRouter.Methods("GET").Path("/saves/list").Name("ListInstanceSaves").HandlerFunc(ListSaves)
+	instanceRouter.Methods("GET").Path("/saves/dl/{save}").Name("DLInstanceSave").HandlerFunc(DLSave)
+	instanceRouter.Methods("POST").Path("/saves/upload").Name("UploadInstanceSave").HandlerFunc(UploadSave)
+	instanceRouter.Methods("GET").Path("/saves/rm/{save}").Name("RemoveInstanceSave").HandlerFunc(RemoveSave)
+	instanceRouter.Methods("GET").Path("/saves/create/{save}").Name("CreateInstanceSave").HandlerFunc(CreateSaveHandler)
+	instanceRouter.Methods("GET").Path("/settings").Name("GetInstanceSettings").HandlerFunc(GetServerSettings)
+	instanceRouter.Methods("POST").Path("/settings/update").Name("UpdateInstanceSettings").HandlerFunc(UpdateServerSettings)
+	instanceRouter.Methods("GET").Path("/log/tail").Name("InstanceLogTail").HandlerFunc(LogTail)
+	instanceRouter.Methods("GET").Path("/config").Name("InstanceLoadConfig").HandlerFunc(LoadConfig)
+	instanceRouter.Methods("GET").Path("/version/current").Name("InstanceVersionCurrent").HandlerFunc(GetCurrentVersion)
+	instanceRouter.Methods("GET").Path("/version/available").Name("InstanceVersionAvailable").HandlerFunc(GetAvailableVersions)
+	instanceRouter.Methods("GET").Path("/version/list").Name("InstanceVersionList").HandlerFunc(GetFullVersionList)
+	instanceRouter.Methods("POST").Path("/version/install").Name("InstanceVersionInstall").HandlerFunc(InstallVersion)
+	instanceRouter.Methods("GET").Path("/version/install-status").Name("InstanceVersionInstallStatus").HandlerFunc(GetInstallStatus)
+	instanceRouter.Methods("GET").Path("/mods/list").Name("ListInstanceMods").HandlerFunc(ListInstalledModsHandler)
+	instanceRouter.Methods("POST").Path("/mods/toggle").Name("ToggleInstanceMod").HandlerFunc(ModToggleHandler)
+	instanceRouter.Methods("POST").Path("/mods/delete").Name("DeleteInstanceMod").HandlerFunc(ModDeleteHandler)
+	instanceRouter.Methods("POST").Path("/mods/delete/all").Name("DeleteAllInstanceMods").HandlerFunc(ModDeleteAllHandler)
+	instanceRouter.Methods("POST").Path("/mods/update").Name("UpdateInstanceMod").HandlerFunc(ModUpdateHandler)
+	instanceRouter.Methods("POST").Path("/mods/upload").Name("UploadInstanceMod").HandlerFunc(ModUploadHandler)
+	instanceRouter.Methods("GET").Path("/mods/download").Name("DownloadInstanceMods").HandlerFunc(ModDownloadHandler)
+
+	// Legacy redirects for old /api/server/* paths
+	apiRouter.Methods("POST").Path("/server/start").HandlerFunc(legacyRedirect("/api/instance/default/start"))
+	apiRouter.Methods("GET").Path("/server/stop").HandlerFunc(legacyRedirect("/api/instance/default/stop"))
+	apiRouter.Methods("GET").Path("/server/kill").HandlerFunc(legacyRedirect("/api/instance/default/kill"))
+	apiRouter.Methods("GET").Path("/server/status").HandlerFunc(legacyRedirect("/api/instance/default/status"))
+	apiRouter.Methods("GET").Path("/server/facVersion").HandlerFunc(legacyRedirect("/api/instances/default"))
+	apiRouter.Methods("GET").Path("/server/availableVersions").HandlerFunc(legacyRedirect("/api/instance/default/version/available"))
+	apiRouter.Methods("POST").Path("/server/install").HandlerFunc(legacyRedirect("/api/instance/default/version/install"))
+	apiRouter.Methods("DELETE").Path("/server/install").HandlerFunc(legacyRedirect("/api/instance/default/version/install"))
+	apiRouter.Methods("GET").Path("/server/version/current").HandlerFunc(legacyRedirect("/api/instance/default/version/current"))
+	apiRouter.Methods("GET").Path("/server/version/available").HandlerFunc(legacyRedirect("/api/instance/default/version/available"))
+	apiRouter.Methods("GET").Path("/server/version/list").HandlerFunc(legacyRedirect("/api/instance/default/version/list"))
+	apiRouter.Methods("POST").Path("/server/version/install").HandlerFunc(legacyRedirect("/api/instance/default/version/install"))
+	apiRouter.Methods("GET").Path("/server/version/install-status").HandlerFunc(legacyRedirect("/api/instance/default/version/install-status"))
+
 	for _, route := range apiRoutes {
 		var router *mux.Router
 		if route.ServerOff {
@@ -502,4 +560,16 @@ var apiRoutes = Routes{
 		ModPackModPortalInstallMultipleHandler,
 		false,
 	},
+}
+
+// legacyRedirect returns a handler that issues 308 redirect for backward compat.
+func legacyRedirect(targetPath string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		resolvedPath := targetPath
+		for k, v := range mux.Vars(r) {
+			resolvedPath = strings.ReplaceAll(resolvedPath, "{"+k+"}", v)
+		}
+		log.Printf("Legacy endpoint %s -> 308 to %s", r.URL.Path, resolvedPath)
+		http.Redirect(w, r, resolvedPath, http.StatusPermanentRedirect)
+	}
 }

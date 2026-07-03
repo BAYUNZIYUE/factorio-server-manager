@@ -11,15 +11,6 @@ import (
 	"github.com/gorilla/mux"
 )
 
-// contextKey and instanceKey are used by InstanceMiddleware (defined in instance_helpers.go)
-// to pass the resolved instance via request context.
-type contextKey string
-
-const instanceKey contextKey = "instance"
-
-// timeSleep allows mocking in tests.
-var timeSleep = time.Sleep
-
 func getInstanceFromRequest(r *http.Request) (*instance.Instance, error) {
 	// Try context first (set by InstanceMiddleware)
 	if inst, ok := r.Context().Value(instanceKey).(*instance.Instance); ok {

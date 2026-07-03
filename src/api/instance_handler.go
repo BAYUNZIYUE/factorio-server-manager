@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"regexp"
 
-	"github.com/OpenFactorioServerManager/factorio-server-manager/api/websocket"
 	"github.com/OpenFactorioServerManager/factorio-server-manager/instance"
 	"github.com/gorilla/mux"
 )
@@ -174,16 +173,6 @@ func CheckPortConflict(w http.ResponseWriter, r *http.Request) {
 	}
 	err := instanceManager.ValidatePort(body.Port)
 	json.NewEncoder(w).Encode(map[string]interface{}{"available": err == nil, "error": errMsg(err)})
-}
-
-// broadcastInstanceEvent sends an instance lifecycle event to the "instances" WebSocket room.
-func broadcastInstanceEvent(event string, inst *instance.Instance) {
-	m := inst.Metadata()
-	data, _ := json.Marshal(map[string]interface{}{
-		"event": event, "name": m.Name, "display_name": m.DisplayName, "status": inst.Status().String(),
-	})
-	room := websocket.WebsocketHub.GetRoom("instances")
-	room.Send(string(data))
 }
 
 func errMsg(err error) string {
