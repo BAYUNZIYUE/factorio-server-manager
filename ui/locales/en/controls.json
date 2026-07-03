@@ -16,5 +16,6 @@
   "UNKNOWN": "Unknown",
   "saveBeforeStop": "Save before stopping?",
   "confirmStop": "Are you sure you want to stop the server?",
-  "confirmKill": "Are you sure you want to kill the server? This may cause data loss."
+  "confirmKill": "Are you sure you want to kill the server? This may cause data loss.",
+  "backToInstances": "\u2190 Back to Instances"
 }

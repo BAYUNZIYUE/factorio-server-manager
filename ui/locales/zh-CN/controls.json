@@ -16,5 +16,6 @@
   "UNKNOWN": "未知",
   "saveBeforeStop": "停止前保存游戏？",
   "confirmStop": "确认停止服务器？",
-  "confirmKill": "确认强制停止服务器？这可能导致数据丢失。"
+  "confirmKill": "确认强制停止服务器？这可能导致数据丢失。",
+  "backToInstances": "← 返回实例列表"
 }

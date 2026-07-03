@@ -1,4 +1,5 @@
 import React, {useEffect, useState, useRef} from "react";
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Panel from "../components/Panel";
 import Button from "../components/Button";
@@ -15,6 +16,7 @@ import {faUsers, faClock, faMicrochip, faMemory, faComments} from "@fortawesome/
 import { useInstance } from '../context/InstanceProvider';
 
 const Controls = () => {
+    const navigate = useNavigate();
     const { instanceStatus } = useInstance();
     const serverStatus = instanceStatus || {};
 
@@ -213,6 +215,12 @@ const Controls = () => {
                     }
                 />
             </form>
+
+            <div className="mt-3">
+                <Button onClick={() => navigate('/instances')} size="sm" type="danger">
+                    ← 返回实例列表
+                </Button>
+            </div>
 
             {/* Chat Panel */}
             {serverStatus.running && (
