@@ -17,6 +17,7 @@ import (
 
 type Flags struct {
 	ConfFile           string `long:"conf" default:"./conf.json" description:"Specify location of Factorio Server Manager config file." env:"FSM_CONF"`
+	InstancesDir       string `long:"instances-dir" default:"./instances" description:"Directory containing Factorio server instances." env:"FSM_INSTANCES_DIR"`
 	FactorioDir        string `long:"dir" default:"./" description:"Specify location of Factorio directory." env:"FSM_DIR"`
 	ServerIP           string `long:"host" default:"0.0.0.0" description:"Specify IP for webserver to listen on." env:"FSM_SERVER_IP"`
 	FactorioIP         string `long:"game-bind-address" default:"0.0.0.0" description:"Specify IP for Factorio game server to listen on." env:"FSM_FACTORIO_IP"`
@@ -33,6 +34,7 @@ type Flags struct {
 }
 
 type Config struct {
+	InstancesDir            string `json:"instances_dir,omitempty"`
 	FactorioDir             string `json:"factorio_dir,omitempty"`
 	FactorioSavesDir        string `json:"saves_dir,omitempty"`
 	FactorioBaseModDir      string `json:"basemod_dir,omitempty"`
@@ -205,6 +207,7 @@ func randomPort() int {
 }
 
 func (config *Config) mapFlags(flags Flags) {
+	config.InstancesDir = flags.InstancesDir
 	config.Autostart = flags.Autostart
 	config.GlibcCustom = flags.GlibcCustom
 	config.GlibcLocation = flags.GlibcLocation
