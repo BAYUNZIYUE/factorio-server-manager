@@ -37,6 +37,26 @@ export default {
         const response = await client.get('/api/server/kill');
         return response.data;
     },
+    instanceStart: async (name, ip, port, savefile) => {
+        const response = await client.post(`/api/instance/${name}/start`, {
+            bindip: ip,
+            port,
+            savefile
+        });
+        return response.data;
+    },
+    instanceStop: async (name) => {
+        const response = await client.get(`/api/instance/${name}/stop`);
+        return response.data;
+    },
+    instanceKill: async (name) => {
+        const response = await client.get(`/api/instance/${name}/kill`);
+        return response.data;
+    },
+    instanceStatus: async (name) => {
+        const response = await client.get(`/api/instance/${name}/status`);
+        return response.data;
+    },
     version: {
         current: async () => {
             const response = await client.get('/api/server/version/current');

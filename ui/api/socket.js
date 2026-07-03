@@ -68,6 +68,20 @@ function connect() {
         activeRooms.delete(room);
     }
 
+    function dynamicSubscribe(room) {
+        if (!activeRooms.has(room)) {
+            activeRooms.add(room);
+            socket.send(JSON.stringify({room_name: "", controls: {type: "subscribe", value: room}}));
+        }
+    }
+
+    function dynamicUnsubscribe(room) {
+        if (activeRooms.has(room)) {
+            activeRooms.delete(room);
+            socket.send(JSON.stringify({room_name: "", controls: {type: "unsubscribe", value: room}}));
+        }
+    }
+
     function registerEventEmitter() {
         bus.on('log subscribe',      () => subscribe('gamelog'));
         bus.on('log unsubscribe',    () => { unsubscribe('gamelog'); logUnsubscribeEvent(); });
@@ -98,6 +112,9 @@ function connect() {
         for (const room of activeRooms) {
             const fn = roomSubs[room];
             if (fn) fn();
+            else {
+                socket.send(JSON.stringify({room_name: "", controls: {type: "subscribe", value: room}}));
+            }
         }
     }
 
@@ -119,6 +136,10 @@ function connect() {
         registerEventEmitter()
         resubscribeAll()
     }
+
+    // Expose dynamic subscribe/unsubscribe on the bus for instance-specific rooms
+    bus.subscribe = dynamicSubscribe;
+    bus.unsubscribe = dynamicUnsubscribe;
 }
 
 connect();
