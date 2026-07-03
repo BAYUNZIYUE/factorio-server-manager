@@ -17,10 +17,18 @@ import (
 
 	"github.com/OpenFactorioServerManager/factorio-server-manager/bootstrap"
 	"github.com/OpenFactorioServerManager/factorio-server-manager/factorio"
+	"github.com/OpenFactorioServerManager/factorio-server-manager/instance"
 	"github.com/gorilla/sessions"
 
 	"github.com/gorilla/mux"
 )
+
+var instanceManager *instance.InstanceManager
+
+// SetInstanceManager stores the global instance manager, called during startup.
+func SetInstanceManager(mgr *instance.InstanceManager) {
+	instanceManager = mgr
+}
 
 const readHttpBodyError = "Could not read the Request Body."
 
