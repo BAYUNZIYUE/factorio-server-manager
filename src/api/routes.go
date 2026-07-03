@@ -37,6 +37,7 @@ func ServerOffMiddleware(next http.Handler) http.Handler {
 }
 
 var spaHandler = func(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Cache-Control", "no-store, must-revalidate")
 	path := filepath.Join("app", r.URL.Path)
 	if _, err := os.Stat(path); err == nil {
 		http.ServeFile(w, r, path)
