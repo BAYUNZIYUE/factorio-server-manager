@@ -54,8 +54,7 @@ export function InstanceProvider({ children }) {
 
 export function useInstance() {
     const ctx = useContext(InstanceContext);
-    if (!ctx) throw new Error('useInstance must be used within InstanceProvider');
-    return ctx;
+    return ctx || { instance: null, instanceStatus: null, loading: false };
 }
 
 export function useInstances() {

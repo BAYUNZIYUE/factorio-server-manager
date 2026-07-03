@@ -1,13 +1,19 @@
 import React, {useEffect, useState} from "react";
-import {NavLink, Outlet} from "react-router-dom";
+import {NavLink, Outlet, useParams} from "react-router-dom";
 import Button from "./Button";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faBars} from "@fortawesome/free-solid-svg-icons";
 import {Flash} from "./Flash";
 import ChangeLangDialog from "./ChangeLangDialog";
 import { useTranslation } from "react-i18next";
+import InstanceSwitcher from './InstanceSwitcher';
+import { useInstance } from '../context/InstanceProvider';
 
-const Layout = ({handleLogout, serverStatus}) => {
+const Layout = ({handleLogout}) => {
+    const { instanceStatus, instance } = useInstance();
+    const serverStatus = instanceStatus || {};
+    const params = useParams();
+    const currentName = instance?.name || params.name || 'default';
 
     const { t, i18n } = useTranslation();
 
@@ -65,6 +71,9 @@ const Layout = ({handleLogout, serverStatus}) => {
                 <div className={isNavCollapsed ? "hidden md:block" : "block"}>
                     <div className="py-4 px-2 accentuated">
                         <h1 className="text-dirty-white text-lg mb-2 mx-4">{t("server_status")}</h1>
+                        <div className="mx-4 mb-2">
+                            <InstanceSwitcher/>
+                        </div>
                         <div className="mx-4 mb-4 text-center">
                             <Status info={serverStatus}/>
                         </div>
@@ -72,12 +81,12 @@ const Layout = ({handleLogout, serverStatus}) => {
                     <div className="py-4 px-2 accentuated">
                         <h1 className="text-dirty-white text-lg mb-2 mx-4">{t("server_management")}</h1>
                         <div className="text-white text-center rounded-sm bg-black shadow-inner mx-4 p-1">
-                            <Link to="/">{t("controls.title")}</Link>
-                            <Link to="/saves">{t("saves.title")}</Link>
-                            <Link to="/mods">{t("mods.title")}</Link>
-                            <Link to="/server-version">{t("serverVersion.title")}</Link>
-                            <Link to="/server-settings">{t("server_settings.title")}</Link>
-                            <Link to="/console">{t("console.title")}</Link>
+                            <Link to={`/instance/${currentName}`}>{t("controls.title")}</Link>
+                            <Link to={`/instance/${currentName}/saves`}>{t("saves.title")}</Link>
+                            <Link to={`/instance/${currentName}/mods`}>{t("mods.title")}</Link>
+                            <Link to={`/instance/${currentName}/server-version`}>{t("serverVersion.title")}</Link>
+                            <Link to={`/instance/${currentName}/server-settings`}>{t("server_settings.title")}</Link>
+                            <Link to={`/instance/${currentName}/console`}>{t("console.title")}</Link>
                         </div>
                     </div>
                     <div className="py-4 px-2 accentuated">
@@ -86,7 +95,7 @@ const Layout = ({handleLogout, serverStatus}) => {
                             <Link to="/user-management">{t("users.title")}</Link>
                             <Button className="w-full mb-1" onClick={() => setIsChangingLang(true)}>{t("lang")}</Button>
                             <Link to="/help">{t("help.title")}</Link>
-                            <Link to="/event-log" last={true}>事件日志</Link>
+                            <Link to={`/instance/${currentName}/event-log`} last={true}>事件日志</Link>
                             <ChangeLangDialog
                                 isOpen={isChangingLang}
                                 close={() => setIsChangingLang(false)}

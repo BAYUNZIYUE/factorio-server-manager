@@ -4,8 +4,11 @@ import Panel from "../components/Panel";
 import Button from "../components/Button";
 import server from "../../api/resources/server";
 import socket from "../../api/socket";
+import { useInstance } from '../context/InstanceProvider';
 
-const ServerVersion = ({serverStatus}) => {
+const ServerVersion = () => {
+    const { instanceStatus } = useInstance();
+    const serverStatus = instanceStatus || {};
 
     const { t } = useTranslation('serverVersion');
     const [currentVersion, setCurrentVersion] = useState(null);

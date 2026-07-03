@@ -6,8 +6,11 @@ import CreateSaveForm from "./components/CreateSaveForm";
 import UploadSaveForm from "./components/UploadSaveForm";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faDownload, faTrashAlt} from "@fortawesome/free-solid-svg-icons";
+import { useInstance } from '../../context/InstanceProvider';
 
-const Saves = ({serverStatus}) => {
+const Saves = () => {
+    const { instanceStatus } = useInstance();
+    const serverStatus = instanceStatus || {};
 
     const { t } = useTranslation('saves');
 

@@ -17,8 +17,11 @@ import ModList from "./components/ModList";
 import ConfirmDialog from "../../components/ConfirmDialog";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { useInstance } from '../../context/InstanceProvider';
 
-const Mods = ({serverStatus}) => {
+const Mods = () => {
+    const { instanceStatus } = useInstance();
+    const serverStatus = instanceStatus || {};
 
     const { t } = useTranslation('mods');
 

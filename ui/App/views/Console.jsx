@@ -3,11 +3,14 @@ import React, {useEffect, useRef, useState} from "react";
 import { useTranslation } from 'react-i18next';
 import socket from "../../api/socket";
 import log from "../../api/resources/log";
+import { useInstance } from '../context/InstanceProvider';
 
 const FONT_CLASS = { small: 'text-xs', medium: 'text-sm', large: 'text-base' };
 const WIDTH = { compact: {maxWidth: '56rem'}, normal: {maxWidth: '72rem'}, full: {maxWidth: 'none'} };
 
-const Console = ({serverStatus}) => {
+const Console = () => {
+    const { instanceStatus } = useInstance();
+    const serverStatus = instanceStatus || {};
 
     const { t } = useTranslation('console');
     const [logs, setLogs] = useState([]);

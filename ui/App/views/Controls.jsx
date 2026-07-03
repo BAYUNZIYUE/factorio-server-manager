@@ -12,8 +12,11 @@ import Error from "../components/Error";
 import socket from "../../api/socket";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faUsers, faClock, faMicrochip, faMemory, faComments} from "@fortawesome/free-solid-svg-icons";
+import { useInstance } from '../context/InstanceProvider';
 
-const Controls = ({serverStatus}) => {
+const Controls = () => {
+    const { instanceStatus } = useInstance();
+    const serverStatus = instanceStatus || {};
 
     const { t } = useTranslation('controls');
     const savedIp = localStorage.getItem('fsm_ip') || '0.0.0.0';
