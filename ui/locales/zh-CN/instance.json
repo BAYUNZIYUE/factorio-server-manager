@@ -26,5 +26,13 @@
   "back": "返回",
   "nameRequired": "小写字母数字加连字符（1-64 字符）",
   "portInvalid": "端口必须在 1024-65535 之间",
-  "loading": "加载中..."
+  "loading": "加载中...",
+  "port": "端口",
+  "rcon": "RCON",
+  "importSave": "导入存档",
+  "createNew": "+ 创建",
+  "starting": "启动中",
+  "stopping": "停止中",
+  "error": "错误",
+  "unknown": "未知"
 }

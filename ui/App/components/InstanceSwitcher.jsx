@@ -1,12 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useInstances } from '../context/InstanceProvider';
+import { useTranslation } from 'react-i18next';
 
 const InstanceSwitcher = () => {
     const { name: currentName } = useParams();
     const [isOpen, setIsOpen] = useState(false);
     const ref = useRef(null);
     const { instances } = useInstances();
+    const { t } = useTranslation();
 
     useEffect(() => {
         const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setIsOpen(false); };
@@ -38,7 +40,7 @@ const InstanceSwitcher = () => {
                     ))}
                     <div className="border-t border-gray-medium mt-1 pt-1">
                         <Link to="/instances" className="block px-3 py-2 text-gray-light text-sm hover:text-dirty-white" onClick={() => setIsOpen(false)}>
-                            \u2190 All Instances
+                            \u2190 {t('instance_allInstances')}
                         </Link>
                     </div>
                 </div>
