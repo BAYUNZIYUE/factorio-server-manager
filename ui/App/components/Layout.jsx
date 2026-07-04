@@ -70,13 +70,15 @@ const Layout = ({handleLogout}) => {
                     </div>
                 </div>
                 <div className={isNavCollapsed ? "hidden md:block" : "block"}>
-                    {instance && (
+                    {instance ? (
+                        <>
                         <div className="py-4 px-2 accentuated">
                             <div className="mx-4">
                                 <Button className="w-full text-sm" onClick={() => navigate('/instances')}>← 返回实例列表</Button>
-                            </div>
                         </div>
-                    )}
+                    </div>
+                        </>
+                    ) : null}
                     <div className="py-4 px-2 accentuated">
                         <h1 className="text-dirty-white text-lg mb-2 mx-4">{t("server_status")}</h1>
                         <div className="mx-4 mb-2">
@@ -103,7 +105,7 @@ const Layout = ({handleLogout}) => {
                             <Link to="/user-management">{t("users.title")}</Link>
                             <Button className="w-full mb-1" onClick={() => setIsChangingLang(true)}>{t("lang")}</Button>
                             <Link to="/help">{t("help.title")}</Link>
-                            <Link to={`/instance/${currentName}/event-log`} last={true}>事件日志</Link>
+                            {instance && <Link to={`/instance/${currentName}/event-log`} last={true}>事件日志</Link>}
                             <ChangeLangDialog
                                 isOpen={isChangingLang}
                                 close={() => setIsChangingLang(false)}

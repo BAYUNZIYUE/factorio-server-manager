@@ -210,7 +210,7 @@ const Mods = () => {
                                         isFactorioAuthenticated={isFactorioAuthenticated} setIsFactorioAuthenticated={setIsFactorioAuthenticated}/>
                             </Tab>
                             <Tab title={t('uploadMod')}>
-                                <UploadMod refetchInstalledMods={fetchInstalledMods}/>
+                                <UploadMod refetchInstalledMods={fetchInstalledMods} api={mi}/>
                             </Tab>
                             <Tab title={t('loadModsFromSave')}>
                                 <LoadMods refreshMods={fetchInstalledMods}

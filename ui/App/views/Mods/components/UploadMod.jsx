@@ -3,9 +3,8 @@ import { useTranslation } from 'react-i18next';
 import Button from "../../../components/Button";
 import Label from "../../../components/Label";
 import {useForm} from "react-hook-form";
-import modsResource from "../../../../api/resources/mods";
 
-const UploadMod = ({refetchInstalledMods}) => {
+const UploadMod = ({refetchInstalledMods, api}) => {
 
     const { t } = useTranslation('mods');
     const defaultFileText = t('selectModFile')
@@ -23,7 +22,7 @@ const UploadMod = ({refetchInstalledMods}) => {
 
         for (let i = 0; i < files.length; i++) {
             try {
-                await modsResource.upload(files[i]);
+                await api.upload(files[i]);
             } catch (err) {}
             setUploadProgress({current: i + 1, total: files.length});
         }
