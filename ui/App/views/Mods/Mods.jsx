@@ -2,6 +2,7 @@ import Panel from "../../components/Panel";
 import React, {useEffect, useState} from "react";
 import { useTranslation } from 'react-i18next';
 import modsResource from "../../../api/resources/mods";
+import { useParams } from 'react-router-dom';
 import Button from "../../components/Button";
 import server from "../../../api/resources/server";
 import socket from "../../../api/socket";
@@ -20,6 +21,8 @@ import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { useInstance } from '../../context/InstanceProvider';
 
 const Mods = () => {
+    const { name } = useParams();
+    const mi = mi.forInstance(name);
     const { instanceStatus } = useInstance();
     const serverStatus = instanceStatus || {};
 
@@ -46,18 +49,18 @@ const Mods = () => {
     };
 
     const fetchInstalledMods = () => {
-        return modsResource.installed()
+        return mi.installed()
             .then(setInstalledMods);
     };
 
     const fetchModPacks = () => {
-        return modsResource.packs.list()
+        return mi.packs.list()
             .then(setModPacks)
     }
 
     const deleteAllMods = () => {
         setIsDeletingAllMods(true);
-        modsResource.deleteAll()
+        mi.deleteAll()
             .then(fetchInstalledMods)
             .finally(() => setIsDeletingAllMods(false))
     }
@@ -67,7 +70,7 @@ const Mods = () => {
 
         let promises = [];
         for (const updatableMod of updatableMods) {
-            promises.push(modsResource.update(updatableMod))
+            promises.push(mi.update(updatableMod))
         }
 
         Promise.all(promises)
@@ -76,7 +79,7 @@ const Mods = () => {
     }
 
     useEffect(() => {
-        modsResource.portal.status().then(auth => {
+        mi.portal.status().then(auth => {
             setIsFactorioAuthenticated(auth);
             setAuthChecked(true);
         });
@@ -91,7 +94,7 @@ const Mods = () => {
             })
 
         setPortalLoading(true);
-        modsResource.portal.list()
+        mi.portal.list()
             .then(res => {
                 setFuse(new Fuse(res.results, {
                     keys: [{name: "name", weight: 2}, {name: "title", weight: 1}],
@@ -183,7 +186,7 @@ const Mods = () => {
                                 <div className="text-orange font-bold text-xl">
                                     {t('syncingInProgress')}
                                 </div>
-                                <Button size="sm" type="danger" onClick={() => modsResource.cancelSync()}>
+                                <Button size="sm" type="danger" onClick={() => mi.cancelSync()}>
                                     取消同步
                                 </Button>
                             </div>
@@ -242,7 +245,7 @@ const Mods = () => {
                         {!isBusy ? (
                             <>
                                 <a className="bg-gray-light py-1 px-2 hover:glow-orange hover:bg-orange inline-block accentuated text-black font-bold"
-                                   href={modsResource.downloadAllURL}>{t('downloadAllMods')}</a>
+                                   href={mi.downloadAllURL}>{t('downloadAllMods')}</a>
                                 <Button size="sm" className="ml-2" onClick={enableAllMods}>{t('enableAllMods')}</Button>
                                 <Button size="sm" className="ml-2" onClick={disableAllMods}>{t('disableAllMods')}</Button>
                                 <Button size="sm" type="danger" className="ml-2"
