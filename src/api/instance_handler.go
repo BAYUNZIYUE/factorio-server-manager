@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
 	"path/filepath"
 	"regexp"
 
@@ -27,14 +28,30 @@ func ListInstances(w http.ResponseWriter, r *http.Request) {
 		GamePort        int    `json:"game_port"`
 		RconPort        int    `json:"rcon_port"`
 		Autostart       bool   `json:"autostart"`
+		SaveCount       int    `json:"save_count"`
+		ModCount        int    `json:"mod_count"`
+		Uptime          int64  `json:"uptime"`
 	}
 	result := make([]summary, 0, len(instances))
 	for _, inst := range instances {
 		m := inst.Metadata()
-		result = append(result, summary{
+		s := summary{
 			Name: m.Name, DisplayName: m.DisplayName, Status: inst.Status().String(),
 			FactorioVersion: m.FactorioVersion, GamePort: m.GamePort, RconPort: m.RconPort, Autostart: m.Autostart,
-		})
+		}
+		savesDir := inst.Server().SavesDir()
+		if entries, err := os.ReadDir(savesDir); err == nil {
+			s.SaveCount = len(entries)
+		}
+		modsDir := filepath.Join(inst.Dir(), "mods")
+		if data, err := os.ReadFile(filepath.Join(modsDir, "mod-list.json")); err == nil {
+			var modList struct{ Mods []interface{} `json:"mods"` }
+			if json.Unmarshal(data, &modList) == nil {
+				s.ModCount = len(modList.Mods)
+			}
+		}
+		s.Uptime = inst.Uptime()
+		result = append(result, s)
 	}
 	json.NewEncoder(w).Encode(result)
 }

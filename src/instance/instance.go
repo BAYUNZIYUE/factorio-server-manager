@@ -50,11 +50,12 @@ type InstanceMetadata struct {
 }
 
 type Instance struct {
-	metadata InstanceMetadata
-	server   *factorio.Server
-	status   InstanceStatus
-	statusMu sync.RWMutex
-	dir      string
+	metadata  InstanceMetadata
+	server    *factorio.Server
+	status    InstanceStatus
+	statusMu  sync.RWMutex
+	dir       string
+	startedAt time.Time
 }
 
 func NewInstance(dir string, meta InstanceMetadata, srv *factorio.Server) *Instance {
@@ -68,6 +69,9 @@ func (inst *Instance) Start() error {
 		inst.SetStatus(StatusError)
 		return err
 	}
+	inst.statusMu.Lock()
+	inst.startedAt = time.Now()
+	inst.statusMu.Unlock()
 	inst.SetStatus(StatusRunning)
 	return nil
 }
@@ -80,6 +84,7 @@ func (inst *Instance) Stop() error {
 		return err
 	}
 	inst.SetStatus(StatusStopped)
+	inst.startedAt = time.Time{}
 	return nil
 }
 
@@ -90,7 +95,17 @@ func (inst *Instance) Kill() error {
 		return err
 	}
 	inst.SetStatus(StatusStopped)
+	inst.startedAt = time.Time{}
 	return nil
+}
+
+func (inst *Instance) Uptime() int64 {
+	inst.statusMu.RLock()
+	defer inst.statusMu.RUnlock()
+	if inst.startedAt.IsZero() {
+		return 0
+	}
+	return int64(time.Since(inst.startedAt).Seconds())
 }
 
 func (inst *Instance) Status() InstanceStatus {
