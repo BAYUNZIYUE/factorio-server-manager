@@ -72,6 +72,11 @@ const Layout = ({handleLogout}) => {
                 <div className={isNavCollapsed ? "hidden md:block" : "block"}>
                     <div className="py-4 px-2 accentuated">
                         <h1 className="text-dirty-white text-lg mb-2 mx-4">{t("server_status")}</h1>
+                        {instance && (
+                            <div className="mx-4 mb-2">
+                                <Button className="w-full text-sm" onClick={() => navigate('/instances')}>← 返回实例列表</Button>
+                            </div>
+                        )}
                         <div className="mx-4 mb-2">
                             <InstanceSwitcher/>
                         </div>
@@ -109,13 +114,6 @@ const Layout = ({handleLogout}) => {
                             <Button className="w-full mb-1" onClick={() => window.dispatchEvent(new CustomEvent('fsm_refresh_mods'))}>{t("refresh")}</Button>
                         </div>
                     </div>
-                    {instance && (
-                        <div className="py-4 px-2 accentuated">
-                            <div className="text-white text-center rounded-sm bg-black shadow-inner mx-4 p-1">
-                                <Button className="w-full" onClick={() => navigate('/instances')}>← 返回实例列表</Button>
-                            </div>
-                        </div>
-                    )}
                     <div className="py-4 px-2 accentuated">
                         <div className="text-white text-center rounded-sm bg-black shadow-inner mx-4 p-1">
                             <Button type="danger" className="w-full" onClick={handleLogout}>{t("logout")}</Button>

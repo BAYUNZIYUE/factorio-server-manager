@@ -36,11 +36,6 @@ const InstanceSwitcher = () => {
                             <span className={`${dotColor(inst.status)} w-2 h-2 rounded-full flex-shrink-0 ml-2`}></span>
                         </Link>
                     ))}
-                    <div className="border-t border-gray-medium mt-1 pt-1">
-                        <Link to="/instances" className="block px-3 py-2 text-gray-light text-sm hover:text-dirty-white" onClick={() => setIsOpen(false)}>
-                            \u2190 返回实例列表
-                        </Link>
-                    </div>
                 </div>
             )}
         </div>
