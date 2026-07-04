@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from "react";
-import {NavLink, Outlet, useParams, useNavigate} from "react-router-dom";
+import {NavLink, Outlet, useParams, useNavigate, useLocation} from "react-router-dom";
 import Button from "./Button";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faBars} from "@fortawesome/free-solid-svg-icons";
@@ -11,6 +11,8 @@ import { useInstance } from '../context/InstanceProvider';
 
 const Layout = ({handleLogout}) => {
     const navigate = useNavigate();
+    const location = useLocation();
+    const showInstanceNav = location.pathname.startsWith('/instance/');
     const { instanceStatus, instance } = useInstance();
     const serverStatus = instanceStatus || {};
     const params = useParams();
@@ -70,15 +72,13 @@ const Layout = ({handleLogout}) => {
                     </div>
                 </div>
                 <div className={isNavCollapsed ? "hidden md:block" : "block"}>
-                    {instance ? (
+                    {showInstanceNav && (
                         <>
                         <div className="py-4 px-2 accentuated">
                             <div className="mx-4">
                                 <Button className="w-full text-sm" onClick={() => navigate('/instances')}>← 返回实例列表</Button>
+                            </div>
                         </div>
-                    </div>
-                        </>
-                    ) : null}
                     <div className="py-4 px-2 accentuated">
                         <h1 className="text-dirty-white text-lg mb-2 mx-4">{t("server_status")}</h1>
                         <div className="mx-4 mb-2">
@@ -99,13 +99,15 @@ const Layout = ({handleLogout}) => {
                             <Link to={`/instance/${currentName}/console`}>{t("console.title")}</Link>
                         </div>
                     </div>
+                        </>
+                    )}
                     <div className="py-4 px-2 accentuated">
                         <h1 className="text-dirty-white text-lg mb-2 mx-4">{t("FSM_administration")}</h1>
                         <div className="text-white text-center rounded-sm bg-black shadow-inner mx-4 p-1">
                             <Link to="/user-management">{t("users.title")}</Link>
                             <Button className="w-full mb-1" onClick={() => setIsChangingLang(true)}>{t("lang")}</Button>
                             <Link to="/help">{t("help.title")}</Link>
-                            {instance && <Link to={`/instance/${currentName}/event-log`} last={true}>事件日志</Link>}
+                            {showInstanceNav && <Link to={`/instance/${currentName}/event-log`} last={true}>事件日志</Link>}
                             <ChangeLangDialog
                                 isOpen={isChangingLang}
                                 close={() => setIsChangingLang(false)}
@@ -138,4 +140,3 @@ const Layout = ({handleLogout}) => {
     );
 }
 
-export default Layout;
