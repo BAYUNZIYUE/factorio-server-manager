@@ -11,7 +11,7 @@ module.exports = (env, argv) => {
             style: './ui/index.scss'
         },
         output: {
-            filename: '[name].js',
+            filename: '[name].[contenthash:8].js',
             path: path.resolve(__dirname, 'app'),
             publicPath: ""
         },
