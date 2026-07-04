@@ -70,13 +70,15 @@ const Layout = ({handleLogout}) => {
                     </div>
                 </div>
                 <div className={isNavCollapsed ? "hidden md:block" : "block"}>
-                    <div className="py-4 px-2 accentuated">
-                        <h1 className="text-dirty-white text-lg mb-2 mx-4">{t("server_status")}</h1>
-                        {instance && (
-                            <div className="mx-4 mb-2">
+                    {instance && (
+                        <div className="py-4 px-2 accentuated">
+                            <div className="mx-4">
                                 <Button className="w-full text-sm" onClick={() => navigate('/instances')}>← 返回实例列表</Button>
                             </div>
-                        )}
+                        </div>
+                    )}
+                    <div className="py-4 px-2 accentuated">
+                        <h1 className="text-dirty-white text-lg mb-2 mx-4">{t("server_status")}</h1>
                         <div className="mx-4 mb-2">
                             <InstanceSwitcher/>
                         </div>
