@@ -106,6 +106,10 @@ func NewRouter() *mux.Router {
 	apiRouter.Methods("GET").Path("/jobs").Name("ListJobs").HandlerFunc(ListJobs)
 	apiRouter.Methods("POST").Path("/jobs/{id}/cancel").Name("CancelJob").HandlerFunc(CancelJob)
 
+	apiRouter.Methods("GET").Path("/templates").Name("ListTemplates").HandlerFunc(ListTemplates)
+	apiRouter.Methods("POST").Path("/templates/from/{name}").Name("CreateTemplate").HandlerFunc(CreateTemplateFromInstance)
+	apiRouter.Methods("DELETE").Path("/templates/{name}").Name("DeleteTemplate").HandlerFunc(DeleteTemplate)
+
 	// Legacy redirects for old /api/server/* paths
 	apiRouter.Methods("POST").Path("/server/start").HandlerFunc(legacyRedirect("/api/instance/default/start"))
 	apiRouter.Methods("GET").Path("/server/stop").HandlerFunc(legacyRedirect("/api/instance/default/stop"))

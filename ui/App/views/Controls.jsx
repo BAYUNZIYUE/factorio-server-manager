@@ -217,10 +217,21 @@ const Controls = () => {
                 />
             </form>
 
-            <div className="mt-3">
+            <div className="mt-3 flex gap-2">
                 <Button onClick={() => navigate('/instances')} size="sm" type="danger">
                     ← 返回实例列表
                 </Button>
+                <Button onClick={async () => {
+                    const templateName = prompt('模板名称（默认使用实例名）:');
+                    if (templateName !== null) {
+                        await fetch(`/api/templates/from/${name}`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ template_name: templateName || undefined })
+                        });
+                        alert(templateName || name + ' 模板已保存');
+                    }
+                }} size="sm" type="default">💾 保存为模板</Button>
             </div>
 
             {/* Chat Panel */}

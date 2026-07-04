@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Panel from '../components/Panel';
 import Button from '../components/Button';
-import Input from '../components/Input';
 import Error from '../components/Error';
 import { useForm } from 'react-hook-form';
 
@@ -12,15 +11,27 @@ const InstanceCreate = () => {
     const [creating, setCreating] = useState(false);
     const [error, setError] = useState('');
     const [modpacks, setModpacks] = useState([]);
+    const [templates, setTemplates] = useState([]);
     const [selectedModpack, setSelectedModpack] = useState('');
-    const { handleSubmit, register, formState: { errors }, watch } = useForm();
+    const [selectedTemplate, setSelectedTemplate] = useState('');
+    const { handleSubmit, register, formState: { errors }, watch, setValue } = useForm();
 
     useEffect(() => {
-        fetch('/api/mods/packs/list')
-            .then(r => r.json())
-            .then(data => setModpacks(data || []))
-            .catch(() => {});
+        fetch('/api/templates').then(r => r.json()).then(d => setTemplates(d || [])).catch(() => {});
+        fetch('/api/mods/packs/list').then(r => r.json()).then(d => setModpacks(d || [])).catch(() => {});
     }, []);
+
+    const onTemplateChange = (name) => {
+        setSelectedTemplate(name);
+        if (!name) return;
+        const t = templates.find(t => t.name === name);
+        if (t) {
+            if (t.game_port) setValue('game_port', t.game_port);
+            if (t.modpack) {
+                setSelectedModpack(t.modpack);
+            }
+        }
+    };
 
     const onSubmit = async (data) => {
         setCreating(true);
@@ -74,6 +85,16 @@ const InstanceCreate = () => {
                                 {...register('game_port', { min: 1024, max: 65535 })}
                                 className="w-full bg-black border border-gray-medium text-dirty-white rounded-sm px-3 py-2 mt-1 text-sm"/>
                             {errors.game_port && <Error message="端口范围 1024-65535"/>}
+                        </div>
+                        <div>
+                            <label className="text-sm text-gray-light">从模板创建（可选）</label>
+                            <select value={selectedTemplate} onChange={e => onTemplateChange(e.target.value)}
+                                className="w-full bg-black border border-gray-medium text-dirty-white rounded-sm px-3 py-2 mt-1 text-sm">
+                                <option value="">自定义配置</option>
+                                {templates.map(t => (
+                                    <option key={t.name} value={t.name}>{t.name}{t.factorio_version ? ` (${t.factorio_version})` : ''}{t.modpack ? ` + ${t.modpack}` : ''}</option>
+                                ))}
+                            </select>
                         </div>
                         <div>
                             <label className="text-sm text-gray-light">模组包（可选）</label>
