@@ -18,6 +18,7 @@ type CreateOpts struct {
 	RconPort    int
 	BindIP      string
 	Autostart   bool
+	Modpack     string
 }
 
 type InstanceManager struct {
@@ -114,6 +115,7 @@ func (m *InstanceManager) Create(name string, opts CreateOpts) (*Instance, error
 		RconPort:  opts.RconPort,
 		BindIP:    opts.BindIP,
 		Autostart: opts.Autostart,
+		Modpack:   opts.Modpack,
 		CreatedAt: time.Now().UTC(),
 		UpdatedAt: time.Now().UTC(),
 	}

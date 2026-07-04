@@ -31,13 +31,14 @@ func ListInstances(w http.ResponseWriter, r *http.Request) {
 		SaveCount       int    `json:"save_count"`
 		ModCount        int    `json:"mod_count"`
 		Uptime          int64  `json:"uptime"`
+		Modpack         string `json:"modpack,omitempty"`
 	}
 	result := make([]summary, 0, len(instances))
 	for _, inst := range instances {
 		m := inst.Metadata()
 		s := summary{
 			Name: m.Name, DisplayName: m.DisplayName, Status: inst.Status().String(),
-			FactorioVersion: m.FactorioVersion, GamePort: m.GamePort, RconPort: m.RconPort, Autostart: m.Autostart,
+			FactorioVersion: m.FactorioVersion, GamePort: m.GamePort, RconPort: m.RconPort, Autostart: m.Autostart, Modpack: m.Modpack,
 		}
 		savesDir := inst.Server().SavesDir()
 		if entries, err := os.ReadDir(savesDir); err == nil {
@@ -87,6 +88,7 @@ func CreateInstance(w http.ResponseWriter, r *http.Request) {
 		Name        string `json:"name"`
 		DisplayName string `json:"display_name"`
 		GamePort    int    `json:"game_port"`
+		Modpack     string `json:"modpack"`
 	}
 	if err := json.Unmarshal(bodyBytes, &body); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -126,7 +128,7 @@ func CreateInstance(w http.ResponseWriter, r *http.Request) {
 	if displayName == "" {
 		displayName = body.Name
 	}
-	opts := instance.CreateOpts{Name: body.Name, DisplayName: displayName, GamePort: gamePort, RconPort: rconPort, BindIP: "0.0.0.0"}
+	opts := instance.CreateOpts{Name: body.Name, DisplayName: displayName, GamePort: gamePort, RconPort: rconPort, BindIP: "0.0.0.0", Modpack: body.Modpack}
 	inst, err := instanceManager.Create(body.Name, opts)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -136,7 +138,7 @@ func CreateInstance(w http.ResponseWriter, r *http.Request) {
 	broadcastInstanceEvent("instance_added", inst)
 	m := inst.Metadata()
 	w.WriteHeader(http.StatusCreated)
-	resp = map[string]interface{}{"name": m.Name, "display_name": m.DisplayName, "game_port": m.GamePort, "rcon_port": m.RconPort, "status": inst.Status().String()}
+	resp = map[string]interface{}{"name": m.Name, "display_name": m.DisplayName, "game_port": m.GamePort, "rcon_port": m.RconPort, "modpack": m.Modpack, "status": inst.Status().String()}
 }
 
 func DeleteInstance(w http.ResponseWriter, r *http.Request) {

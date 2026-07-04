@@ -45,6 +45,7 @@ type InstanceMetadata struct {
 	RconPort        int       `json:"rcon_port"`
 	BindIP          string    `json:"bind_ip"`
 	Autostart       bool      `json:"autostart"`
+	Modpack         string    `json:"modpack,omitempty"`
 	CreatedAt       time.Time `json:"created_at"`
 	UpdatedAt       time.Time `json:"updated_at"`
 }
@@ -132,6 +133,13 @@ func (inst *Instance) SaveMetadata() error {
 		return err
 	}
 	return os.WriteFile(path, data, 0644)
+}
+
+func (inst *Instance) ModsDir() string {
+	if inst.metadata.Modpack != "" {
+		return filepath.Join(filepath.Dir(inst.dir), "..", "mod_packs", inst.metadata.Modpack, "mods")
+	}
+	return filepath.Join(inst.dir, "mods")
 }
 
 func LoadMetadata(dir string) (InstanceMetadata, error) {

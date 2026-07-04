@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Panel from '../components/Panel';
 import Button from '../components/Button';
@@ -11,16 +11,31 @@ const InstanceCreate = () => {
     const [step, setStep] = useState(1);
     const [creating, setCreating] = useState(false);
     const [error, setError] = useState('');
+    const [modpacks, setModpacks] = useState([]);
+    const [selectedModpack, setSelectedModpack] = useState('');
     const { handleSubmit, register, formState: { errors }, watch } = useForm();
+
+    useEffect(() => {
+        fetch('/api/mods/packs/list')
+            .then(r => r.json())
+            .then(data => setModpacks(data || []))
+            .catch(() => {});
+    }, []);
 
     const onSubmit = async (data) => {
         setCreating(true);
         setError('');
         try {
+            const body = {
+                name: data.name,
+                display_name: data.display_name || data.name,
+                game_port: parseInt(data.game_port) || 34197,
+            };
+            if (selectedModpack) body.modpack = selectedModpack;
             const res = await fetch('/api/instances', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name: data.name, display_name: data.display_name || data.name, game_port: parseInt(data.game_port) || 34197 })
+                body: JSON.stringify(body)
             });
             if (res.ok) {
                 const result = await res.json();
@@ -28,56 +43,72 @@ const InstanceCreate = () => {
             } else {
                 setError(await res.text());
             }
-        } catch (err) {
-            setError(err.message);
-        } finally {
-            setCreating(false);
+        } catch (e) {
+            setError(e.message);
         }
+        setCreating(false);
     };
 
+    const formValues = watch();
+
     return (
-        <div className="max-w-2xl mx-auto">
-            <h1 className="text-2xl text-dirty-white font-bold mb-6">Create Instance</h1>
-            <div className="flex mb-6">
-                <div className={`flex-1 text-center py-2 ${step === 1 ? 'bg-orange text-black' : 'bg-gray-dark text-gray-light'}`}>1. Configure</div>
-                <div className={`flex-1 text-center py-2 ${step >= 2 ? 'bg-orange text-black' : 'bg-gray-dark text-gray-light'}`}>2. Confirm</div>
-            </div>
-            <form onSubmit={handleSubmit(onSubmit)}>
-                <Panel title={step === 1 ? 'Configure Instance' : 'Confirm Settings'}
-                    content={step === 1 ? (
-                        <div className="space-y-4">
-                            <div>
-                                <div className="font-bold text-sm mb-1">Name *</div>
-                                <Input placeholder="my-server" register={register('name', { required: true, pattern: /^[a-z0-9]([a-z0-9-]{0,62}[a-z0-9])?$/, minLength: 1, maxLength: 64 })} />
-                                <Error error={errors.name} message="Lowercase alphanumeric with hyphens (1-64 chars)" />
-                            </div>
-                            <div>
-                                <div className="font-bold text-sm mb-1">Display Name</div>
-                                <Input placeholder="My Server" register={register('display_name')} />
-                            </div>
-                            <div>
-                                <div className="font-bold text-sm mb-1">Game Port</div>
-                                <Input type="number" defaultValue="34197" min={1024} max={65535} register={register('game_port', { min: 1024, max: 65535 })} />
-                            </div>
+        <div className="space-y-6 px-4 sm:px-6 max-w-xl mx-auto">
+            <h1 className="text-2xl text-dirty-white font-bold">创建实例</h1>
+            {step === 1 && (
+                <Panel title="1. 配置" content={
+                    <div className="space-y-4">
+                        <div>
+                            <label className="text-sm text-gray-light">名称 *</label>
+                            <input {...register('name', { required: true, pattern: /^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/, minLength: 1, maxLength: 64 })}
+                                className="w-full bg-black border border-gray-medium text-dirty-white rounded-sm px-3 py-2 mt-1 text-sm"/>
+                            {errors.name && <Error message="小写字母数字加连字符，1-64 字符"/>}
                         </div>
-                    ) : (
-                        <div className="space-y-2 text-sm">
-                            <div><span className="text-gray-light">Name:</span> <span className="text-dirty-white">{watch('name')}</span></div>
-                            <div><span className="text-gray-light">Display Name:</span> <span className="text-dirty-white">{watch('display_name') || watch('name')}</span></div>
-                            <div><span className="text-gray-light">Port:</span> <span className="text-dirty-white">{watch('game_port') || 34197}</span></div>
-                            {error && <div className="text-red-light font-bold">{error}</div>}
+                        <div>
+                            <label className="text-sm text-gray-light">显示名称</label>
+                            <input {...register('display_name')}
+                                className="w-full bg-black border border-gray-medium text-dirty-white rounded-sm px-3 py-2 mt-1 text-sm"/>
                         </div>
-                    )}
-                    actions={step === 1 ? (
-                        <Button type="success" onClick={() => setStep(2)}>Next</Button>
-                    ) : (
-                        <div className="flex gap-2">
-                            <Button type="default" onClick={() => setStep(1)}>Back</Button>
-                            <Button isSubmit type="success" isLoading={creating}>Create</Button>
+                        <div>
+                            <label className="text-sm text-gray-light">游戏端口</label>
+                            <input type="number" defaultValue={34197}
+                                {...register('game_port', { min: 1024, max: 65535 })}
+                                className="w-full bg-black border border-gray-medium text-dirty-white rounded-sm px-3 py-2 mt-1 text-sm"/>
+                            {errors.game_port && <Error message="端口范围 1024-65535"/>}
                         </div>
-                    )}
-                />
-            </form>
+                        <div>
+                            <label className="text-sm text-gray-light">模组包（可选）</label>
+                            <select value={selectedModpack} onChange={e => setSelectedModpack(e.target.value)}
+                                className="w-full bg-black border border-gray-medium text-dirty-white rounded-sm px-3 py-2 mt-1 text-sm">
+                                <option value="">无（手动配置模组）</option>
+                                {modpacks.map(p => (
+                                    <option key={p} value={p}>{p}</option>
+                                ))}
+                            </select>
+                        </div>
+                        <div className="flex gap-2 pt-2">
+                            <Button type="default" onClick={() => navigate('/instances')}>取消</Button>
+                            <Button type="primary" onClick={() => setStep(2)}>下一步</Button>
+                        </div>
+                    </div>
+                }/>
+            )}
+            {step === 2 && (
+                <Panel title="2. 确认" content={
+                    <div className="space-y-4">
+                        <div className="bg-gray-dark rounded-sm p-3 space-y-2 text-sm">
+                            <div className="flex justify-between"><span className="text-gray-light">名称</span><span className="text-dirty-white">{formValues.name}</span></div>
+                            {formValues.display_name && <div className="flex justify-between"><span className="text-gray-light">显示名称</span><span className="text-dirty-white">{formValues.display_name}</span></div>}
+                            <div className="flex justify-between"><span className="text-gray-light">端口</span><span className="text-dirty-white">{formValues.game_port || 34197}</span></div>
+                            <div className="flex justify-between"><span className="text-gray-light">模组包</span><span className="text-dirty-white">{selectedModpack || '无（手动配置）'}</span></div>
+                        </div>
+                        {error && <Error message={error}/>}
+                        <div className="flex gap-2 pt-2">
+                            <Button type="default" onClick={() => setStep(1)}>返回</Button>
+                            <Button type="success" isLoading={creating} onClick={handleSubmit(onSubmit)}>创建实例</Button>
+                        </div>
+                    </div>
+                }/>
+            )}
         </div>
     );
 };
