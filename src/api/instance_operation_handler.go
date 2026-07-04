@@ -1,13 +1,13 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
-	"time"
 
 	"github.com/OpenFactorioServerManager/factorio-server-manager/instance"
+	"github.com/OpenFactorioServerManager/factorio-server-manager/jobqueue"
 	"github.com/gorilla/mux"
 )
 
@@ -48,26 +48,15 @@ func StartInstance(w http.ResponseWriter, r *http.Request) {
 	instanceManager.StartOperation()
 	defer instanceManager.EndOperation()
 
-	go func() {
+	job := jobqueue.GlobalQueue.Submit(fmt.Sprintf("启动 %s", inst.Metadata().Name), func(ctx context.Context, j *jobqueue.Job) error {
+		j.SetProgress(10, "正在启动...")
 		if err := inst.Start(); err != nil {
-			log.Printf("Error starting %s: %v", inst.Metadata().Name, err)
+			return err
 		}
-	}()
-
-	// Wait briefly for status change
-	for i := 0; i < 10; i++ {
-		if inst.Status() == instance.StatusRunning {
-			break
-		}
-		timeSleep(1 * time.Second)
-	}
-	if inst.Status() != instance.StatusRunning {
-		w.WriteHeader(http.StatusInternalServerError)
-		resp = fmt.Sprintf("Failed to start instance %s", inst.Metadata().Name)
-		return
-	}
-	broadcastInstanceEvent("instance_status_changed", inst)
-	resp = fmt.Sprintf("Instance %s started", inst.Metadata().Name)
+		j.SetProgress(100, "启动完成")
+		return nil
+	})
+	resp = fmt.Sprintf("Job %s: 启动任务已提交", job.ID)
 }
 
 func StopInstance(w http.ResponseWriter, r *http.Request) {

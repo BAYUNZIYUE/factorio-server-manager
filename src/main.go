@@ -6,9 +6,11 @@ import (
 	"os"
 
 	"github.com/OpenFactorioServerManager/factorio-server-manager/api"
+	"github.com/OpenFactorioServerManager/factorio-server-manager/api/websocket"
 	"github.com/OpenFactorioServerManager/factorio-server-manager/bootstrap"
 	"github.com/OpenFactorioServerManager/factorio-server-manager/factorio"
 	"github.com/OpenFactorioServerManager/factorio-server-manager/instance"
+	"github.com/OpenFactorioServerManager/factorio-server-manager/jobqueue"
 )
 
 func main() {
@@ -31,6 +33,10 @@ func main() {
 
 	factorio.GlobalInstanceManager = manager
 	api.SetInstanceManager(manager)
+
+	// Job queue with WebSocket broadcasting
+	queue := jobqueue.NewQueue(&wshubAdapter{}, 20)
+	jobqueue.SetGlobalQueue(queue)
 
 	factorio.ModStartUp()
 
@@ -65,4 +71,10 @@ func needsMigration(config bootstrap.Config) bool {
 		return false
 	}
 	return true
+}
+
+type wshubAdapter struct{}
+
+func (a *wshubAdapter) Send(room string, msg interface{}) {
+	websocket.WebsocketHub.Broadcast(msg)
 }

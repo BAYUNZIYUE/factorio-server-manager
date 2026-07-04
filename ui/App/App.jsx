@@ -16,6 +16,7 @@ import ServerVersion from "./views/ServerVersion";
 import EventLog from "./views/EventLog";
 import InstanceList from "./views/InstanceList";
 import InstanceCreate from "./views/InstanceCreate";
+import JobProgress from "./components/JobProgress";
 import {InstanceProvider} from "./context/InstanceProvider";
 import {Flash} from "./components/Flash";
 import "./i18n";
@@ -69,6 +70,7 @@ const App = () => {
                     <Route index element={<Navigate to="/instances" replace/>}/>
                 </Route>
             </Routes>
+            <JobProgress/>
         </BrowserRouter>
     );
 };

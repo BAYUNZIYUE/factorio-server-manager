@@ -103,6 +103,9 @@ func NewRouter() *mux.Router {
 	instanceRouter.Methods("POST").Path("/mods/upload").Name("UploadInstanceMod").HandlerFunc(ModUploadHandler)
 	instanceRouter.Methods("GET").Path("/mods/download").Name("DownloadInstanceMods").HandlerFunc(ModDownloadHandler)
 
+	apiRouter.Methods("GET").Path("/jobs").Name("ListJobs").HandlerFunc(ListJobs)
+	apiRouter.Methods("POST").Path("/jobs/{id}/cancel").Name("CancelJob").HandlerFunc(CancelJob)
+
 	// Legacy redirects for old /api/server/* paths
 	apiRouter.Methods("POST").Path("/server/start").HandlerFunc(legacyRedirect("/api/instance/default/start"))
 	apiRouter.Methods("GET").Path("/server/stop").HandlerFunc(legacyRedirect("/api/instance/default/stop"))

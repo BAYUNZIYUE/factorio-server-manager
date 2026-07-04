@@ -1,5 +1,5 @@
 import React, {useEffect, useState, useRef} from "react";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Panel from "../components/Panel";
 import Button from "../components/Button";
@@ -17,6 +17,7 @@ import { useInstance } from '../context/InstanceProvider';
 
 const Controls = () => {
     const navigate = useNavigate();
+    const { name } = useParams();
     const { instanceStatus } = useInstance();
     const serverStatus = instanceStatus || {};
 
@@ -41,17 +42,17 @@ const Controls = () => {
         setIsStarting(true);
         localStorage.setItem('fsm_ip', data.ip);
         localStorage.setItem('fsm_port', data.port);
-        await server.start(data.ip, parseInt(data.port), data.save);
+        await server.instanceStart(name, data.ip, parseInt(data.port), data.save);
     }
 
     const stopServer = async () => {
         setIsStopping(true);
-        await server.stop();
+        await server.instanceStop(name);
     }
 
     const killServer = async () => {
         setIsKilling(true);
-        await server.kill();
+        await server.instanceKill(name);
     }
 
     useEffect(() => {
