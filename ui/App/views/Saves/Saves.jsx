@@ -1,5 +1,6 @@
 import React, {useEffect, useState} from "react";
 import { useTranslation } from 'react-i18next';
+import { useParams } from 'react-router-dom';
 import savesResource from "../../../api/resources/saves";
 import Panel from "../../components/Panel";
 import CreateSaveForm from "./components/CreateSaveForm";
@@ -9,6 +10,8 @@ import {faDownload, faTrashAlt} from "@fortawesome/free-solid-svg-icons";
 import { useInstance } from '../../context/InstanceProvider';
 
 const Saves = () => {
+    const { name } = useParams();
+    const savesApi = savesResource.forInstance(name);
     const { instanceStatus } = useInstance();
     const serverStatus = instanceStatus || {};
 
@@ -17,7 +20,7 @@ const Saves = () => {
     const [saves, setSaves] = useState([]);
 
     const updateList = () => {
-        savesResource.list()
+        savesApi.list()
             .then(res => {
                 if (res) {
                     setSaves(res);
@@ -31,7 +34,7 @@ const Saves = () => {
     }, []);
 
     const deleteSave = async (save) => {
-        const res = await savesResource.delete(save);
+        const res = await savesApi.delete(save);
         if (res) {
             updateList()
         }
@@ -48,13 +51,13 @@ const Saves = () => {
                             ? <p className="text-red-light pt-4 pb-24">
                                 {t('createSaveDisabled')}
                             </p>
-                            : <CreateSaveForm onSuccess={updateList}/>
+                            : <CreateSaveForm onSuccess={updateList} api={savesApi}/>
                     }
                 />
                 <Panel
                     title={t('uploadSave')}
                     className="lg:w-1/2 lg:ml-3"
-                    content={<UploadSaveForm onSuccess={updateList}/>}
+                    content={<UploadSaveForm onSuccess={updateList} api={savesApi}/>}
                 />
             </div>
 

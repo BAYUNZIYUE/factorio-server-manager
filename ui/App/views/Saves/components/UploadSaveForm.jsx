@@ -2,17 +2,16 @@ import Button from "../../../components/Button";
 import React, {useState} from "react";
 import { useTranslation } from 'react-i18next';
 import {useForm} from "react-hook-form";
-import saves from "../../../../api/resources/saves";
 import Error from "../../../components/Error";
 
 
-const UploadSaveForm = ({onSuccess}) => {
+const UploadSaveForm = ({onSuccess, api}) => {
     const { t } = useTranslation('saves');
     const {register, handleSubmit, formState: {errors}} = useForm();
     const [fileName, setFileName] = useState(t('selectFile'));
 
     const onSubmit = (data, e) => {
-        saves.upload(data.savefile[0]).then(_ => {
+        api.upload(data.savefile[0]).then(_ => {
             e.target.reset();
             onSuccess();
         })

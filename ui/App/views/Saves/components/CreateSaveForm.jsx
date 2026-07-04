@@ -2,19 +2,18 @@ import {useForm} from "react-hook-form";
 import { useTranslation } from 'react-i18next';
 import Button from "../../../components/Button";
 import React, {useState} from "react";
-import saves from "../../../../api/resources/saves";
 import Label from "../../../components/Label";
 import Input from "../../../components/Input";
 import Error from "../../../components/Error";
 
-const CreateSaveForm = ({onSuccess}) => {
+const CreateSaveForm = ({onSuccess, api}) => {
     const { t } = useTranslation('saves');
     const {register, handleSubmit, formState: {errors}} = useForm();
     const [isLoading, setIsLoading] = useState(false);
 
     const onSubmit = async (data, e) => {
         setIsLoading(true)
-        saves.create(data.savefile)
+        api.create(data.savefile)
             .then(() => {
                 e.target.reset();
                 onSuccess();

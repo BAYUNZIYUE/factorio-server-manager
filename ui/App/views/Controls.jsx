@@ -19,6 +19,7 @@ const Controls = () => {
     const navigate = useNavigate();
     const { name } = useParams();
     const { instanceStatus } = useInstance();
+    const savesApi = savesResource.forInstance(name);
     const serverStatus = instanceStatus || {};
 
     const { t } = useTranslation('controls');
@@ -56,7 +57,7 @@ const Controls = () => {
     }
 
     useEffect(() => {
-        savesResource.list(true)
+        savesApi.list(true)
             .then(res => {
                 setSaves(res);
                 if (res.length > 0) setIsDisabled(undefined);
