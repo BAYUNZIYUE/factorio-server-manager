@@ -24,7 +24,6 @@ const InstanceSwitcher = () => {
             <button className="w-full bg-gray-medium text-dirty-white rounded-sm px-3 py-2 text-left flex items-center justify-between hover:bg-gray-light"
                 onClick={() => setIsOpen(!isOpen)}>
                 <span className="font-bold truncate">{current?.display_name || current?.name || currentName || '...'}</span>
-                <span className="text-xs ml-2">\u25BC</span>
             </button>
             {isOpen && (
                 <div className="absolute top-full left-0 right-0 mt-1 bg-gray-dark border border-gray-medium rounded-sm shadow-lg z-50">
