@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from "react";
-import {NavLink, Outlet, useParams} from "react-router-dom";
+import {NavLink, Outlet, useParams, useNavigate} from "react-router-dom";
 import Button from "./Button";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faBars} from "@fortawesome/free-solid-svg-icons";
@@ -10,6 +10,7 @@ import InstanceSwitcher from './InstanceSwitcher';
 import { useInstance } from '../context/InstanceProvider';
 
 const Layout = ({handleLogout}) => {
+    const navigate = useNavigate();
     const { instanceStatus, instance } = useInstance();
     const serverStatus = instanceStatus || {};
     const params = useParams();
@@ -108,6 +109,13 @@ const Layout = ({handleLogout}) => {
                             <Button className="w-full mb-1" onClick={() => window.dispatchEvent(new CustomEvent('fsm_refresh_mods'))}>{t("refresh")}</Button>
                         </div>
                     </div>
+                    {instance && (
+                        <div className="py-4 px-2 accentuated">
+                            <div className="text-white text-center rounded-sm bg-black shadow-inner mx-4 p-1">
+                                <Button className="w-full" onClick={() => navigate('/instances')}>← 返回实例列表</Button>
+                            </div>
+                        </div>
+                    )}
                     <div className="py-4 px-2 accentuated">
                         <div className="text-white text-center rounded-sm bg-black shadow-inner mx-4 p-1">
                             <Button type="danger" className="w-full" onClick={handleLogout}>{t("logout")}</Button>
