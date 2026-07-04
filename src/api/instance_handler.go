@@ -89,6 +89,7 @@ func CreateInstance(w http.ResponseWriter, r *http.Request) {
 		DisplayName string `json:"display_name"`
 		GamePort    int    `json:"game_port"`
 		Modpack     string `json:"modpack"`
+		Save        string `json:"save"`
 	}
 	if err := json.Unmarshal(bodyBytes, &body); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -137,6 +138,14 @@ func CreateInstance(w http.ResponseWriter, r *http.Request) {
 	}
 	broadcastInstanceEvent("instance_added", inst)
 	m := inst.Metadata()
+	if body.Save != "" {
+		src := filepath.Join("saves", filepath.Base(body.Save))
+		dst := filepath.Join(inst.Dir(), "saves", filepath.Base(body.Save))
+		os.MkdirAll(filepath.Dir(dst), 0755)
+		if data, err := os.ReadFile(src); err == nil {
+			os.WriteFile(dst, data, 0644)
+		}
+	}
 	w.WriteHeader(http.StatusCreated)
 	resp = map[string]interface{}{"name": m.Name, "display_name": m.DisplayName, "game_port": m.GamePort, "rcon_port": m.RconPort, "modpack": m.Modpack, "status": inst.Status().String()}
 }

@@ -110,6 +110,9 @@ func NewRouter() *mux.Router {
 	apiRouter.Methods("POST").Path("/templates/from/{name}").Name("CreateTemplate").HandlerFunc(CreateTemplateFromInstance)
 	apiRouter.Methods("DELETE").Path("/templates/{name}").Name("DeleteTemplate").HandlerFunc(DeleteTemplate)
 
+	apiRouter.Methods("GET").Path("/saves/pool").Name("ListGlobalSaves").HandlerFunc(ListGlobalSaves)
+	apiRouter.Methods("POST").Path("/saves/pool/copy").Name("CopyGlobalSave").HandlerFunc(CopyGlobalSaveToInstance)
+
 	// Legacy redirects for old /api/server/* paths
 	apiRouter.Methods("POST").Path("/server/start").HandlerFunc(legacyRedirect("/api/instance/default/start"))
 	apiRouter.Methods("GET").Path("/server/stop").HandlerFunc(legacyRedirect("/api/instance/default/stop"))

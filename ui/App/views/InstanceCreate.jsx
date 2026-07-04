@@ -14,11 +14,13 @@ const InstanceCreate = () => {
     const [templates, setTemplates] = useState([]);
     const [selectedModpack, setSelectedModpack] = useState('');
     const [selectedTemplate, setSelectedTemplate] = useState('');
+    const [selectedSave, setSelectedSave] = useState('');
+    const [globalSaves, setGlobalSaves] = useState([]);
     const { handleSubmit, register, formState: { errors }, watch, setValue } = useForm();
 
     useEffect(() => {
         fetch('/api/templates').then(r => r.json()).then(d => setTemplates(d || [])).catch(() => {});
-        fetch('/api/mods/packs/list').then(r => r.json()).then(d => setModpacks(d || [])).catch(() => {});
+        fetch('/api/saves/pool').then(r => r.json()).then(d => setGlobalSaves(d || [])).catch(() => {});
     }, []);
 
     const onTemplateChange = (name) => {
@@ -43,6 +45,7 @@ const InstanceCreate = () => {
                 game_port: parseInt(data.game_port) || 34197,
             };
             if (selectedModpack) body.modpack = selectedModpack;
+            if (selectedSave) body.save = selectedSave;
             const res = await fetch('/api/instances', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -93,6 +96,16 @@ const InstanceCreate = () => {
                                 <option value="">自定义配置</option>
                                 {templates.map(t => (
                                     <option key={t.name} value={t.name}>{t.name}{t.factorio_version ? ` (${t.factorio_version})` : ''}{t.modpack ? ` + ${t.modpack}` : ''}</option>
+                                ))}
+                            </select>
+                        </div>
+                        <div>
+                            <label className="text-sm text-gray-light">初始存档（可选，从全局池复制）</label>
+                            <select value={selectedSave} onChange={e => setSelectedSave(e.target.value)}
+                                className="w-full bg-black border border-gray-medium text-dirty-white rounded-sm px-3 py-2 mt-1 text-sm">
+                                <option value="">无（空服务器）</option>
+                                {globalSaves.map(s => (
+                                    <option key={s.name} value={s.name}>{s.name} ({(s.size/1024).toFixed(0)} KB)</option>
                                 ))}
                             </select>
                         </div>

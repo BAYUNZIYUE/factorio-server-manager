@@ -4,7 +4,7 @@ import Button from '../components/Button';
 import Panel from '../components/Panel';
 import { useInstances } from '../context/InstanceProvider';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faServer, faNetworkWired, faSave, faPuzzlePiece, faClock, faPlay, faStop, faRightToBracket } from '@fortawesome/free-solid-svg-icons';
+import { faServer, faNetworkWired, faSave, faPuzzlePiece, faClock, faPlay, faStop, faRightToBracket, faTrash } from '@fortawesome/free-solid-svg-icons';
 
 const L = {
     title: '实例列表',
@@ -48,6 +48,12 @@ const InstanceList = () => {
     const handleStop = async (name, e) => {
         e.stopPropagation();
         await fetch(`/api/instance/${name}/stop`, { method: 'POST' });
+        refresh();
+    };
+    const handleDelete = async (name, e) => {
+        e.stopPropagation();
+        if (!window.confirm(`确定删除实例「${name}」？此操作不可撤销。`)) return;
+        await fetch(`/api/instances/${name}`, { method: 'DELETE' });
         refresh();
     };
     const statusColor = (s) => {
@@ -148,6 +154,9 @@ const InstanceList = () => {
                                 )}
                                 <Button size="sm" type="primary" onClick={() => navigate(`/instance/${inst.name}`)}>
                                     <FontAwesomeIcon icon={faRightToBracket} className="mr-1"/>{L.enter}
+                                </Button>
+                                <Button size="sm" type="danger" onClick={(e) => handleDelete(inst.name, e)}>
+                                    <FontAwesomeIcon icon={faTrash} className="mr-1"/>{L.delete}
                                 </Button>
                             </div>
                         </div>
