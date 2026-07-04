@@ -66,7 +66,7 @@ const InstanceCreate = () => {
     const formValues = watch();
 
     return (
-        <div className="space-y-6 px-4 sm:px-6 max-w-xl mx-auto">
+        <div className="space-y-6 max-w-xl mx-auto">
             <h1 className="text-2xl text-dirty-white font-bold">创建实例</h1>
             {step === 1 && (
                 <Panel title="1. 配置" content={

@@ -69,7 +69,7 @@ const InstanceList = () => {
     if (loading) return <div className="text-center py-12 text-gray-light">{L.loading}</div>;
 
     return (
-        <div className="space-y-6 px-4 sm:px-6 max-w-7xl mx-auto">
+        <div className="space-y-6 max-w-7xl mx-auto">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                 <div>
                     <h1 className="text-2xl text-dirty-white font-bold">{L.title}</h1>

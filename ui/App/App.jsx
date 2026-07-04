@@ -50,9 +50,11 @@ const App = () => {
             <Routes>
                 <Route path="login" element={<Login handleLogin={handleAuthenticationStatus}/>}/>
                 <Route element={<ProtectedRoute isAuthenticated={isAuthenticated}/>}>
-                    <Route path="instances" element={<InstanceList/>}/>
-                    <Route path="instances/create" element={<InstanceCreate/>}/>
-                    <Route path="instances/import-save" element={<Placeholder title="Import from Save"/>}/>
+                    <Route element={<Layout handleLogout={handleLogout}/>}>
+                        <Route path="instances" element={<InstanceList/>}/>
+                        <Route path="instances/create" element={<InstanceCreate/>}/>
+                        <Route path="instances/import-save" element={<Placeholder title="Import from Save"/>}/>
+                    </Route>
                     <Route path="instance/:name" element={<InstanceProvider><Layout handleLogout={handleLogout}/></InstanceProvider>}>
                         <Route index element={<Controls/>}/>
                         <Route path="saves" element={<Saves/>}/>
