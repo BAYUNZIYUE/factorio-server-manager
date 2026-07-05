@@ -76,6 +76,7 @@ const Layout = ({handleLogout}) => {
                         <div className="py-4 px-2 accentuated">
                             <h1 className="text-dirty-white text-lg mb-2 mx-4">资源管理</h1>
                             <div className="text-white text-center rounded-sm bg-black shadow-inner mx-4 p-1">
+                                <Link to="/instances">实例列表</Link>
                                 <a href="/instance/default/mods" className="block py-2 px-4">MOD 包管理</a>
                             </div>
                         </div>
