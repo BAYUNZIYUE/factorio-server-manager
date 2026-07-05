@@ -17,6 +17,7 @@ import EventLog from "./views/EventLog";
 import InstanceList from "./views/InstanceList";
 import InstanceCreate from "./views/InstanceCreate";
 import JobProgress from "./components/JobProgress";
+import ModPackPage from "./views/ModPackPage";
 import {InstanceProvider} from "./context/InstanceProvider";
 import {Flash} from "./components/Flash";
 import "./i18n";
@@ -54,6 +55,7 @@ const App = () => {
                         <Route path="instances" element={<InstanceList/>}/>
                         <Route path="instances/create" element={<InstanceCreate/>}/>
                         <Route path="instances/import-save" element={<Placeholder title="Import from Save"/>}/>
+                        <Route path="instances/modpacks" element={<ModPackPage/>}/>
                     </Route>
                     <Route path="instance/:name" element={<InstanceProvider><Layout handleLogout={handleLogout}/></InstanceProvider>}>
                         <Route index element={<Controls/>}/>
