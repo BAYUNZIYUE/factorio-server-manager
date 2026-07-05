@@ -22,7 +22,7 @@ import { useInstance } from '../../context/InstanceProvider';
 
 const Mods = () => {
     const { name } = useParams();
-    const mi = mi.forInstance(name);
+    const mi = modsResource.forInstance(name);
     const { instanceStatus } = useInstance();
     const serverStatus = instanceStatus || {};
 
