@@ -16,9 +16,11 @@ const ModPackPage = () => {
     };
     useEffect(() => { fetchPacks(); }, []);
 
-    const selectPack = async (name) => {
-        setSelected(name);
-        try { const r = await fetch(`/api/mods/packs/${name}/list`); setMods(await r.json() || []); } catch(e) {}
+    const selectPack = async (pack) => {
+        setSelected(pack.name);
+        const modList = pack.mods?.mods || pack.mods || [];
+        setMods(modList);
+        setPortalInfo({});
     };
 
     const checkUpdates = async () => {
@@ -54,10 +56,9 @@ const ModPackPage = () => {
             await fetch(`/api/mods/packs/${selected}/mod/update`, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ modName, downloadUrl: info.downloadUrl, fileName: info.fileName })
+                body: JSON.stringify({ modName, downloadUrl: (info || {}).downloadUrl, fileName: (info || {}).fileName })
             });
-            // Refresh mod list
-            await selectPack(selected);
+            fetchPacks();
         } catch(e) {}
         setUpdating(p => ({...p, [modName]: false}));
     };
@@ -95,12 +96,12 @@ const ModPackPage = () => {
                         <div className="space-y-1">
                             {packs.length === 0 && <p className="text-gray-light text-sm text-center py-4">暂无模组包</p>}
                             {packs.map(p => (
-                                <div key={p} className={`flex items-center justify-between px-3 py-2 rounded-sm cursor-pointer text-sm ${selected === p ? 'bg-gray-medium text-dirty-white' : 'bg-gray-dark text-gray-light hover:bg-gray-medium'}`}
+                                <div key={p.name} className={`flex items-center justify-between px-3 py-2 rounded-sm cursor-pointer text-sm ${selected === p.name ? 'bg-gray-medium text-dirty-white' : 'bg-gray-dark text-gray-light hover:bg-gray-medium'}`}
                                     onClick={() => selectPack(p)}>
-                                    <span className="truncate">{p}</span>
+                                    <span className="truncate">{p.name}</span>
                                     <div className="flex gap-1 ml-2 flex-shrink-0">
-                                        <a href={`/api/mods/packs/${p}/download`} className="text-green hover:text-green-light text-xs px-1" title="下载">↓</a>
-                                        <button className="text-red hover:text-red-light text-xs px-1" onClick={(e) => { e.stopPropagation(); handleDelete(p); }} title="删除">✕</button>
+                                        <a href={`/api/mods/packs/${p.name}/download`} className="text-green hover:text-green-light text-xs px-1" title="下载">↓</a>
+                                        <button className="text-red hover:text-red-light text-xs px-1" onClick={(e) => { e.stopPropagation(); handleDelete(p.name); }} title="删除">✕</button>
                                     </div>
                                 </div>
                             ))}
