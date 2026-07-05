@@ -57,5 +57,8 @@
   "instance_enter": "Enter",
   "instance_allInstances": "\u2190 All Instances",
   "instance_error": "Error",
-  "instance_unknown": "Unknown"
+  "instance_unknown": "Unknown",
+  "resource_management": "Resources",
+  "instance_list": "Instance List",
+  "modpack_management": "ModPack Manager"
 }

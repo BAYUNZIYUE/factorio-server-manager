@@ -57,5 +57,8 @@
   "instance_enter": "进入",
   "instance_allInstances": "← 所有实例",
   "instance_error": "错误",
-  "instance_unknown": "未知"
+  "instance_unknown": "未知",
+  "resource_management": "资源管理",
+  "instance_list": "实例列表",
+  "modpack_management": "MOD 包管理"
 }
