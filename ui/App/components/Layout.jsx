@@ -84,19 +84,17 @@ const Layout = ({handleLogout}) => {
                     {showInstanceNav && (
                         <>
                         <div className="py-4 px-2 accentuated">
-                            <div className="mx-4">
+                            <div className="mx-4 space-y-2">
                                 <Button className="w-full text-sm" onClick={() => navigate('/instances')}>← 返回实例列表</Button>
+                                <InstanceSwitcher/>
                             </div>
                         </div>
-                    <div className="py-4 px-2 accentuated">
-                        <h1 className="text-dirty-white text-lg mb-2 mx-4">{t("server_status")}</h1>
-                        <div className="mx-4 mb-2">
-                            <InstanceSwitcher/>
+                        <div className="py-4 px-2 accentuated">
+                            <h1 className="text-dirty-white text-lg mb-2 mx-4">{t("server_status")}</h1>
+                            <div className="mx-4 mb-4 text-center">
+                                <Status info={serverStatus}/>
+                            </div>
                         </div>
-                        <div className="mx-4 mb-4 text-center">
-                            <Status info={serverStatus}/>
-                        </div>
-                    </div>
                     <div className="py-4 px-2 accentuated">
                         <h1 className="text-dirty-white text-lg mb-2 mx-4">{t("server_management")}</h1>
                         <div className="text-white text-center rounded-sm bg-black shadow-inner mx-4 p-1">
