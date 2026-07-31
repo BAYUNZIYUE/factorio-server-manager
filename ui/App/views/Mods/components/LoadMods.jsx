@@ -36,7 +36,7 @@ const formatTime = (seconds) => {
     return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 };
 
-const LoadMods = ({refreshMods, isFactorioAuthenticated, setIsFactorioAuthenticated, onSyncingChange}) => {
+const LoadMods = ({refreshMods, isFactorioAuthenticated, setIsFactorioAuthenticated, onSyncingChange, savesApi}) => {
     const {t} = useTranslation('mods');
     const [saves, setSaves] = useState([]);
     const [selectedSave, setSelectedSave] = useState("");
@@ -66,7 +66,7 @@ const LoadMods = ({refreshMods, isFactorioAuthenticated, setIsFactorioAuthentica
             if (!isFactorioAuthenticated) {
                 setIsFactorioAuthenticated(await modsResource.portal.status());
             }
-            const s = await savesResource.list();
+            const s = await (savesApi || savesResource).list();
             setSaves(s);
             if (s.length > 0) {
                 setIsDisabled(false);

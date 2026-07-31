@@ -2,6 +2,7 @@ import Panel from "../../components/Panel";
 import React, {useEffect, useState} from "react";
 import { useTranslation } from 'react-i18next';
 import modsResource from "../../../api/resources/mods";
+import savesResource from "../../../api/resources/saves";
 import { useParams } from 'react-router-dom';
 import Button from "../../components/Button";
 import server from "../../../api/resources/server";
@@ -23,6 +24,7 @@ import { useInstance } from '../../context/InstanceProvider';
 const Mods = () => {
     const { name } = useParams();
     const mi = modsResource.forInstance(name);
+    const savesApi = savesResource.forInstance(name);
     const { instanceStatus } = useInstance();
     const serverStatus = instanceStatus || {};
 
@@ -216,7 +218,8 @@ const Mods = () => {
                                 <LoadMods refreshMods={fetchInstalledMods}
                                           isFactorioAuthenticated={isFactorioAuthenticated}
                                           setIsFactorioAuthenticated={setIsFactorioAuthenticated}
-                                          onSyncingChange={setIsSyncing} />
+                                          onSyncingChange={setIsSyncing}
+                                          savesApi={savesApi} />
                             </Tab>
                         </TabControl>
                     </div>
