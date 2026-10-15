@@ -161,6 +161,20 @@ func UpdateServerHandler(w http.ResponseWriter, r *http.Request) {
 	if data.Version != nil {
 		trimmed := strings.TrimSpace(*data.Version)
 		if trimmed != "" && trimmed != server.VersionChannel {
+			if manager != nil && !factorio.CanInstallFactorio() {
+				installed := false
+				for _, v := range manager.ListInstalledVersions() {
+					if v == trimmed {
+						installed = true
+						break
+					}
+				}
+				if !installed {
+					w.WriteHeader(http.StatusBadRequest)
+					resp = fmt.Sprintf("Factorio %s is not installed", trimmed)
+					return
+				}
+			}
 			if server.Running {
 				server.PendingRestart = true
 				server.VersionChannel = trimmed

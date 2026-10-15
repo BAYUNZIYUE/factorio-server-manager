@@ -417,6 +417,7 @@ const Controls = () => {
                         versionLabel={versionLabel}
                         availableVersions={availableVersions}
                         installedVersions={installedVersions}
+                        canInstall={canInstall}
                         onUpdated={refreshServers}
                         t={t}
                     />
@@ -426,7 +427,7 @@ const Controls = () => {
     );
 };
 
-const ServerCard = ({server, saves, selectedSave, setSelectedSave, busy, runAction, versionLabel, availableVersions, installedVersions, onUpdated, t}) => {
+const ServerCard = ({server, saves, selectedSave, setSelectedSave, busy, runAction, versionLabel, availableVersions, installedVersions, canInstall, onUpdated, t}) => {
     const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
     const [serverInfo, setServerInfo] = useState({server_ip: ""});
     const [ipDraft, setIpDraft] = useState(server.bindip || server.bind_ip || "0.0.0.0");
@@ -444,6 +445,7 @@ const ServerCard = ({server, saves, selectedSave, setSelectedSave, busy, runActi
     const [fieldBusy, setFieldBusy] = useState(false);
 
     const resolveChannel = (srv) => {
+        if (!canInstall) return srv.version || "";
         if (srv.version_channel === "stable" || srv.version_channel === "experimental") return srv.version_channel;
         const v = srv.version || "";
         if (v === "stable" || v === "experimental") return v;
@@ -463,7 +465,7 @@ const ServerCard = ({server, saves, selectedSave, setSelectedSave, busy, runActi
         if (!versionUserEdited.current) {
             setVersionDraft(resolveChannel(server));
         }
-    }, [server.bindip, server.bind_ip, server.port, server.version, server.fac_version]);
+    }, [server.bindip, server.bind_ip, server.port, server.version, server.fac_version, canInstall]);
 
     const running = !!server.running;
     const starting = running && !server.rcon_connected;
@@ -525,7 +527,7 @@ const ServerCard = ({server, saves, selectedSave, setSelectedSave, busy, runActi
         setVersionDraft(value);
         saveField("version", value, () => {
             versionUserEdited.current = false;
-            setVersionDraft(server.version_channel || "stable");
+            setVersionDraft(canInstall ? (server.version_channel || "stable") : (server.version || ""));
         });
     };
 
@@ -586,9 +588,9 @@ const ServerCard = ({server, saves, selectedSave, setSelectedSave, busy, runActi
                         disabled={fieldBusy}
                         onChange={handleVersionChange}
                     >
-                        <option value="stable">{versionLabel("stable")}</option>
-                        <option value="experimental">{versionLabel("experimental")}</option>
-                        {installedVersions.filter(v => v !== availableVersions?.stable?.headless && v !== availableVersions?.experimental?.headless).map(v => (
+                        {canInstall && <option value="stable">{versionLabel("stable")}</option>}
+                        {canInstall && <option value="experimental">{versionLabel("experimental")}</option>}
+                        {installedVersions.filter(v => !canInstall || (v !== availableVersions?.stable?.headless && v !== availableVersions?.experimental?.headless)).map(v => (
                             <option key={v} value={v}>{v}</option>
                         ))}
                     </select>
