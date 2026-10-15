@@ -32,14 +32,22 @@ const Controls = () => {
     const [confirmDeleteAll, setConfirmDeleteAll] = useState(false);
     const [createForm, setCreateForm] = useState(emptyCreate);
     const [hostIp, setHostIp] = useState("");
+    const [canInstall, setCanInstall] = useState(true);
 
     useEffect(() => {
         serverResource.info().then(info => {
             if (info.server_ip && info.server_ip !== "0.0.0.0") {
                 setHostIp(info.server_ip);
             }
+            if (info.can_install === false) setCanInstall(false);
         }).catch(() => {});
     }, []);
+    useEffect(() => {
+        if (canInstall || installedVersions.length === 0) return;
+        if (!installedVersions.includes(createForm.version)) {
+            setCreateForm(f => ({...f, version: installedVersions[0], customVersion: ""}));
+        }
+    }, [canInstall, installedVersions, createForm.version]);
     const [nextPreview, setNextPreview] = useState({name: "", port: ""});
     const [savesByServer, setSavesByServer] = useState({});
     const [selectedSaveByServer, setSelectedSaveByServer] = useState({});
@@ -240,14 +248,14 @@ const Controls = () => {
                 content={
                     <div>
                         {(() => {
-                            const allVersions = [
+                            const allVersions = canInstall ? [
                                 {key: "stable", label: versionLabel("stable")},
                                 {key: "experimental", label: versionLabel("experimental")},
                                 ...installedVersions
                                     .filter(v => v !== availableVersions?.stable?.headless && v !== availableVersions?.experimental?.headless)
                                     .map(v => ({key: v, label: v})),
                                 {key: "__other__", label: t("controls.other_version", "other...")}
-                            ];
+                            ] : installedVersions.map(v => ({key: v, label: v}));
                             const isOther = createForm.version === "__other__";
                             const selKey = isOther ? (createForm.customVersion || "") : (createForm.version || "stable");
                             const resolvedKey = selKey === "stable"
@@ -271,7 +279,7 @@ const Controls = () => {
                             if (isInstalled && isDownloaded) { badgeClass += "text-green"; badgeText = "✓ installed · zip cached"; }
                             else if (isInstalled && !isDownloaded) { badgeClass += "text-green"; badgeText = "✓ installed"; }
                             else if (!isInstalled && isDownloaded) { badgeClass += "text-orange"; badgeText = "zip cached · not installed"; }
-                            else { badgeClass += "text-gray-400"; badgeText = "not installed · no zip"; }
+                            else { badgeClass += "text-gray-400"; badgeText = canInstall ? "not installed · no zip" : "not installed"; }
                             return (
                                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-2">
                                     <div className="flex gap-2">
@@ -306,6 +314,9 @@ const Controls = () => {
                                             <option key={key} value={key}>{label}</option>
                                         ))}
                                     </select>
+                                    {!canInstall && installedVersions.length === 0 && (
+                                        <span className="text-orange text-xs">No Factorio version installed. Run prepare-factorio.bat and reload the page.</span>
+                                    )}
                                     {isOther && (
                                         <input
                                             className="shadow appearance-none border py-2 px-3 text-black"
@@ -334,13 +345,13 @@ const Controls = () => {
                                         />
                                     )}
                                     <span className={badgeClass}>{badgeText}</span>
-                                    {(!isInstalled || !isDownloaded) && !expandedDelete && (
+                                    {canInstall && (!isInstalled || !isDownloaded) && !expandedDelete && (
                                         <Button size="sm" type="default" isLoading={busyVersion[selKey] === "downloading"} isDisabled={isBusy} onClick={() => handleDownload(selKey)}>
                                             {t("controls.download", "Download")}
                                         </Button>
                                     )}
                                     {!expandedDelete && (
-                                    <Button size="sm" type="success" isLoading={busyVersion[selKey] === "creating"} isDisabled={isBusy} onClick={() => handleCreateWithVersion(selKey)}>
+                                    <Button size="sm" type="success" isLoading={busyVersion[selKey] === "creating"} isDisabled={isBusy || (!canInstall && !isInstalled)} onClick={() => handleCreateWithVersion(selKey)}>
                                         {t("create")}
                                     </Button>
                                     )}

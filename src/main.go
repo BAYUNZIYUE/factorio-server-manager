@@ -48,6 +48,7 @@ func main() {
 		displayIP = "0.0.0.0"
 	}
 	log.Printf("FSM starting on: %s:%s", displayIP, config.ServerPort)
+	printReadyBanner(config.ServerIP, config.ServerPort, config.FsmDataDir, manager.ListServers())
 	log.Fatal(http.ListenAndServe("0.0.0.0:"+config.ServerPort, router))
 
 }

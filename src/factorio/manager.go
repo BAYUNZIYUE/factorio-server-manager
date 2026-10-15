@@ -595,7 +595,7 @@ func buildInstancePaths(instanceRoot, versionDir, serverID, fsmDataDir string) I
 	configDir := filepath.Join(instanceRoot, "config")
 	modsDir := filepath.Join(instanceRoot, "mods")
 	logsDir := filepath.Join(instanceRoot, "logs")
-	binary := filepath.Join(versionDir, "bin", "x64", "factorio")
+	binary := factorioBinaryPath(versionDir)
 	return InstancePaths{
 		Root:           instanceRoot,
 		VersionDir:     versionDir,

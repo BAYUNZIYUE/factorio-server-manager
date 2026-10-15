@@ -67,7 +67,7 @@ func (m *ServerManager) ListInstalledVersions() []string {
 		if !e.IsDir() {
 			continue
 		}
-		binary := filepath.Join(m.versionDir, e.Name(), "bin", "x64", "factorio")
+		binary := factorioBinaryPath(filepath.Join(m.versionDir, e.Name()))
 		if _, err := os.Stat(binary); err == nil {
 			versions = append(versions, e.Name())
 		}
@@ -137,7 +137,7 @@ func (m *ServerManager) EnsureVersionInstalled(requested string) (string, error)
 	defer m.installMu.Unlock()
 
 	versionDir := filepath.Join(m.versionDir, resolved)
-	binary := filepath.Join(versionDir, "bin", "x64", "factorio")
+	binary := factorioBinaryPath(versionDir)
 	if _, err := os.Stat(binary); err == nil {
 		return resolved, nil
 	}
@@ -146,7 +146,7 @@ func (m *ServerManager) EnsureVersionInstalled(requested string) (string, error)
 		return "", err
 	}
 	if runtime.GOOS == "windows" {
-		return "", fmt.Errorf("automatic Factorio installation is not supported on Windows. Please download Factorio from https://www.factorio.com/download and extract it next to factorio-server-manager.exe as 'factorio' folder")
+		return "", fmt.Errorf("Factorio %s is not installed. Automatic download is not available on Windows: run prepare-factorio.bat and refresh the page", resolved)
 	}
 	archive := filepath.Join(m.downloadDir, fmt.Sprintf("factorio_%s.tar.xz", resolved))
 	url := fmt.Sprintf("https://www.factorio.com/get-download/%s/headless/linux64", resolved)
@@ -230,7 +230,7 @@ func (m *ServerManager) EnsureServerVersion(server *Server) error {
 	}
 
 	versionDir := filepath.Join(m.versionDir, resolved)
-	binary := filepath.Join(versionDir, "bin", "x64", "factorio")
+	binary := factorioBinaryPath(versionDir)
 	if _, err := os.Stat(binary); err != nil {
 		return fmt.Errorf("Factorio %s binary is unavailable at %s: %w", resolved, binary, err)
 	}
@@ -459,4 +459,20 @@ func install7zip() error {
 
 	cmd := exec.Command(tmpInstaller, "/S")
 	return cmd.Run()
+}
+
+// factorioBinaryPath returns the Factorio executable path inside a version dir.
+// On Windows the binary has the .exe extension.
+func factorioBinaryPath(versionDir string) string {
+	name := "factorio"
+	if runtime.GOOS == "windows" {
+		name = "factorio.exe"
+	}
+	return filepath.Join(versionDir, "bin", "x64", name)
+}
+
+// CanInstallFactorio reports whether FSM can download Factorio by itself.
+// The headless archive is Linux-only, so on Windows versions are prepared manually.
+func CanInstallFactorio() bool {
+	return runtime.GOOS != "windows"
 }

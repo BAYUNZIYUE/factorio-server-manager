@@ -1,6 +1,7 @@
 package api
 
 import (
+	"path/filepath"
 	"encoding/base64"
 	"errors"
 	"fmt"
@@ -76,6 +77,12 @@ func SetupAuth() {
 		log.Println("Created default admin user. Please change it's password as soon as possible.")
 		log.Printf("Username: %s", user.Username)
 		fmt.Fprintf(os.Stderr, "[FSM] Default admin password: %s\n", password)
+		if dir := bootstrap.GetConfig().FsmDataDir; dir != "" {
+			_ = os.MkdirAll(dir, 0755)
+			if err := os.WriteFile(filepath.Join(dir, "admin-credentials.txt"), []byte(password+"\n"), 0600); err != nil {
+				log.Printf("Cannot save initial admin password: %v", err)
+			}
+		}
 	}
 }
 

@@ -227,8 +227,9 @@ func DeleteServerHandler(w http.ResponseWriter, r *http.Request) {
 func InfoHandler(w http.ResponseWriter, r *http.Request) {
 	config := bootstrap.GetConfig()
 	w.Header().Set("Content-Type", "application/json;charset=UTF-8")
-	WriteResponse(w, map[string]string{
-		"server_ip": config.ServerIP,
+	WriteResponse(w, map[string]interface{}{
+		"server_ip":   config.ServerIP,
+		"can_install": factorio.CanInstallFactorio(),
 	})
 }
 
