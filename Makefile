@@ -37,8 +37,8 @@ factorio-server-manager-windows:
 	@mkdir -p factorio-server-manager
 	@cd src; \
 	GO111MODULE=on GOOS=windows GOARCH=amd64 CGO_ENABLED=0 CXX=x86_64-w64-mingw32-g++ CC=x86_64-w64-mingw32-gcc go build -ldflags="-extldflags=-static" -o ../factorio-server-manager/factorio-server-manager.exe .
-	@printf '@echo off\r\ncd /d "%%~dp0"\r\nstart factorio-server-manager.exe --port 8080 --servers-root "%%~dp0factorio-server" --fsm-data-dir "%%~dp0fsm-data" --locales-dir "%%~dp0fsm-data\\locales"\r\n' > factorio-server-manager/start.bat
-	@cp windows/prepare-factorio.bat windows/prepare-factorio.ps1 factorio-server-manager/
+	@printf '@echo off\r\ncd /d "%%~dp0"\r\npowershell -NoProfile -ExecutionPolicy Bypass -File "%%~dp0start.ps1"\r\npause\r\n' > factorio-server-manager/start.bat
+	@cp windows/prepare-factorio.bat windows/prepare-factorio.ps1 windows/start.ps1 factorio-server-manager/
 
 ifeq ($(BUILD_WINDOWS),1)
 gen_release: build/factorio-server-manager-linux.zip build/factorio-server-manager-windows.zip
