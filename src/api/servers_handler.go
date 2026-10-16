@@ -161,6 +161,13 @@ func UpdateServerHandler(w http.ResponseWriter, r *http.Request) {
 	if data.Version != nil {
 		trimmed := strings.TrimSpace(*data.Version)
 		if trimmed != "" && trimmed != server.VersionChannel {
+			if resolved, rerr := factorio.ResolveVersion(trimmed); rerr != nil {
+				w.WriteHeader(http.StatusBadGateway)
+				resp = fmt.Sprintf("cannot resolve Factorio %s: %s", trimmed, rerr)
+				return
+			} else {
+				trimmed = resolved
+			}
 			if manager != nil && !factorio.CanInstallFactorio() {
 				installed := false
 				for _, v := range manager.ListInstalledVersions() {

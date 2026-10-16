@@ -222,6 +222,12 @@ func (m *ServerManager) EnsureServerVersion(server *Server) error {
 	if strings.TrimSpace(requested) == "" || requested == "uninstalled" {
 		requested = "stable"
 	}
+	// keep the pinned version; channels are resolved only on an explicit change
+	if (requested == "stable" || requested == "experimental") && strings.TrimSpace(server.VersionLabel) != "" {
+		if _, err := os.Stat(factorioBinaryPath(filepath.Join(m.versionDir, server.VersionLabel))); err == nil {
+			requested = server.VersionLabel
+		}
+	}
 	server.VersionChannel = requested
 
 	resolved, err := m.EnsureVersionInstalled(requested)
@@ -475,4 +481,9 @@ func factorioBinaryPath(versionDir string) string {
 // The headless archive is Linux-only, so on Windows versions are prepared manually.
 func CanInstallFactorio() bool {
 	return runtime.GOOS != "windows"
+}
+
+// ResolveVersion turns stable/experimental into a concrete version number.
+func ResolveVersion(requested string) (string, error) {
+	return resolveFactorioVersion(requested)
 }

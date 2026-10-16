@@ -95,7 +95,8 @@ const Controls = () => {
 
     const versionLabel = (type) => {
         const v = availableVersions?.[type]?.headless;
-        return v ? `${type} (${v})` : type;
+        const short = {stable: "stab", experimental: "exp"}[type] || type;
+        return v ? `${short} (${v})` : short;
     };
 
     const setBusyFor = (id, action, value) => {
@@ -446,14 +447,13 @@ const ServerCard = ({server, saves, selectedSave, setSelectedSave, busy, runActi
 
     const resolveChannel = (srv) => {
         if (!canInstall) return srv.version || "";
-        if (srv.version_channel === "stable" || srv.version_channel === "experimental") return srv.version_channel;
         const v = srv.version || "";
         if (v === "stable" || v === "experimental") return v;
         const stableV = availableVersions?.stable?.headless || "";
         const expV = availableVersions?.experimental?.headless || "";
         if (stableV && v.startsWith(stableV)) return "stable";
         if (expV && v.startsWith(expV)) return "experimental";
-        return "stable";
+        return v || "stable";
     };
 
     const [versionDraft, setVersionDraft] = useState(() => resolveChannel(server));
