@@ -5,19 +5,9 @@ import (
 	"os"
 	"strings"
 
-	"github.com/OpenFactorioServerManager/factorio-server-manager/bootstrap"
 )
 
 const maxTailLogLines = 200
-
-func TailLog() ([]string, error) {
-	config := bootstrap.GetConfig()
-	logFile := config.ConsoleLogFile
-	if manager := GetServerManager(); manager != nil {
-		logFile = manager.DefaultServer().consoleLogFile()
-	}
-	return TailLogFile(logFile)
-}
 
 func TailLogFile(logFile string) ([]string, error) {
 	data, err := os.ReadFile(logFile)

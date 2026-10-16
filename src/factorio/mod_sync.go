@@ -23,10 +23,6 @@ var modsSyncing = struct {
 var syncCancelMu sync.Mutex
 var syncCancelFn context.CancelFunc
 
-func IsModsSyncing() bool {
-	return IsModsSyncingForServer(DefaultServerID)
-}
-
 func IsModsSyncingForServer(serverID string) bool {
 	if serverID == "" {
 		serverID = DefaultServerID
@@ -104,10 +100,6 @@ func isVanillaSave(mods []Mod) bool {
 		}
 	}
 	return true
-}
-
-func sendSyncProgress(p ModSyncProgress) {
-	sendSyncProgressForServer(DefaultServerID, p)
 }
 
 func sendSyncProgressForServer(serverID string, p ModSyncProgress) {
@@ -273,20 +265,6 @@ func getModRelease(modName string, version string) (portalModRelease, error) {
 	}
 
 	return portalModRelease{}, fmt.Errorf("version %s not found for mod %s on portal", version, modName)
-}
-
-// SyncModsFromSave читает моды из сейва, сравнивает с установленными,
-// качает только недостающие. Прогресс через WebSocket room "mods_sync".
-// Пока идёт синк — IsModsSyncing() возвращает true, сервер не стартует.
-func SyncModsFromSave(savePath string, modNames []string) {
-	modsDir := ""
-	if manager := GetServerManager(); manager != nil {
-		modsDir = manager.DefaultServer().modsDir()
-	}
-	if modsDir == "" {
-		return
-	}
-	SyncModsFromSaveForDir(nil, savePath, modsDir, DefaultServerID, modNames, "add")
 }
 
 func SyncModsFromSaveForDir(db *gorm.DB, savePath string, modsDir string, serverID string, modNames []string, mode string) {
@@ -564,17 +542,6 @@ type ModStatus struct {
 	VersionInstalled string `json:"version_installed"`
 	Status           string `json:"status"` // missing, installed, wrong_version, builtin
 	PortalURL        string `json:"portal_url"`
-}
-
-func GetModsFromSave(savePath string) ([]ModStatus, error) {
-	modsDir := ""
-	if manager := GetServerManager(); manager != nil {
-		modsDir = manager.DefaultServer().modsDir()
-	}
-	if modsDir == "" {
-		return nil, fmt.Errorf("mods directory not configured")
-	}
-	return GetModsFromSaveForDir(savePath, modsDir)
 }
 
 func GetModsFromSaveForDir(savePath string, modsDir string) ([]ModStatus, error) {

@@ -7,10 +7,6 @@ import (
 	"github.com/OpenFactorioServerManager/rcon"
 )
 
-func connectRC() error {
-	return GetFactorioServer().connectRC()
-}
-
 func (server *Server) connectRC() error {
 	var err error
 	host := "127.0.0.1"

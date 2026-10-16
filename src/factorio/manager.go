@@ -208,12 +208,6 @@ func (m *ServerManager) saveCatalogLocked() error {
 	return nil
 }
 
-func (m *ServerManager) SaveCatalog() error {
-	m.mu.Lock()
-	defer m.mu.Unlock()
-	return m.saveCatalogLocked()
-}
-
 func (m *ServerManager) migrateLegacy(config bootstrap.Config) error {
 	log.Printf("No managed server catalog found; migrating legacy server into ID %s", DefaultServerID)
 

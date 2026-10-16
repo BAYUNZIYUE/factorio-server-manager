@@ -11,7 +11,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"regexp"
 	"strconv"
 	"strings"
 	"sync"
@@ -71,159 +70,8 @@ func (server *Server) GetRunning() bool {
 	return server.Running
 }
 
-func (server *Server) autostart() {
-	var err error
-	if server.BindIP == "" {
-		server.BindIP = "0.0.0.0"
-
-	}
-	if server.Port == 0 {
-		server.Port = 34197
-	}
-	server.Savefile = "Load Latest"
-
-	err = server.Run()
-
-	if err != nil {
-		log.Printf("Error starting Factorio server: %+v", err)
-		return
-	}
-
-}
-
 func SetFactorioServer(server Server) {
 	instantiated = server
-}
-
-func NewFactorioServer() (err error) {
-	server := Server{}
-	server.Settings = make(map[string]interface{})
-	config := bootstrap.GetConfig()
-	if err = os.MkdirAll(config.FactorioConfigDir, 0755); err != nil {
-		log.Printf("failed to create config directory: %v", err)
-		return
-	}
-
-	settingsPath := config.SettingsFile
-	var settings *os.File
-
-	if _, err = os.Stat(settingsPath); os.IsNotExist(err) {
-		log.Printf("server-settings.json not found\t\tloading default config")
-
-		defaultContent := getDefaultServerSettings()
-
-		os.MkdirAll(filepath.Dir(settingsPath), 0755)
-		if err = os.WriteFile(settingsPath, []byte(defaultContent), 0644); err != nil {
-			log.Printf("failed to write default server settings: %v", err)
-			return
-		}
-		log.Printf("Default server-settings.json written to %s", settingsPath)
-
-		settings, err = os.Open(settingsPath)
-		if err != nil {
-			log.Printf("failed to open server settings file: %v", err)
-			return
-		}
-		defer settings.Close()
-	} else {
-		log.Printf("server-settings.json present\t\topening normally")
-		// otherwise, open file normally
-		settings, err = os.Open(settingsPath)
-		if err != nil {
-			log.Printf("failed to open server settings file: %v", err)
-			return
-		}
-		defer settings.Close()
-	}
-
-	// before reading reset offset
-	if _, err = settings.Seek(0, 0); err != nil {
-		log.Printf("error while seeking in settings file: %v", err)
-		return
-	}
-
-	if err = json.NewDecoder(settings).Decode(&server.Settings); err != nil {
-		log.Printf("error reading %s: %v", settingsPath, err)
-		return
-	}
-	// Защита от null в JSON файле
-	if server.Settings == nil {
-		log.Printf("server-settings.json содержит null, инициализируем пустыми настройками")
-		server.Settings = make(map[string]interface{})
-	}
-
-	log.Printf("Loaded Factorio settings from %s\n", settingsPath)
-
-	out := []byte{}
-	//Load factorio version
-	if config.GlibcCustom == "true" {
-		out, err = exec.Command(config.GlibcLocation, "--library-path", config.GlibcLibLoc, config.FactorioBinary, "--version").Output()
-	} else {
-		out, err = exec.Command(config.FactorioBinary, "--version").Output()
-	}
-
-	if err != nil {
-		log.Printf("error on loading factorio version: %s", err)
-		return
-	}
-
-	reg := regexp.MustCompile("Version.*?((\\d+\\.)?(\\d+\\.)?(\\*|\\d+)+)")
-	found := reg.FindStringSubmatch(string(out))
-	err = server.Version.UnmarshalText([]byte(found[1]))
-	if err != nil {
-		log.Printf("could not parse version: %v", err)
-		return
-	}
-
-	//Load baseMod version
-	baseModInfoFile := filepath.Join(config.FactorioBaseModDir, "info.json")
-	bmifBa, err := ioutil.ReadFile(baseModInfoFile)
-	if err != nil {
-		log.Printf("couldn't open baseMods info.json: %s", err)
-		return
-	}
-	var modInfo ModInfo
-	err = json.Unmarshal(bmifBa, &modInfo)
-	if err != nil {
-		log.Printf("error unmarshalling baseMods info.json to a modInfo: %s", err)
-		return
-	}
-
-	server.BaseModVersion = modInfo.Version
-
-	// load admins from additional file
-	if (server.Version.Greater(Version{0, 17, 0})) {
-		if _, err = os.Stat(config.FactorioAdminFile); os.IsNotExist(err) {
-			//save empty admins-file
-			err = ioutil.WriteFile(config.FactorioAdminFile, []byte("[]"), 0664)
-			server.Settings["admins"] = make([]string, 0)
-		} else {
-			var data []byte
-			data, err = ioutil.ReadFile(config.FactorioAdminFile)
-			if err != nil {
-				log.Printf("Error loading FactorioAdminFile: %s", err)
-				return
-			}
-
-			var jsonData interface{}
-			err = json.Unmarshal(data, &jsonData)
-			if err != nil {
-				log.Printf("Error unmarshalling FactorioAdminFile: %s", err)
-				return
-			}
-
-			server.Settings["admins"] = jsonData
-		}
-	}
-
-	SetFactorioServer(server)
-
-	// autostart factorio is configured to do so
-	if config.Autostart == "true" {
-		go instantiated.autostart()
-	}
-
-	return
 }
 
 func GetFactorioServer() (f *Server) {
@@ -572,13 +420,6 @@ func (server *Server) consoleLogFile() string {
 	return bootstrap.GetConfig().ConsoleLogFile
 }
 
-func (server *Server) factorioLogFile() string {
-	if server.Paths.FactorioLog != "" {
-		return server.Paths.FactorioLog
-	}
-	return bootstrap.GetConfig().FactorioLog
-}
-
 func (server *Server) rconPort() int {
 	if server.RconPort != 0 {
 		return server.RconPort
@@ -591,11 +432,4 @@ func (server *Server) rconPass() string {
 		return server.RconPass
 	}
 	return bootstrap.GetConfig().FactorioRconPass
-}
-
-func (server *Server) logRoomName() string {
-	if server.ID == "" || server.ID == DefaultServerID {
-		return "gamelog"
-	}
-	return "servers:" + server.ID + ":gamelog"
 }

@@ -21,12 +21,6 @@ func GetInstallStatus() InstallStatus {
 	return currentInstall
 }
 
-func SetInstallStatus(s InstallStatus) {
-	installMu.Lock()
-	defer installMu.Unlock()
-	currentInstall = s
-}
-
 type ProgressReader struct {
 	Reader     io.Reader
 	Total      int64

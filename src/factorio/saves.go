@@ -24,16 +24,6 @@ func (s *Save) String() string {
 	return s.Name
 }
 
-// Lists save files in factorio/saves
-func ListSaves() (saves []Save, err error) {
-	config := bootstrap.GetConfig()
-	savesDir := config.FactorioSavesDir
-	if manager := GetServerManager(); manager != nil {
-		savesDir = manager.DefaultServer().savesDir()
-	}
-	return ListSavesInDir(savesDir)
-}
-
 func ListSavesInDir(savesDir string) (saves []Save, err error) {
 	saves = []Save{}
 	entries, err := os.ReadDir(savesDir)
@@ -84,15 +74,6 @@ func ListSavesWithLatestInDir(savesDir string) ([]Save, error) {
 	return append([]Save{latestSave}, saves...), nil
 }
 
-func FindSave(name string) (*Save, error) {
-	config := bootstrap.GetConfig()
-	savesDir := config.FactorioSavesDir
-	if manager := GetServerManager(); manager != nil {
-		savesDir = manager.DefaultServer().savesDir()
-	}
-	return FindSaveInDir(savesDir, name)
-}
-
 func FindSaveInDir(savesDir, name string) (*Save, error) {
 	name, err := ValidateSaveName(name)
 	if err != nil {
@@ -133,16 +114,6 @@ func (s *Save) RemoveFromDir(savesDir string) error {
 	return os.Remove(savePath)
 }
 
-// Create savefiles for Factorio
-func CreateSave(filePath string) (string, error) {
-	config := bootstrap.GetConfig()
-	binary := config.FactorioBinary
-	if manager := GetServerManager(); manager != nil {
-		binary = manager.DefaultServer().factorioBinary()
-	}
-	return CreateSaveWithBinary(filePath, binary)
-}
-
 func CreateSaveWithBinary(filePath, binary string) (string, error) {
 	err := os.MkdirAll(filepath.Dir(filePath), 0755)
 	if err != nil {
@@ -161,25 +132,6 @@ func CreateSaveWithBinary(filePath, binary string) (string, error) {
 	result := string(cmdOutput)
 
 	return result, nil
-}
-
-func GetLatestSave() (save Save, err error) {
-	config := bootstrap.GetConfig()
-	savesDir := config.FactorioSavesDir
-	if manager := GetServerManager(); manager != nil {
-		savesDir = manager.DefaultServer().savesDir()
-	}
-	return GetLatestSaveInDir(savesDir)
-}
-
-func GetLatestSaveInDir(savesDir string) (save Save, err error) {
-	saves, err := ListSavesInDir(savesDir)
-	if err != nil || len(saves) == 0 {
-		return save, err
-	}
-	save = saves[0]
-
-	return
 }
 
 func ValidateSaveName(name string) (string, error) {
