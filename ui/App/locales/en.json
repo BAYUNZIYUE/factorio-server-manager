@@ -99,7 +99,32 @@
             "save_file_error_message": "Savefile is required",
             "upload": "Upload"
         },
-        "upload_or_create": "Upload or create a save first"
+        "upload_or_create": "Upload or create a save first",
+        "backup_delete_error": "Failed to delete backup",
+        "backup_done": "Backup completed",
+        "backup_enabled": "Enabled",
+        "backup_error": "Backup failed",
+        "backup_interval": "Interval (min)",
+        "backup_restore": "Restore",
+        "backup_restore_error": "Failed to restore backup",
+        "backup_restored": "Backup restored to saves",
+        "backup_retention": "Retention",
+        "backup_run_now": "Run now",
+        "backup_skipped": "No changes, backup skipped",
+        "backups_title": "Save Backups",
+        "confirm_delete": "Delete?",
+        "delete": "Delete",
+        "download": "Download",
+        "empty": "No saves for this server yet.",
+        "no_backups": "No backups yet",
+        "pin": "Pin",
+        "pin_error": "Failed to pin backup",
+        "rename": "Rename",
+        "rename_done": "Backup renamed",
+        "rename_error": "Failed to rename backup",
+        "restore_here": "Restore here",
+        "schedule_error": "Failed to save schedule",
+        "schedule_saved": "Backup schedule saved"
     },
     "controls": {
         "title": "Server Manager",
@@ -122,7 +147,11 @@
         "downloading": "Downloading... {{current}} MB / {{total}} MB",
         "extracting": "Extracting...",
         "download": "Download",
-        "starting": "Starting..."
+        "starting": "Starting...",
+        "other_version": "other...",
+        "other_version_hint": "Enter a specific Factorio version number, e.g. 2.0.76. Full list: factorio.com/download/archive",
+        "settings": "Settings",
+        "version": "Version"
     },
     "servers": {
         "create": "Create server",
@@ -139,7 +168,9 @@
         "running_summary": "{{running}} / {{total}} servers running",
         "no_servers_title": "No servers yet",
         "no_servers_hint": "Create your first Factorio server to get started.",
-        "go_create": "Create server"
+        "go_create": "Create server",
+        "watchdog_hint": "0 = disabled. Reconnects RCON if server is running but unreachable.",
+        "watchdog_interval": "Watchdog interval (sec)"
     },
     "mods": {
         "change_mods_while_running_error_message": "Changing mods is disabled while the server is running!",
@@ -169,7 +200,9 @@
         },
         "mod_pack": {
             "load_modpack": "Load ModPack",
-            "load_confirm_dialog": "Loading the ModPack @@@ will remove all installed Mods."
+            "load_confirm_dialog": "Loading the ModPack @@@ will remove all installed Mods.",
+            "copy_link": "Copy download link",
+            "link_copied": "Link copied!"
         },
         "sync_from_save": "Sync Mods from Save",
         "sync_started": "Sync started...",
@@ -192,7 +225,33 @@
         "mod_options": "Mod Options",
         "mod_options_raw_note": "Edit the raw base64 encoded mod-settings.dat for this server.",
         "mod_library": "Mod Library",
-        "mod_library_help": "Mod Library is shared storage for mod files. Upload a mod ZIP once — then assign it to any server via manifest.\n\n1. Upload a ZIP or import from Mod Portal\n2. Add mods to manifest using + button\n3. Preview changes before applying\n4. Apply — deploys mods to server folder\n\nServer must be stopped before applying."
+        "mod_library_help": "Mod Library is shared storage for mod files. Upload a mod ZIP once — then assign it to any server via manifest.\n\n1. Upload a ZIP or import from Mod Portal\n2. Add mods to manifest using + button\n3. Preview changes before applying\n4. Apply — deploys mods to server folder\n\nServer must be stopped before applying.",
+        "apply_error": "Failed to apply mods",
+        "apply_preview": "Apply Preview",
+        "apply_success": "Mods applied successfully",
+        "apply_to_server": "Apply to Server",
+        "cancel_changes": "Cancel",
+        "cancel_error": "Failed to cancel changes",
+        "cancel_success": "Changes cancelled",
+        "import": "Import",
+        "import_error": "Import failed",
+        "import_success": "Mod imported to library",
+        "login_first": "Login to portal first",
+        "mod_options_file_loaded": "File loaded, click Save to apply",
+        "needs_server_stop": "Server must be stopped before applying.",
+        "search_portal": "🌐 Search portal...",
+        "select_save": "📁 Load from Save...",
+        "sync": "Sync",
+        "sync_dependencies": "Sync Dependencies",
+        "sync_deps_error": "Failed to sync dependencies",
+        "sync_deps_none": "All dependencies already satisfied",
+        "sync_success": "Mods synced from save",
+        "to_add": "To Add",
+        "to_remove": "To Remove",
+        "upload": "Upload",
+        "upload_error": "Upload failed",
+        "upload_success": "Mod uploaded to library",
+        "upload_zip": "⬆ Upload ZIP..."
     },
     "login": {
         "login_failed_message": "Login failed. Username or Password wrong.",
@@ -203,7 +262,8 @@
         "sign_in": "Sign In",
         "password_or_token": "Password or Token",
         "factorio_credentials_validation_error": "Factorio accepted the login request, but the saved credentials could not be validated.",
-        "factorio_login_error_message": "Given username or email and password do not match any account."
+        "factorio_login_error_message": "Given username or email and password do not match any account.",
+        "password": "Password"
     },
     "console": {
         "title": "Console",
@@ -308,5 +368,15 @@
     "lang_upload_err": "Upload error",
     "lang_download_current": "Download this language",
     "lang_apply_question": "Apply uploaded language?",
-    "lang_overwrite_question": "File already exists. Replace it?"
+    "lang_overwrite_question": "File already exists. Replace it?",
+    "presets": {
+        "add": "Add Preset",
+        "delete_error": "Failed to delete preset",
+        "description": "Description",
+        "load_error": "Failed to load preset",
+        "load_preset": "Load Preset",
+        "save": "Save",
+        "save_error": "Failed to save preset",
+        "title": "Mod Presets"
+    }
 }
