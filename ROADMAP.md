@@ -17,6 +17,14 @@
 - Fix: F5 white page on nested routes (absolute asset paths)
 - Fix: "broken pipe" noise in WriteResponse
 - Fix: final docker image was built from cache (fsm-build uses --no-cache)
+- Add: server Factorio version is pinned to a number; stab/exp resolve only on explicit change in the server card (labels shortened to stab/exp)
+- Add: setup helper asks macvlan first, autodetects host IP/interface/gateway (use --network host on Linux), Windows hint only on Docker Desktop
+- Add: missing en/ru translations (saves, mods, presets, controls, watchdog)
+- Fix: web port other than 80 in the Docker helper (container listens on 80, host port via -p); log shows the public port
+- Fix: macvlan with a custom port verified
+- Fix: setup helper no longer takes the docker bridge route as gateway
+- Fix: readable DB logging, "record not found" noise removed (FSM_DEBUG_SQL=1 shows SQL)
+- Chore: removed unreachable legacy code (old single-server helpers)
 
 ### v6.6 (2026-08-26)
 - Add: save backups — scheduled backups with interval and retention
@@ -116,10 +124,12 @@
 - Proper FSM login (registration form on first launch)
 
 ### Setup helper / Docker
-- OS detection, common fsm/data|server|backup layout, no macvlan question on Docker Desktop
-- Verify web port != 80 in the Docker helper (listen port vs -p HTTP:80)
+- Common fsm/data|server|backup layout, OS detection for Docker Desktop (no macvlan question)
+- Do not append the alias to ~/.bashrc twice
 
 ### Servers
+- Delete admin-credentials.txt on password change (Authentication)
+- Log the sync mode (match/add)
 - Update indicator for installed Factorio builds (stable/experimental), with save-backup warning
 - Check the recycler entry in mod-list.json for 2.0 servers
 
@@ -127,7 +137,7 @@
 - Test the client-zip branch of prepare-factorio on a clean machine without Steam
 
 ### i18n
-- Chinese locale keys for Help
+- Chinese locale keys (Help and the keys added in v0.3.x)
 
 ### Technical debt
 - Replace deprecated ioutil with os/io
