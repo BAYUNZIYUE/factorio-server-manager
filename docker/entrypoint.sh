@@ -7,13 +7,29 @@ IMAGE="${FSM_IMAGE:-ghcr.io/joey00797-cell/fsm:latest}"
 run_setup() {
     echo "=== FSM Setup ==="
     echo ""
-    read -p "Host IP (your server IP): " HOST_IP < /dev/tty
-    HOST_IP=$(echo "$HOST_IP" | sed 's|https\?://||g' | tr -d '/')
-    while [ -z "$HOST_IP" ]; do
-        echo "  Host IP is required!"
+    # host network is visible only with --network host; docker bridge addresses are ignored
+    DET_IFACE=$(ip route 2>/dev/null | awk '/default/ {print $5; exit}')
+    DET_IP=""
+    if [ -n "$DET_IFACE" ]; then
+        DET_IP=$(ip -4 addr show "$DET_IFACE" 2>/dev/null | awk '/inet / {print $2; exit}' | cut -d/ -f1)
+    fi
+    DET_GW=$(ip route 2>/dev/null | awk '/default/ {print $3; exit}')
+    case "$DET_IP" in 172.1[6-9].*|172.2[0-9].*|172.3[01].*) DET_IP="";; esac
+
+    USE_MACVLAN=""
+    CONTAINER_IP=""
+    read -p "Enable macvlan (own LAN IP for the container, LAN broadcast works; container IP = host IP + 1)? [y/N]: " USE_MACVLAN < /dev/tty
+
+    if [ -n "$DET_IP" ]; then
+        read -p "Host IP [$DET_IP]: " HOST_IP < /dev/tty
+        HOST_IP=${HOST_IP:-$DET_IP}
+    else
         read -p "Host IP (your server IP): " HOST_IP < /dev/tty
-        HOST_IP=$(echo "$HOST_IP" | sed 's|https\?://||g' | tr -d '/')
-    done
+        while [ -z "$HOST_IP" ]; do
+            echo "  Host IP is required!"
+            read -p "Host IP (your server IP): " HOST_IP < /dev/tty
+        done
+    fi
     read -p "HTTP port [80]: " HTTP_PORT < /dev/tty
     HTTP_PORT=${HTTP_PORT:-80}
     read -p "UDP port start [34197]: " UDP_START < /dev/tty
@@ -22,25 +38,20 @@ run_setup() {
     UDP_SLOTS=${UDP_SLOTS:-10}
     UDP_END=$((UDP_START + UDP_SLOTS - 1))
 
-    # macvlan
-    USE_MACVLAN=""
-    CONTAINER_IP=""
-    echo ""
-    read -p "Enable macvlan for LAN broadcast? [y/N]: " USE_MACVLAN < /dev/tty
     if [ "$USE_MACVLAN" = "y" ] || [ "$USE_MACVLAN" = "Y" ]; then
-        # Suggest HOST_IP + 1
         BASE=$(echo $HOST_IP | cut -d. -f1-3)
         LAST=$(echo $HOST_IP | cut -d. -f4)
         SUGGESTED_IP="$BASE.$((LAST + 1))"
         echo "  Reserve this IP on your router/DHCP!"
         read -p "  Container IP [$SUGGESTED_IP]: " CONTAINER_IP < /dev/tty
         CONTAINER_IP=${CONTAINER_IP:-$SUGGESTED_IP}
-
-        # Derive subnet and gateway from HOST_IP
-        BASE=$(echo $HOST_IP | cut -d. -f1-3)
-        IFACE=$(ip route | awk '/default/ {print $5; exit}')
+        IFACE=$DET_IFACE
+        if [ -z "$IFACE" ] || [ -z "$DET_IP" ]; then
+            read -p "  Host network interface [eth0]: " IFACE < /dev/tty
+            IFACE=${IFACE:-eth0}
+        fi
         SUBNET="${BASE}.0/24"
-        GATEWAY="${BASE}.1"
+        GATEWAY=${DET_GW:-${BASE}.1}
         read -p "  Subnet [$SUBNET]: " INPUT_SUBNET < /dev/tty
         SUBNET=${INPUT_SUBNET:-$SUBNET}
         read -p "  Gateway [$GATEWAY]: " INPUT_GW < /dev/tty
@@ -317,13 +328,17 @@ fi
 
 init_conf
 
+# behind -p the container always listens on 80; with macvlan it has its own IP
+if [ "$USE_MACVLAN" = "y" ] || [ "$USE_MACVLAN" = "Y" ]; then LISTEN_PORT=${HTTP_PORT:-80}; else LISTEN_PORT=80; fi
+
+export FSM_PUBLIC_PORT=${HTTP_PORT:-80}
 printf "Starting FSM"
 cd /opt/fsm
 ./factorio-server-manager \
     --conf /opt/fsm-data/conf.json \
     --dir /opt/factorio-server \
     --servers-root /opt/factorio-server \
-    --port ${HTTP_PORT:-80} \
+    --port ${LISTEN_PORT} \
     --autostart false > $LOG_FILE 2>&1 &
 FSM_PID=$!
 
