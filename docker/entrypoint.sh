@@ -15,6 +15,8 @@ run_setup() {
     fi
     DET_GW=$(ip route 2>/dev/null | awk '/default/ {print $3; exit}')
     case "$DET_IP" in 172.1[6-9].*|172.2[0-9].*|172.3[01].*) DET_IP="";; esac
+    # without --network host the route is the docker bridge: ignore it completely
+    if [ -z "$DET_IP" ]; then DET_GW=""; DET_IFACE=""; fi
 
     USE_MACVLAN=""
     CONTAINER_IP=""
@@ -86,7 +88,7 @@ if [ ! -w "/opt/fsm-data" ]; then
 fi
 if [ ! -f "/opt/fsm-data/setup.conf" ]; then
     echo "ERROR: setup.conf not found — run setup first:"
-    echo "  docker run -it --rm -v /opt/fsm-data:/opt/fsm-data ${IMAGE}"
+    echo "  docker run -it --rm --network host -v /opt/fsm-data:/opt/fsm-data ${IMAGE}"
     exit 1
 fi
 echo "Pre-flight OK"
@@ -120,7 +122,7 @@ if [ ! -w "/opt/fsm-data" ]; then
 fi
 if [ ! -f "/opt/fsm-data/setup.conf" ]; then
     echo "ERROR: setup.conf not found — run setup first:"
-    echo "  docker run -it --rm -v /opt/fsm-data:/opt/fsm-data ${IMAGE}"
+    echo "  docker run -it --rm --network host -v /opt/fsm-data:/opt/fsm-data ${IMAGE}"
     exit 1
 fi
 echo "Pre-flight OK"
@@ -204,7 +206,7 @@ BATCH
     echo "    source ~/.bashrc"
     echo ""
     echo "  Reconfigure:"
-    echo "    docker run -it --rm \\"
+    echo "    docker run -it --rm --network host \\"
     echo "      -v /opt/fsm-data:/opt/fsm-data \\"
     echo "      ${IMAGE}"
     echo ""
@@ -273,7 +275,7 @@ show_ready() {
     fi
     echo "----------------------------------------"
     echo "  Reconfigure:"
-    echo "    docker run -it --rm \\"
+    echo "    docker run -it --rm --network host \\"
     echo "      -v /opt/fsm-data:/opt/fsm-data \\"
     echo "      ${IMAGE}"
     echo "  Logs: docker logs fsm -f"
@@ -303,7 +305,7 @@ if [ ! -f "$SETUP_CONF" ]; then
         echo "  No setup.conf found and no TTY available."
         echo "  Run the setup wizard first:"
         echo ""
-        echo "    docker run -it --rm \\"
+        echo "    docker run -it --rm --network host \\"
         echo "      -v /opt/fsm-data:/opt/fsm-data \\"
         echo "      ghcr.io/joey00797-cell/fsm:latest"
         echo ""
