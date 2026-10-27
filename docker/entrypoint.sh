@@ -196,11 +196,13 @@ BATCH
     echo "  Start (Linux/Mac):"
     echo "    bash /opt/fsm-data/fsm-start.sh"
     echo ""
-    echo "  Start (Windows):"
-    echo "    cd C:\\fsm-data && docker compose up -d"
-    echo "    (or C:\\fsm-data\\fsm-start.bat)"
-    echo "    Setup on Windows must be run with: -v C:\\fsm-data:/opt/fsm-data"
-    echo ""
+    if grep -qiE "microsoft|linuxkit" /proc/version 2>/dev/null; then
+        echo "  Start (Windows / Docker Desktop):"
+        echo "    cd C:\\fsm-data && docker compose up -d"
+        echo "    (or C:\\fsm-data\\fsm-start.bat)"
+        echo "    Setup on Windows must be run with: -v C:\\fsm-data:/opt/fsm-data"
+        echo ""
+    fi
     echo "  Alias (optional):"
     echo "    echo \"alias fsm='bash /opt/fsm-data/fsm-start.sh'\" >> ~/.bashrc"
     echo "    source ~/.bashrc"
