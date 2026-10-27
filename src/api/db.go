@@ -18,7 +18,7 @@ func GetDB() *gorm.DB {
 func SetupDB() {
 	config := bootstrap.GetConfig()
 
-	db, err := gorm.Open(sqlite.Open(config.SQLiteDatabaseFile), &gorm.Config{})
+	db, err := gorm.Open(sqlite.Open(config.SQLiteDatabaseFile), &gorm.Config{Logger: newDBLogger()})
 	if err != nil {
 		log.Printf("Error opening sqlite database: %s", err)
 		panic(err)
