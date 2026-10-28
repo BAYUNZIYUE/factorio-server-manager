@@ -1,64 +1,68 @@
-## Docker Quick Start
+# Factorio Server Manager (fork)
+
+Web UI for running several Factorio servers on one machine: Linux (Docker) or Windows (native exe, or Docker Desktop).
+
+Fork of [OpenFactorioServerManager/factorio-server-manager](https://github.com/OpenFactorioServerManager/factorio-server-manager), reworked into a multi-server manager with a mod library, backups and a Windows build. History: [CHANGELOG.md](CHANGELOG.md) and [ROADMAP.md](ROADMAP.md). The original changelog is kept in [CHANGELOG-upstream.md](CHANGELOG-upstream.md).
+
+![Servers](screenshots/01-servers.png)
+
+## Features
+* Multiple servers, each with its own saves, mods, config and logs
+* Mod library with a per-server manifest, Apply preview and Sync from a save (Match save / Add from save)
+* Scheduled save backups: retention, pin, rename, restore into any server
+* Factorio versions are pinned per server; stab/exp channels change only when you ask
+* Watchdog, RCON status, logs, inline server settings
+* Help tab with a quick start and a danger zone (wipe or delete a server)
+* Languages: EN, RU
+
+![Mod library](screenshots/02-mod-library.png)
+![Backups](screenshots/03-backups.png)
+
+## Quick start: Linux (Docker)
 
 ```bash
-docker run -it --rm \
+docker run -it --rm --network host \
   -v /opt/fsm-data:/opt/fsm-data \
   ghcr.io/joey00797-cell/fsm:latest
 ```
 
-Follow the wizard — it will configure everything and generate a start script.
+`--network host` lets the wizard detect your IP and gateway. It asks about macvlan first (own LAN IP for the container, host IP + 1), then ports, and writes a start script:
 
----
+```bash
+bash /opt/fsm-data/fsm-start.sh
+```
 
-[![.github/workflows/test-workflow.yml](https://github.com/OpenFactorioServerManager/factorio-server-manager/workflows/.github/workflows/test-workflow.yml/badge.svg)](https://github.com/OpenFactorioServerManager/factorio-server-manager/actions)
-[![Discord](https://img.shields.io/discord/779512040934342687?label=Discord)](https://discord.gg/SB647WmSbU)
+The URL and the initial admin password are printed on start. Change the password after the first login.
 
-# Factorio Server Manager
+![Linux banner](screenshots/05-linux-banner.png)
 
-### A tool for managing Factorio servers.
-This tool runs on a Factorio server and allows management of the Factorio server, saves, mods and many other features.
+## Quick start: Windows without Docker
 
-## Features
-* Allows control of the Factorio Server, starting and stopping the Factorio binary.
-* Allows the management of save files, upload, download and delete saves.
-* Manage installed mods, upload new ones and more
-* Manage modpacks, so it is easier to play with different configurations
-* Allow viewing of the server logs and current configuration.
-* Authentication for protecting against unauthorized users
-* Available as a Docker container
+1. Download `fsm-windows-*.zip` from [Releases](https://github.com/joey00797-cell/factorio-server-manager/releases) and extract it to a folder you own.
+2. Run `start.bat`. On the first launch it prepares Factorio and asks for the web port and display IP.
+3. Open the printed URL, log in as `admin` with the printed password, create a server, upload a save.
 
-#### Manage Factorio Server
-![Factorio Server Manager Screenshot](screenshots/Screenshot_Controls.png)
+Preparing Factorio needs the game: the Steam client, a client zip next to `start.bat`, or a folder path you type in. The script takes only `factorio.exe` from it and downloads the matching headless data. Stop all servers before preparing another version. Allow the server UDP port in Windows Firewall.
 
-#### Manage save files
-![Factorio Server Manager Screenshot](screenshots/Screenshot_Saves.png)
+## Quick start: Windows with Docker Desktop
 
-#### Manage mods
-![Factorio Server Manager Screenshot](screenshots/Screenshot_Mods.png)
+Run the wizard with your folder mounted (`-v C:\fsm-data:/opt/fsm-data`, without `--network host`), then `docker compose up -d` in that folder. macvlan does not work on Docker Desktop.
 
-## [Installation and Usage](https://github.com/OpenFactorioServerManager/factorio-server-manager/wiki/Installation-and-Usage)
-
-## [Development](https://github.com/OpenFactorioServerManager/factorio-server-manager/wiki/Development)
+## Building from source
+See [DEVELOPMENT.md](DEVELOPMENT.md).
 
 ## Contributing
-1. Fork it!
-2. Checkout the develop branch, only use that as a base: `git checkout develop`
-2. Create your feature branch: `git checkout -b my-new-feature`
-3. Commit your changes: `git commit -am 'Add some feature'`
-4. Add your changes a in human readable way into CHANGELOG.md
-4. Push to the branch: `git push origin my-new-feature`
-5. Submit a pull request, with `develop` as base :D
+1. Fork it, use `develop` as the base branch
+2. Create a feature branch, commit, push
+3. Add a line to CHANGELOG.md and ROADMAP.md
+4. Open a pull request against `develop`
 
-## Authors
+## Credits
+* Original project: **Mitch Roote**, [knoxfighter](https://github.com/knoxfighter), [Jannaahs](https://github.com/jannaahs) and [all contributors](https://github.com/OpenFactorioServerManager/factorio-server-manager/graphs/contributors)
+* Multi-server work: thanks to @TheCoolestPaul
+* **mickael9** for reverse engineering the Factorio save format: https://forums.factorio.com/viewtopic.php?f=5&t=8568
 
-* **Mitch Roote** - [roote.ca](https://roote.ca)
-* **[knoxfighter](https://github.com/knoxfighter)**
-* **[Jannaahs](https://github.com/jannaahs)**
-
-## Special Thanks
-- **[All Contributions](https://github.com/OpenFactorioServerManager/factorio-server-manager/graphs/contributors)**
-- **mickael9** for reverseengineering the factorio-save-file: https://forums.factorio.com/viewtopic.php?f=5&t=8568#
+Not affiliated with Factorio or Wube Software.
 
 ## License
-
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
+MIT, see [LICENSE.md](LICENSE.md).
