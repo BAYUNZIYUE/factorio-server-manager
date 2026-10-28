@@ -31,6 +31,7 @@ factorio-server-manager-linux:
 	@mkdir -p factorio-server-manager
 	@cd src; \
 	CGO_ENABLED=0 GO111MODULE=on GOOS=linux GOARCH=amd64 go build -o ../factorio-server-manager/factorio-server-manager .
+	@cp linux/start.sh factorio-server-manager/start.sh && chmod +x factorio-server-manager/start.sh
 
 factorio-server-manager-windows:
 	@echo "Building Backend - Windows"

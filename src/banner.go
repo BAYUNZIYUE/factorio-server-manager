@@ -26,7 +26,7 @@ func localIP() string {
 
 // printReadyBanner prints the access info (Windows only; on Linux entrypoint.sh does it).
 func printReadyBanner(serverIP, port, dataDir string, servers []*factorio.Server) {
-	if runtime.GOOS != "windows" {
+	if runtime.GOOS != "windows" && os.Getenv("FSM_BANNER") != "1" {
 		return
 	}
 	ip := serverIP
