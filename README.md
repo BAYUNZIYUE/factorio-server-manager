@@ -40,6 +40,19 @@ The URL and the initial admin password are printed on start. Change the password
 
 ![Linux banner](screenshots/05-linux-banner.png)
 
+## Quick start: Linux without Docker
+
+One line installs the latest release (and updates it later: run it again and it offers the update):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/joey00797-cell/factorio-server-manager/master/install.sh | bash
+cd /opt/fsm && ./start.sh
+```
+
+To read the script first: `curl -fsSL <url> -o install.sh && less install.sh && bash install.sh`.
+
+The installer needs `curl` and `unzip` (or `python3`). It installs into `/opt/fsm` for root and `~/fsm` otherwise (change with `FSM_DIR=/path`). `start.sh` checks `xz`, `tar` and CA certificates, asks for the web port and display IP on the first launch, and keeps everything (database, backups, servers) next to the script. Updates replace only the binary, `app/` and `start.sh`.
+
 ## Quick start: Windows without Docker
 
 1. Download `fsm-windows-*.zip` from [Releases](https://github.com/joey00797-cell/factorio-server-manager/releases) and extract it to a folder you own.

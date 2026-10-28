@@ -2,6 +2,11 @@
 
 ## ✅ Done
 
+### v6.7.1 (2026-10-28) - Native Linux
+- Add: install.sh - one-line install/update from the latest release, keeps data and config
+- Add: linux/start.sh - dependency check (xz, tar, CA certs), first-run setup, launcher mode with R, port check, update hint
+- Add: ready banner on Linux for the native launcher (FSM_BANNER=1)
+
 ### v0.3.x (2026-10) - Windows without Docker, wipe, Help
 - Add: Windows exe build (no Docker): start.bat -> start.ps1 (interactive setup, port check, launcher mode, R to reconfigure)
 - Add: prepare-factorio.bat/.ps1 - builds versions/<ver> from the Steam client (or client zip) + headless data, 7zr fallback for .xz

@@ -2,6 +2,10 @@
 
 Changes of this fork. History of the original project: [CHANGELOG-upstream.md](CHANGELOG-upstream.md). Detailed items: [ROADMAP.md](ROADMAP.md).
 
+## [6.7.1] - 2026-10-28
+### Added
+- Native Linux install without Docker: one-line installer/updater (`install.sh`) and `start.sh` (dependency check, first-run setup, port check, update hint)
+
 ## [6.7.0] - 2026-10-27
 First master release of the fork.
 
