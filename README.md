@@ -18,6 +18,10 @@ Fork of [OpenFactorioServerManager/factorio-server-manager](https://github.com/O
 ![Mod library](screenshots/02-mod-library.png)
 ![Backups](screenshots/03-backups.png)
 
+| Help tab: quick start and how-to | Russian interface |
+|---|---|
+| ![Help](screenshots/04-help.png) | ![Russian UI](screenshots/06-ru.png) |
+
 ## Quick start: Linux (Docker)
 
 ```bash
